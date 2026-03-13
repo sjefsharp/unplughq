@@ -68,6 +68,5 @@ nav:
 - System Architecture:
     - Architecture Overview: architecture-overview.md
     - Solution Assessment: solution-assessment.md
-- Project Tracking:
-    - Gate Evaluations: gate-evaluations.md
-    - Session Checkpoint: session-checkpoint.md
+- Security:
+    - Threat Model — UnplugHQ Platform: threat-model.md
