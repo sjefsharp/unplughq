@@ -27,7 +27,7 @@ date: 2026-03-13
 
 This document contains BPMN-style process models for the five core user journeys defined in the Product Vision. Each model depicts the "to-be" future-state process — the experience UnplugHQ enables for non-technical users. Models use Mermaid flowchart syntax representing swim-lane activity diagrams with gateways, error paths, and system/user participant boundaries.
 
-**Upstream reference:** `/artifacts/_project/product-manager/product-vision.md`
+**Upstream reference:** [Product Vision](product-vision.md)
 
 ---
 

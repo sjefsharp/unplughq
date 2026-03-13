@@ -24,31 +24,13 @@ date: 2026-03-13
 
 # Requirements
 
-## Azure Boards Operations
-
-Before artifact production:
-
-```
-node .github/skills/azure-boards/scripts/create-work-item.mjs \
-  --project unplughq \
-  --type task \
-  --name task-XXX-ba-requirements \
-  --title "[BA] Requirements elicitation for epic-001-unplughq-platform" \
-  --parent-id 169 \
-  --priority 2 \
-  --tier full \
-  --phase P1
-```
-
----
-
 ## Overview
 
 This document establishes the full requirements set for the UnplugHQ platform, derived from the Product Vision, Feature Roadmap, PI Objectives, and Risk Register for epic-001-unplughq-platform (AB#169).
 
 Requirements are organized by the four PI-1 feature areas, followed by cross-cutting non-functional requirements. Every requirement is traceable to at least one Desired Outcome (O1–O6), User Journey (UJ1–UJ5), or Success Criterion (SC1–SC8) from the Product Vision.
 
-**Vision reference:** `/artifacts/_project/product-manager/product-vision.md`
+**Vision reference:** [Product Vision](product-vision.md)
 
 ---
 
