@@ -59,6 +59,8 @@ date: 2026-03-13
 3. `create-work-item.mjs` not bridge-aware for artifact directory creation (MEDIUM)
 4. `query-work-items.mjs` fails for Task queries — empty JSON from WIQL (MEDIUM)
 5. Azure Boards Agile Task type does not support "Resolved" state (New→Active→Closed only) — framework docs reference "resolved" for Tasks (LOW)
+6. Azure Boards HTML sanitization strips HTML comments — RESOLVED (fixed marker to `data-section` attribute in framework commit 56135e2)
+7. `update-work-item.mjs --remove-tag` reports success but Azure DevOps CLI `--fields System.Tags=...` does not overwrite tags — tag removal unreliable (LOW)
 
 ## Deferred Items
 
