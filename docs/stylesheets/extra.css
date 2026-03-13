@@ -1,0 +1,31 @@
+/* ====================================================================
+ * Project Design Tokens — MkDocs Material Theme Overrides
+ * --------------------------------------------------------------------
+ * This file is the bridge between UX design and documentation styling.
+ * The UX Designer updates this file at P2 to align the documentation
+ * site with the application's visual identity.
+ *
+ * Color variables override Material theme defaults.
+ * See: https://squidfunk.github.io/mkdocs-material/customization/
+ * ==================================================================== */
+
+:root {
+  /* ── Primary palette ── */
+  /* --md-primary-fg-color:        #4051b5; */
+  /* --md-primary-bg-color:        #ffffff; */
+  /* --md-accent-fg-color:         #526cfe; */
+
+  /* ── Typography ── */
+  /* --md-text-font: "Inter"; */
+  /* --md-code-font: "JetBrains Mono"; */
+
+  /* ── Surface colors ── */
+  /* --md-default-bg-color:        #ffffff; */
+  /* --md-footer-bg-color:         #000000de; */
+}
+
+[data-md-color-scheme="slate"] {
+  /* ── Dark mode overrides ── */
+  /* --md-primary-fg-color:        #7c8aff; */
+  /* --md-default-bg-color:        #1e1e2e; */
+}

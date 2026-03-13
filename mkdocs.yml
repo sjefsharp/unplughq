@@ -1,13 +1,35 @@
-site_name: 'unplughq'
+site_name: 'UnplugHQ'
 site_url: https://sjefsharp.github.io/unplughq/
+site_description: 'UnplugHQ — project documentation'
 theme:
   name: material
   features:
     - navigation.instant
     - navigation.sections
     - navigation.expand
+    - navigation.top
     - search.suggest
+    - search.highlight
     - content.code.copy
+    - content.tabs.link
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+extra_css:
+  - stylesheets/extra.css
 plugins:
   - search
 markdown_extensions:
@@ -22,4 +44,10 @@ markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
   - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
