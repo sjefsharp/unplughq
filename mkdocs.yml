@@ -65,3 +65,6 @@ nav:
 - Program Management:
     - Initial Risk Register: risk-register.md
     - PI Objectives: pi-objectives.md
+- System Architecture:
+    - Architecture Overview: architecture-overview.md
+    - Solution Assessment: solution-assessment.md
