@@ -36,11 +36,11 @@ date: 2026-03-13
 
 | Artifact | Agent | Phase | Status | Path |
 |---|---|---|---|---|
-| product-vision.md | PM | P0 | approved | `artifacts/_project/product-manager/product-vision.md` |
-| feature-roadmap.md | PM | P0 | approved | `artifacts/_project/product-manager/feature-roadmap.md` |
-| pi-objectives.md | RTE | P0 | approved | `artifacts/_project/release-train-engineer/pi-objectives.md` |
-| risk-register.md | RTE | P0 | approved | `artifacts/_project/release-train-engineer/risk-register.md` |
-| gate-evaluations.md | PM | P0 | approved | `artifacts/_project/product-manager/gate-evaluations.md` |
+| product-vision.md | PM | P0 | approved | `docs/product-vision.md` |
+| feature-roadmap.md | PM | P0 | approved | `docs/feature-roadmap.md` |
+| pi-objectives.md | RTE | P0 | approved | `docs/pi-objectives.md` |
+| risk-register.md | RTE | P0 | approved | `docs/risk-register.md` |
+| gate-evaluations.md | PM | P0 | approved | `docs/gate-evaluations.md` |
 
 ## Enhancement Candidates
 
