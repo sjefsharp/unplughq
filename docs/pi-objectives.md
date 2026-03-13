@@ -32,7 +32,7 @@ review:
   reviewed-date: 2026-03-13
 ---
 
-# PI Objectives — UnplugHQ PI-1
+# PI Objectives
 
 ## PI Theme
 

@@ -25,7 +25,7 @@ review:
   reviewed-date: 2026-03-13
 ---
 
-# Initial Risk Register — UnplugHQ PI-1
+# Initial Risk Register
 
 ## Risk Framing
 

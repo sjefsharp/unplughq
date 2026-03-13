@@ -26,7 +26,7 @@ consumed-by:
 date: 2026-03-13
 ---
 
-# Product Vision — UnplugHQ
+# Product Vision
 
 ## Vision Statement
 

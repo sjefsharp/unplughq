@@ -11,7 +11,7 @@ azure-devops-id: 169
 date: 2026-03-13
 ---
 
-# Session Checkpoint — UnplugHQ
+# Session Checkpoint
 
 ## Current State
 

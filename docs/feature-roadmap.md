@@ -20,7 +20,7 @@ consumed-by:
 date: 2026-03-13
 ---
 
-# Feature Roadmap — UnplugHQ
+# Feature Roadmap
 
 ## Roadmap Format: Now-Next-Later
 

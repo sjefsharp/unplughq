@@ -12,7 +12,7 @@ azure-devops-id: 169
 date: 2026-03-13
 ---
 
-# Gate Evaluations — UnplugHQ
+# Gate Evaluations
 
 ## Gate 1 — P0 Intake & Strategic Alignment
 

@@ -22,7 +22,7 @@ consumed-by:
 date: 2026-03-13
 ---
 
-# Requirements — UnplugHQ
+# Requirements
 
 ## Azure Boards Operations
 
