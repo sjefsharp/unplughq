@@ -138,7 +138,7 @@ graph TD
 | Package manager | pnpm 10.x | Efficient disk usage, strict dependency resolution, workspace support |
 | Language | TypeScript 5.9.x | End-to-end type safety from Drizzle schema to React components |
 
-**ADR references:** See [ADR-001](adr-001-next-js-full-stack.md), [ADR-002](adr-002-caddy-reverse-proxy.md), [ADR-003](adr-003-control-data-plane-separation.md), [ADR-004](adr-004-drizzle-orm.md), [ADR-005](adr-005-bullmq-job-queue.md).
+**ADR references:** ADR-001 (Next.js full-stack), ADR-002 (Caddy reverse proxy), ADR-003 (control/data plane separation), ADR-004 (Drizzle ORM), ADR-005 (BullMQ job queue). *ADR artifacts will be produced by the Solution Designer at P1.*
 
 ---
 

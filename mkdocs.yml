@@ -68,3 +68,6 @@ nav:
 - System Architecture:
     - Architecture Overview: architecture-overview.md
     - Solution Assessment: solution-assessment.md
+- Project Tracking:
+    - Gate Evaluations: gate-evaluations.md
+    - Session Checkpoint: session-checkpoint.md
