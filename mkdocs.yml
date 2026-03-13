@@ -28,6 +28,7 @@ theme:
   font:
     text: Inter
     code: JetBrains Mono
+  custom_dir: overrides
 extra_css:
   - stylesheets/extra.css
 plugins:
@@ -51,3 +52,16 @@ markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+nav:
+- Home: index.md
+- Product Management:
+    - Feature Roadmap: feature-roadmap.md
+    - Product Vision: product-vision.md
+- Business Analysis:
+    - Domain Glossary: domain-glossary.md
+    - Process Models: process-models.md
+    - Requirements: requirements.md
+    - Stakeholder Analysis: stakeholder-analysis.md
+- Program Management:
+    - Pi Objectives: pi-objectives.md
+    - Risk Register: risk-register.md

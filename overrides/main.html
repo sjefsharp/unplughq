@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block htmltitle %}
+<title>{% if page.title %}{{ page.title }}{% else %}{{ config.site_name }}{% endif %}</title>
+{% endblock %}
