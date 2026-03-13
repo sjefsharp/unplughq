@@ -15,10 +15,10 @@ date: 2026-03-13
 
 ## Current State
 
-- **Phase:** P0 COMPLETE → Gate 1 PASS → P1 READY
+- **Phase:** P1 IN PROGRESS (BA complete, SA next)
 - **Branch:** `feat/epic-001-unplughq-platform`
 - **Azure Boards:** Epic AB#169, state `proposed`
-- **Next action:** Invoke BA ∥ SA for Phase 1 Discovery & Analysis
+- **Next action:** Invoke SA for architecture assessment, then SEC, then SD
 
 ## Completed Gates
 
@@ -31,22 +31,34 @@ date: 2026-03-13
 | ID | Type | Name | State | Azure ID |
 |---|---|---|---|---|
 | epic-001-unplughq-platform | Epic | UnplugHQ — Self-hosting management platform | proposed | AB#169 |
+| task-172-rte-pi-planning | Task | [RTE] PI-1 objectives and risk register | closed | AB#172 |
+| task-173-ba-requirements-analysis | Task | [BA] Requirements elicitation and domain analysis | closed | AB#173 |
 
 ## Artifact Registry
 
-| Artifact | Agent | Phase | Status | Path |
+| Artifact | Agent | Phase | Status | MkDocs URL |
 |---|---|---|---|---|
-| product-vision.md | PM | P0 | approved | `docs/product-vision.md` |
-| feature-roadmap.md | PM | P0 | approved | `docs/feature-roadmap.md` |
-| pi-objectives.md | RTE | P0 | approved | `docs/pi-objectives.md` |
-| risk-register.md | RTE | P0 | approved | `docs/risk-register.md` |
-| gate-evaluations.md | PM | P0 | approved | `docs/gate-evaluations.md` |
+| product-vision.md | PM | P0 | approved | https://sjefsharp.github.io/unplughq/product-vision/ |
+| feature-roadmap.md | PM | P0 | approved | https://sjefsharp.github.io/unplughq/feature-roadmap/ |
+| pi-objectives.md | RTE | P0 | approved | https://sjefsharp.github.io/unplughq/pi-objectives/ |
+| risk-register.md | RTE | P0 | approved | https://sjefsharp.github.io/unplughq/risk-register/ |
+| gate-evaluations.md | PM | P0 | approved | https://sjefsharp.github.io/unplughq/gate-evaluations/ |
+| requirements.md | BA | P1 | approved | https://sjefsharp.github.io/unplughq/requirements/ |
+| process-models.md | BA | P1 | approved | https://sjefsharp.github.io/unplughq/process-models/ |
+| domain-glossary.md | BA | P1 | approved | https://sjefsharp.github.io/unplughq/domain-glossary/ |
+| stakeholder-analysis.md | BA | P1 | approved | https://sjefsharp.github.io/unplughq/stakeholder-analysis/ |
+
+## GitHub Pages Base URL
+
+`https://sjefsharp.github.io/unplughq/`
 
 ## Enhancement Candidates
 
 1. Azure DevOps `--scope` parameter missing from framework docs (HIGH)
-2. `az-health-check.mjs` uses slug as ADO project name instead of `ADO_PROJECT` (MEDIUM)
+2. `az-health-check.mjs` uses slug as ADO project name instead of `ADO_PROJECT` — RESOLVED (fixed in framework commit 0f1915b)
 3. `create-work-item.mjs` not bridge-aware for artifact directory creation (MEDIUM)
+4. `query-work-items.mjs` fails for Task queries — empty JSON from WIQL (MEDIUM)
+5. Azure Boards Agile Task type does not support "Resolved" state (New→Active→Closed only) — framework docs reference "resolved" for Tasks (LOW)
 
 ## Deferred Items
 
