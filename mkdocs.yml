@@ -68,5 +68,7 @@ nav:
 - System Architecture:
     - Architecture Overview: architecture-overview.md
     - Solution Assessment: solution-assessment.md
+- Solution Design:
+    - API Contracts — UnplugHQ: api-contracts.md
 - Security:
     - Threat Model — UnplugHQ Platform: threat-model.md
