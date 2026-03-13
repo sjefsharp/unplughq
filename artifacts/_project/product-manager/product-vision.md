@@ -7,8 +7,11 @@ work-item-type: epic
 workflow-tier: full
 phase: P0
 version: 1.0.0
-status: draft
+status: approved
 azure-devops-id: 169
+review:
+  reviewed-by: product-manager
+  reviewed-date: 2026-03-13
 consumed-by:
   - release-train-engineer
   - business-analyst

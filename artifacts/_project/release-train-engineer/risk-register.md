@@ -7,7 +7,7 @@ work-item-type: epic
 workflow-tier: full
 phase: P0
 version: 1.0.0
-status: draft
+status: approved
 consumed-by:
   - product-manager
   - system-architect
@@ -21,8 +21,8 @@ consumed-by:
 date: 2026-03-13
 azure-devops-id: 169
 review:
-  reviewed-by:
-  reviewed-date:
+  reviewed-by: product-manager
+  reviewed-date: 2026-03-13
 ---
 
 # Initial Risk Register — UnplugHQ PI-1

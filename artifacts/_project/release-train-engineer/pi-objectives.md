@@ -7,7 +7,7 @@ work-item-type: epic
 workflow-tier: full
 phase: P0
 version: 1.0.0
-status: draft
+status: approved
 azure-devops-id: 169
 consumed-by:
   - product-manager
@@ -27,10 +27,9 @@ consumed-by:
   - database-administrator
   - devops-engineer
 date: 2026-03-13
-azure-devops-id:
 review:
-  reviewed-by:
-  reviewed-date:
+  reviewed-by: product-manager
+  reviewed-date: 2026-03-13
 ---
 
 # PI Objectives — UnplugHQ PI-1
