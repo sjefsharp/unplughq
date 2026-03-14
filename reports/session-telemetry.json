@@ -1,0 +1,139 @@
+{
+  "sessionId": "session-1773416061507",
+  "startedAt": "2026-03-13T15:34:21.507Z",
+  "projectSlug": "unplughq",
+  "agentInvocations": [],
+  "totalPremiumRequests": 0,
+  "totalInvocations": 0,
+  "invocationsByAgent": {},
+  "modelUsage": {},
+  "toolUsage": {
+    "total": 3,
+    "byCategory": {
+      "file_operations": 3
+    },
+    "byTool": {
+      "read_file": 1,
+      "create_file": 1,
+      "multi_replace_string_in_file": 1
+    }
+  },
+  "localExecutionDetected": false,
+  "endedAt": "2026-03-13T15:34:21.650Z",
+  "duration": "0s",
+  "endOfSessionGitState": {
+    "branch": "main",
+    "clean": false,
+    "uncommittedFiles": [
+      "M .github/agents/accessibility.agent.md",
+      "M .github/agents/backend-developer.agent.md",
+      "M .github/agents/business-analyst.agent.md",
+      "M .github/agents/content-strategist.agent.md",
+      "M .github/agents/database-administrator.agent.md",
+      "M .github/agents/devops-engineer.agent.md",
+      "M .github/agents/frontend-developer.agent.md",
+      "M .github/agents/product-manager.agent.md",
+      "M .github/agents/product-owner.agent.md",
+      "M .github/agents/release-train-engineer.agent.md",
+      "M .github/agents/scrum-master.agent.md",
+      "M .github/agents/security-analyst.agent.md",
+      "M .github/agents/solution-designer.agent.md",
+      "M .github/agents/system-architect.agent.md",
+      "M .github/agents/tech-lead.agent.md",
+      "M .github/agents/testing.agent.md",
+      "M .github/agents/ux-designer.agent.md",
+      "M .github/copilot-instructions.md",
+      "M .github/hooks/scripts/__tests__/hook-contracts.test.mjs",
+      "M .github/hooks/scripts/__tests__/security.test.mjs",
+      "M .github/hooks/scripts/__tests__/validate-artifact.test.mjs",
+      "M .github/hooks/scripts/hook-adapter.mjs",
+      "M .github/hooks/scripts/prohibited-patterns.json",
+      "M .github/instructions/artifact-convention.instructions.md",
+      "M .github/instructions/design-tooling.instructions.md",
+      "M .github/instructions/output-formats.instructions.md",
+      "M .github/instructions/pm-session-management.instructions.md",
+      "M .github/instructions/quality-standards.instructions.md",
+      "M .github/instructions/solution-assessment.instructions.md",
+      "M .github/skills/artifact-validation/SKILL.md",
+      "M .github/skills/azure-boards/SKILL.md",
+      "M .github/skills/azure-boards/scripts/batch-sync.mjs",
+      "M .github/skills/azure-boards/scripts/create-work-item.mjs",
+      "M .github/skills/azure-boards/scripts/deploy-artifact.mjs",
+      "M .github/skills/azure-boards/tests/deploy-artifact.test.mjs",
+      "M .github/skills/azure-boards/tests/query-work-items.test.mjs",
+      "M .github/skills/delivery-reporting/SKILL.md",
+      "M .github/skills/delivery-reporting/scripts/generate-report.mjs",
+      "M .github/skills/delivery-reporting/tests/security.test.mjs",
+      "M .github/skills/framework-review/scripts/manage-enhancements.mjs",
+      "M .github/skills/framework-validation/scripts/validate-acceptance-evidence.mjs",
+      "M .github/skills/framework-validation/scripts/validate-artifact-hierarchy-links.mjs",
+      "M .github/skills/framework-validation/scripts/validate-artifact-links.mjs",
+      "M .github/skills/framework-validation/scripts/validate-azure-sync.mjs",
+      "M .github/skills/framework-validation/scripts/validate-checklists.mjs",
+      "M .github/skills/framework-validation/scripts/validate-containment.mjs",
+      "M .github/skills/framework-validation/scripts/validate-deferred-items.mjs",
+      "M .github/skills/framework-validation/scripts/validate-frontmatter.mjs",
+      "M .github/skills/framework-validation/scripts/validate-gate-automation.mjs",
+      "M .github/skills/framework-validation/scripts/validate-gate-evidence.mjs",
+      "M .github/skills/framework-validation/scripts/validate-self-approval.mjs",
+      "M .github/skills/framework-validation/scripts/validate-state-machine.mjs",
+      "M .github/skills/framework-validation/scripts/validate-work-item-content.mjs",
+      "M .github/skills/framework-validation/scripts/validate-work-item-prerequisite.mjs",
+      "M .github/skills/project-scaffold/SKILL.md",
+      "M .github/skills/project-scaffold/scripts/migrate-project.mjs",
+      "M .github/skills/project-scaffold/scripts/resolve-project.mjs",
+      "M .github/skills/project-scaffold/scripts/scaffold-project.mjs",
+      "M .github/skills/project-scaffold/tests/migrate-project.test.mjs",
+      "M .github/skills/project-scaffold/tests/resolve-project.test.mjs",
+      "M .github/skills/project-scaffold/tests/scaffold-project.test.mjs",
+      "M .github/skills/session-management/SKILL.md",
+      "M .github/skills/session-management/scripts/create-work-item.mjs",
+      "M .github/skills/session-management/scripts/session-start.mjs",
+      "M .github/skills/session-management/tests/security.test.mjs",
+      "M AGENTS.md",
+      "M docs/artifact-reference.md",
+      "M docs/azure-boards-integration.md",
+      "M docs/branching-strategy.md",
+      "M docs/evaluator-protocol.md",
+      "M docs/gate-automation.md",
+      "M docs/management-reporting.md",
+      "M docs/phase-execution.md",
+      "M docs/pi-continuation-protocol.md",
+      "M docs/project-initialization.md",
+      "M docs/quality-gates.md",
+      "M docs/work-item-management.md",
+      "M docs/workflow-enforcement.md",
+      "?? reports/"
+    ]
+  },
+  "actualTokenUsage": {
+    "source": "debug-log",
+    "promptTokens": 0,
+    "completionTokens": 0,
+    "totalTokens": 0,
+    "requestsByModel": {
+      "gpt-4o-mini-2024-07-18": {
+        "requests": 3,
+        "totalDurationMs": 3761
+      },
+      "gpt-4o-mini": {
+        "requests": 111,
+        "totalDurationMs": 75838
+      },
+      "claude-opus-4.6": {
+        "requests": 429,
+        "totalDurationMs": 5528068
+      },
+      "gpt-5.4": {
+        "requests": 13,
+        "totalDurationMs": 225108
+      },
+      "claude-sonnet-4.6": {
+        "requests": 10,
+        "totalDurationMs": 575486
+      }
+    },
+    "totalRequests": 566,
+    "totalDurationMs": 6408261
+  }
+}
