@@ -8,7 +8,7 @@ parent-work-item: epic-001-unplughq-platform
 workflow-tier: full
 phase: P2
 version: 1.0.0
-status: draft
+status: approved
 consumed-by:
   - frontend-developer
   - backend-developer

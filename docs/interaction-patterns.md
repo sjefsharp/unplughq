@@ -8,7 +8,7 @@ work-item-type: epic
 workflow-tier: full
 phase: P2
 version: 1.0.0
-status: draft
+status: approved
 consumed-by:
   - frontend-developer
   - accessibility

@@ -58,18 +58,18 @@ date: 2026-03-13
 | stakeholder-analysis.md | BA | P1 | approved | https://sjefsharp.github.io/unplughq/stakeholder-analysis/ |
 | solution-assessment.md | SA | P1 | approved | https://sjefsharp.github.io/unplughq/solution-assessment/ |
 | architecture-overview.md | SA | P1 | approved | https://sjefsharp.github.io/unplughq/architecture-overview/ |
-| threat-model.md | SEC | P1 | draft | https://sjefsharp.github.io/unplughq/threat-model/ |
-| api-contracts.md | SD | P1 | draft | https://sjefsharp.github.io/unplughq/api-contracts/ |
-| messaging-framework.md | CS | P2 | draft | https://sjefsharp.github.io/unplughq/messaging-framework/ |
-| tone-of-voice.md | CS | P2 | draft | https://sjefsharp.github.io/unplughq/tone-of-voice/ |
-| copy-specs.md | CS | P2 | draft | https://sjefsharp.github.io/unplughq/copy-specs/ |
-| content-hierarchy.md | CS | P2 | draft | https://sjefsharp.github.io/unplughq/content-hierarchy/ |
-| seo-structure.md | CS | P2 | draft | https://sjefsharp.github.io/unplughq/seo-structure/ |
-| design-system.md | UX | P2 | draft | https://sjefsharp.github.io/unplughq/design-system/ |
-| wireframes.md | UX | P2 | draft | https://sjefsharp.github.io/unplughq/wireframes/ |
-| interaction-patterns.md | UX | P2 | draft | https://sjefsharp.github.io/unplughq/interaction-patterns/ |
-| wcag-audit.md | A11Y | P2 | draft | https://sjefsharp.github.io/unplughq/wcag-audit/ |
-| accessibility-guidelines.md | A11Y | P2 | draft | https://sjefsharp.github.io/unplughq/accessibility-guidelines/ |
+| threat-model.md | SEC | P1 | approved | https://sjefsharp.github.io/unplughq/threat-model/ |
+| api-contracts.md | SD | P1 | approved | https://sjefsharp.github.io/unplughq/api-contracts/ |
+| messaging-framework.md | CS | P2 | approved | https://sjefsharp.github.io/unplughq/messaging-framework/ |
+| tone-of-voice.md | CS | P2 | approved | https://sjefsharp.github.io/unplughq/tone-of-voice/ |
+| copy-specs.md | CS | P2 | approved | https://sjefsharp.github.io/unplughq/copy-specs/ |
+| content-hierarchy.md | CS | P2 | approved | https://sjefsharp.github.io/unplughq/content-hierarchy/ |
+| seo-structure.md | CS | P2 | approved | https://sjefsharp.github.io/unplughq/seo-structure/ |
+| design-system.md | UX | P2 | approved | https://sjefsharp.github.io/unplughq/design-system/ |
+| wireframes.md | UX | P2 | approved | https://sjefsharp.github.io/unplughq/wireframes/ |
+| interaction-patterns.md | UX | P2 | approved | https://sjefsharp.github.io/unplughq/interaction-patterns/ |
+| wcag-audit.md | A11Y | P2 | approved | https://sjefsharp.github.io/unplughq/wcag-audit/ |
+| accessibility-guidelines.md | A11Y | P2 | approved | https://sjefsharp.github.io/unplughq/accessibility-guidelines/ |
 
 ## GitHub Pages Base URL
 
