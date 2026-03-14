@@ -5,6 +5,7 @@ project-slug: unplughq
 work-item: epic-001-unplughq-platform
 work-item-type: epic
 workflow-tier: full
+phase: P1
 version: 1.0.0
 status: draft
 azure-devops-id: 169
