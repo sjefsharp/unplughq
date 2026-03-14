@@ -70,5 +70,11 @@ nav:
     - Solution Assessment: solution-assessment.md
 - Solution Design:
     - API Contracts — UnplugHQ: api-contracts.md
+- Content Strategy:
+    - Content Hierarchy: content-hierarchy.md
+    - Messaging Framework: messaging-framework.md
+    - Microcopy Specifications: copy-specs.md
+    - SEO Structure Plan: seo-structure.md
+    - Tone of Voice Guidelines: tone-of-voice.md
 - Security:
     - Threat Model — UnplugHQ Platform: threat-model.md
