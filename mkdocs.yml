@@ -76,5 +76,19 @@ nav:
     - Microcopy Specifications: copy-specs.md
     - SEO Structure Plan: seo-structure.md
     - Tone of Voice Guidelines: tone-of-voice.md
+- UX Design:
+    - UnplugHQ Design System: design-system.md
+    - UnplugHQ Interaction Patterns Library: interaction-patterns.md
+    - UnplugHQ Wireframes & Layout Specifications: wireframes.md
+- Accessibility:
+    - Accessibility Implementation Guidelines — UnplugHQ Platform: accessibility-guidelines.md
+    - WCAG 2.2 AA Compliance Audit — UnplugHQ Platform: wcag-audit.md
+- Product Ownership:
+    - Delegation Briefs — Phase 4 (Implementation): delegation-briefs-p4.md
+    - Delegation Briefs — Phase 5 (Verification): delegation-briefs-p5.md
+    - Delegation Briefs — Phase 7 (Deployment): delegation-briefs-p7.md
+    - Product Backlog — UnplugHQ PI-1: product-backlog.md
+    - Sprint Backlog — UnplugHQ Sprint 1: sprint-backlog.md
+    - Story Map — UnplugHQ PI-1: story-map.md
 - Security:
     - Threat Model — UnplugHQ Platform: threat-model.md
