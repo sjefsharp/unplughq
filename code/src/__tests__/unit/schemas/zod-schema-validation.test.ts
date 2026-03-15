@@ -13,15 +13,17 @@ import {
   domains,
   createMetricsSnapshot,
   createCatalogApp,
-} from '../helpers/test-fixtures';
-
-// Schema imports — code agents will create these in src/lib/schemas/
-// import {
-//   ServerConnectInput, ServerRecord, ServerStatus,
-//   DeployAppInput, DeployedApp, DeploymentStatus,
-//   CatalogApp, MetricsSnapshot,
-//   ContainerStatus, AlertSeverity, AlertType, SubscriptionTier,
-// } from '@/lib/schemas';
+} from '../../helpers/test-fixtures';
+import {
+  ServerConnectInput,
+  ServerStatus,
+  DeployAppInput,
+  DeploymentStatus,
+  CatalogApp,
+  MetricsSnapshot,
+  SubscriptionTier,
+  ContainerStatus,
+} from '@/lib/schemas';
 
 describe('Zod Schema Boundary Testing — API Contracts §2', () => {
   describe('ServerConnectInput', () => {
@@ -328,15 +330,4 @@ describe('Zod Schema Boundary Testing — API Contracts §2', () => {
   });
 });
 
-// Stub declarations — these will be Zod schemas created by code agents
-declare const ServerConnectInput: { safeParse: (data: unknown) => { success: boolean; data?: unknown; error?: unknown } };
-declare const ServerStatus: { safeParse: (data: unknown) => { success: boolean } };
-declare const DeployAppInput: { safeParse: (data: unknown) => { success: boolean } };
-declare const DeploymentStatus: { safeParse: (data: unknown) => { success: boolean } };
-declare const CatalogApp: { safeParse: (data: unknown) => { success: boolean } };
-declare const MetricsSnapshot: {
-  safeParse: (data: unknown) => { success: boolean };
-  strict: () => { safeParse: (data: unknown) => { success: boolean } };
-};
-declare const SubscriptionTier: { safeParse: (data: unknown) => { success: boolean } };
-declare const ContainerStatus: { safeParse: (data: unknown) => { success: boolean } };
+

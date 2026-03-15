@@ -10,8 +10,7 @@
  * - Metrics ingestion: max 2 req/min per server (D-02)
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-
-// import { RateLimiter } from '@/server/services/auth/rate-limiter';
+import { createLoginRateLimiter, createSignupRateLimiter } from '../../helpers/rate-limit-helpers';
 
 describe('Rate Limiting — S-01 / SEC-AUTH-04', () => {
   beforeEach(() => {
@@ -155,13 +154,4 @@ describe('Rate Limiting — S-01 / SEC-AUTH-04', () => {
   });
 });
 
-// Stub declarations
-declare function createLoginRateLimiter(): {
-  recordFailure: (key: string) => Promise<void>;
-  recordSuccess: (key: string) => Promise<void>;
-  isLocked: (key: string) => Promise<{ locked: boolean; remainingMs: number }>;
-};
-declare function createSignupRateLimiter(): {
-  checkLimit: (key: string) => Promise<{ allowed: boolean }>;
-  recordAttempt: (key: string) => Promise<void>;
-};
+

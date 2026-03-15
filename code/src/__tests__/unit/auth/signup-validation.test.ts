@@ -9,12 +9,9 @@ import {
   passwords,
   emails,
   validUser,
-} from '../helpers/test-fixtures';
-
-// Service imports — will be created by code agents
-// import { validatePassword } from '@/server/services/auth/password-validation';
-// import { validateEmail } from '@/server/services/auth/email-validation';
-// import { signupUser } from '@/server/services/auth/signup';
+} from '../../helpers/test-fixtures';
+import { validatePassword, validateEmail } from '../../helpers/validation-helpers';
+import { signupUser, getUserCount, getStoredPasswordHash } from '../../helpers/signup-helpers';
 
 describe('Signup Validation', () => {
   describe('Password Strength Enforcement — S-194 Scenario: Password strength enforcement', () => {
@@ -28,32 +25,32 @@ describe('Signup Validation', () => {
     it('should reject a password shorter than 12 characters', () => {
       const result = validatePassword(passwords.tooShort);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain(
-        expect.stringContaining('12')
+      expect(result.errors).toEqual(
+        expect.arrayContaining([expect.stringContaining('12')])
       );
     });
 
     it('should reject a password without uppercase letters', () => {
       const result = validatePassword(passwords.noUppercase);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain(
-        expect.stringMatching(/uppercase|mixed case/i)
+      expect(result.errors).toEqual(
+        expect.arrayContaining([expect.stringMatching(/uppercase|mixed case/i)])
       );
     });
 
     it('should reject a password without lowercase letters', () => {
       const result = validatePassword(passwords.noLowercase);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain(
-        expect.stringMatching(/lowercase|mixed case/i)
+      expect(result.errors).toEqual(
+        expect.arrayContaining([expect.stringMatching(/lowercase|mixed case/i)])
       );
     });
 
     it('should reject a password without a number or symbol', () => {
       const result = validatePassword(passwords.noNumberOrSymbol);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain(
-        expect.stringMatching(/number|symbol|special/i)
+      expect(result.errors).toEqual(
+        expect.arrayContaining([expect.stringMatching(/number|symbol|special/i)])
       );
     });
 
@@ -182,13 +179,4 @@ describe('Signup Validation', () => {
   });
 });
 
-// Stub declarations — code agents will implement these
-declare function validatePassword(password: string): { valid: boolean; errors: string[] };
-declare function validateEmail(email: string): { valid: boolean };
-declare function signupUser(input: { email: string; password: string; name: string }): Promise<{
-  success: boolean;
-  message: string;
-  user: { id: string; email: string };
-}>;
-declare function getUserCount(email: string): Promise<number>;
-declare function getStoredPasswordHash(userId: string): Promise<string>;
+

@@ -6,9 +6,14 @@
  *           I-02 — User enumeration prevention in reset flow
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { resetTokenFixture, emails } from '../helpers/test-fixtures';
-
-// import { generateResetToken, validateResetToken, consumeResetToken } from '@/server/services/auth/password-reset';
+import { resetTokenFixture, emails } from '../../helpers/test-fixtures';
+import {
+  generateResetToken,
+  validateResetToken,
+  consumeResetToken,
+  requestPasswordReset,
+  authenticateUser,
+} from '../../helpers/reset-token-helpers';
 
 describe('Password Reset Token — S-196', () => {
   describe('Token Generation (SEC-AUTH-05)', () => {
@@ -147,9 +152,4 @@ describe('Password Reset Token — S-196', () => {
   });
 });
 
-// Stub declarations
-declare function generateResetToken(email: string): Promise<{ token: string; expiresAt: number }>;
-declare function validateResetToken(token: string): Promise<{ valid: boolean; email?: string; reason?: string }>;
-declare function consumeResetToken(token: string, newPassword: string): Promise<{ success: boolean }>;
-declare function requestPasswordReset(email: string): Promise<{ message: string }>;
-declare function authenticateUser(email: string, password: string): Promise<{ success: boolean }>;
+

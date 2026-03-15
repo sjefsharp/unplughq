@@ -10,10 +10,9 @@ import {
   tenants,
   tierLimits,
   injectionPayloads,
-} from '../helpers/test-fixtures';
-import { createTenantContext, createUnauthenticatedContext } from '../helpers/test-context';
-
-// import { appRouter } from '@/server/trpc/router';
+} from '../../helpers/test-fixtures';
+import { createTenantContext, createUnauthenticatedContext } from '../../helpers/test-context';
+import { createServerCaller } from '../../helpers/server-router-helpers';
 
 describe('Server tRPC Router Integration', () => {
   describe('server.list — S-201', () => {
@@ -201,5 +200,4 @@ describe('Server tRPC Router Integration', () => {
   });
 });
 
-// Stub declarations
-declare function createServerCaller(ctx: any): any;
+

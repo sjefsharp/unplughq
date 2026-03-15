@@ -4,9 +4,13 @@
  * Covers: CPU, RAM, disk parsing from SSH stdout, compatibility checks
  */
 import { describe, it, expect } from 'vitest';
-import { resourceDetectionOutputs, createCatalogApp } from '../helpers/test-fixtures';
-
-// import { parseResourceInfo, checkCompatibility } from '@/server/services/ssh/resource-detection';
+import { resourceDetectionOutputs, createCatalogApp } from '../../helpers/test-fixtures';
+import {
+  parseCpuInfo,
+  parseMemInfo,
+  parseDiskInfo,
+  checkCompatibility,
+} from '../../helpers/server-parsing-helpers';
 
 describe('Resource Detection Parsing — S-199', () => {
   describe('Parse Resource Output — S-199 Scenario: OS and resource detection', () => {
@@ -73,11 +77,4 @@ describe('Resource Detection Parsing — S-199', () => {
   });
 });
 
-// Stub declarations
-declare function parseCpuInfo(output: string): { cpuCores: number };
-declare function parseMemInfo(output: string): { ramGb: number };
-declare function parseDiskInfo(output: string): { diskGb: number };
-declare function checkCompatibility(
-  resources: { cpuCores: number; ramGb: number; diskGb: number },
-  requirements: { minCpuCores: number; minRamGb: number; minDiskGb: number },
-): { compatible: boolean; warnings: string[]; blockers: string[] };
+

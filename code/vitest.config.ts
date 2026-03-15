@@ -8,6 +8,12 @@ export default defineConfig({
     include: ["src/__tests__/**/*.test.ts"],
     exclude: ["node_modules", ".next", "e2e"],
     testTimeout: 10000,
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json-summary"],
+      reportsDirectory: "./coverage",
+      reportOnFailure: true,
+    },
   },
   resolve: {
     alias: {

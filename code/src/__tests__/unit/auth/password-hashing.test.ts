@@ -4,10 +4,8 @@
  * Security: SEC-AUTH-01 — Argon2id with minimum params: memory 64MB, iterations 3, parallelism 1
  */
 import { describe, it, expect } from 'vitest';
-import { passwords } from '../helpers/test-fixtures';
-
-// Service imports — will be created by code agents
-// import { hashPassword, verifyPassword } from '@/server/services/auth/password-hashing';
+import { passwords } from '../../helpers/test-fixtures';
+import { hashPassword, verifyPassword } from '../../helpers/password-helpers';
 
 describe('Password Hashing — Argon2id (SEC-AUTH-01)', () => {
   describe('Hash Generation', () => {
@@ -69,6 +67,4 @@ describe('Password Hashing — Argon2id (SEC-AUTH-01)', () => {
   });
 });
 
-// Stub declarations — code agents will implement these
-declare function hashPassword(password: string): Promise<string>;
-declare function verifyPassword(password: string, hash: string): Promise<boolean>;
+

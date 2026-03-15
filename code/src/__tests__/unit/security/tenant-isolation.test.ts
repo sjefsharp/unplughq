@@ -9,11 +9,18 @@
  * tenantId scoping and never returns data belonging to another tenant.
  */
 import { describe, it, expect } from 'vitest';
-import { tenants, createServerRecord } from '../helpers/test-fixtures';
-import { createTenantContext } from '../helpers/test-context';
-
-// import { ServerService } from '@/server/services/server';
-// import { DeploymentService } from '@/server/services/deployment';
+import { tenants, createServerRecord } from '../../helpers/test-fixtures';
+import { createTenantContext } from '../../helpers/test-context';
+import {
+  listServers,
+  getServer,
+  getServerWithQueryLog,
+  getServerWithExplicitTenant,
+  listDeployments,
+  createDeployment,
+  listAlerts,
+  dismissAlert,
+} from '../../helpers/tenant-helpers';
 
 describe('Tenant Isolation — I-07 / E-02', () => {
   describe('Server Access Isolation (SEC-AC-02, SEC-AC-03)', () => {
@@ -115,21 +122,4 @@ describe('Tenant Isolation — I-07 / E-02', () => {
   });
 });
 
-// Stub declarations
-declare function listServers(tenantId: string): Promise<Array<{ id: string; tenantId: string }>>;
-declare function getServer(tenantId: string, serverId: string): Promise<{ id: string; tenantId: string } | null>;
-declare function getServerWithQueryLog(tenantId: string, serverId: string): Promise<{
-  whereClause: string;
-}>;
-declare function getServerWithExplicitTenant(
-  sessionTenantId: string,
-  requestTenantId: string,
-  serverId: string,
-): Promise<{ usedTenantId: string }>;
-declare function listDeployments(tenantId: string): Promise<Array<{ id: string; tenantId: string }>>;
-declare function createDeployment(
-  tenantId: string,
-  input: { serverId: string; catalogAppId: string; domain: string; config: Record<string, string> },
-): Promise<void>;
-declare function listAlerts(tenantId: string): Promise<Array<{ id: string; tenantId: string }>>;
-declare function dismissAlert(tenantId: string, alertId: string): Promise<void>;
+

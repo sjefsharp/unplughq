@@ -4,9 +4,8 @@
  * Covers: Parsing /etc/os-release output, supported OS validation
  */
 import { describe, it, expect } from 'vitest';
-import { osDetectionOutputs } from '../helpers/test-fixtures';
-
-// import { parseOSRelease, isSupportedOS } from '@/server/services/ssh/os-detection';
+import { osDetectionOutputs } from '../../helpers/test-fixtures';
+import { parseOSRelease, isSupportedOS } from '../../helpers/server-parsing-helpers';
 
 describe('OS Detection Parsing — S-199', () => {
   describe('Parse /etc/os-release — S-199 Scenario: OS and resource detection', () => {
@@ -65,10 +64,4 @@ describe('OS Detection Parsing — S-199', () => {
   });
 });
 
-// Stub declarations
-declare function parseOSRelease(output: string): {
-  prettyName: string;
-  versionId: string;
-  id: string;
-};
-declare function isSupportedOS(os: { id: string; versionId: string }): boolean;
+

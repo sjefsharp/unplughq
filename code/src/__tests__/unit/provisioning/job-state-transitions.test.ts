@@ -5,9 +5,16 @@
  *         BR-F1-003 (idempotent provisioning)
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createServerRecord } from '../helpers/test-fixtures';
-
-// import { ProvisioningStateMachine } from '@/server/services/provisioning/state-machine';
+import { createServerRecord } from '../../helpers/test-fixtures';
+import {
+  createProvisioningStateMachine,
+  checkProvisioningIdempotency,
+  runProvisioningJob,
+  runPreProvisioningChecks,
+  executeWithRetry,
+  simulateProvisioningFailure,
+  createProvisioningJobPayload,
+} from '../../helpers/provisioning-helpers';
 
 describe('Provisioning Pipeline — S-200', () => {
   describe('Job State Transitions — S-200 Scenario: Automated provisioning with progress', () => {
@@ -208,33 +215,4 @@ describe('Provisioning Pipeline — S-200', () => {
   });
 });
 
-// Stub declarations
-declare function createProvisioningStateMachine(): {
-  currentState: string;
-  history: string[];
-  transition: (state: string) => void;
-};
-declare function checkProvisioningIdempotency(serverId: string): Promise<{
-  alreadyProvisioned: boolean;
-  canSkip: boolean;
-}>;
-declare function runProvisioningJob(params: {
-  serverId: string;
-  tenantId: string;
-  force?: boolean;
-}): Promise<{ success: boolean; duplicatesCreated: boolean }>;
-declare function runPreProvisioningChecks(serverId: string): Promise<Array<{
-  check: string;
-  installed: boolean;
-}>>;
-declare function executeWithRetry<T>(
-  fn: () => Promise<T>,
-  opts: { maxRetries: number },
-): Promise<T>;
-declare function simulateProvisioningFailure(serverId: string, step: string): Promise<{
-  serverStatus: string;
-  failedStep: string;
-  userMessage: string;
-  serverLog: { exitCode: number; stderr: string; jobId: string };
-}>;
-declare function createProvisioningJobPayload(serverId: string, tenantId: string): Record<string, unknown>;
+

@@ -10,9 +10,16 @@
  * 3. Only allowlisted characters pass through to commands
  */
 import { describe, it, expect } from 'vitest';
-import { injectionPayloads, validServerConnect } from '../helpers/test-fixtures';
-
-// import { SSHCommandBuilder } from '@/server/services/ssh/command-builder';
+import { injectionPayloads, validServerConnect } from '../../helpers/test-fixtures';
+import {
+  buildDockerPullCommand,
+  buildDockerRunCommand,
+  buildDockerLifecycleCommand,
+  buildDockerInspectCommand,
+  buildDockerPsCommand,
+  validateSSHTarget,
+  validateSSHUser,
+} from '../../helpers/ssh-command-helpers';
 
 describe('SSH Command Templates — T-01 (Command Injection Prevention)', () => {
   describe('Docker Pull Command', () => {
@@ -167,11 +174,4 @@ describe('SSH Command Templates — T-01 (Command Injection Prevention)', () => 
   });
 });
 
-// Stub declarations
-declare function buildDockerPullCommand(params: { registry: string; image: string; digest: string }): string;
-declare function buildDockerRunCommand(params: { containerName: string; imageWithDigest: string; network: string }): string;
-declare function buildDockerLifecycleCommand(action: 'start' | 'stop' | 'rm', containerName: string): string;
-declare function buildDockerInspectCommand(containerName: string): string;
-declare function buildDockerPsCommand(): string;
-declare function validateSSHTarget(ip: string, port: number): void;
-declare function validateSSHUser(username: string): void;
+

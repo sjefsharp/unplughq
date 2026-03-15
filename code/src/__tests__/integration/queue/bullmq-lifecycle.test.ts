@@ -7,11 +7,17 @@
  * Uses ioredis-mock as per api-contracts.md §6.4 test doubles.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { tenants, createServerRecord } from '../helpers/test-fixtures';
-
-// import { Queue, Worker, Job } from 'bullmq';
-// import { ProvisioningJobHandler } from '@/server/workers/provisioning';
-// import { TestConnectionJobHandler } from '@/server/workers/test-connection';
+import { tenants, createServerRecord } from '../../helpers/test-fixtures';
+import {
+  enqueueTestConnectionJob,
+  enqueueProvisioningJob,
+  processJob,
+  processProvisioningJob,
+  processProvisioningJobWithFailure,
+  processJobPayload,
+  getDeadLetterJobs,
+  getActiveJobs,
+} from '../../helpers/queue-helpers';
 
 describe('BullMQ Job Lifecycle Integration', () => {
   describe('Test Connection Job — S-198', () => {
@@ -192,12 +198,4 @@ describe('BullMQ Job Lifecycle Integration', () => {
   });
 });
 
-// Stub declarations
-declare function enqueueTestConnectionJob(data: any): Promise<any>;
-declare function enqueueProvisioningJob(data: any): Promise<any>;
-declare function processJob(job: any): Promise<any>;
-declare function processProvisioningJob(job: any): Promise<any>;
-declare function processProvisioningJobWithFailure(job: any): Promise<void>;
-declare function processJobPayload(data: any): Promise<any>;
-declare function getDeadLetterJobs(queueName: string): Promise<any[]>;
-declare function getActiveJobs(tenantId: string): Promise<any[]>;
+

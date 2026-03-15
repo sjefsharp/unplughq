@@ -8,11 +8,23 @@
  * Uses createTestContext per api-contracts.md §6.2.
  */
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { validUser, validUser2, passwords, emails } from '../helpers/test-fixtures';
-import { createTestContext, createUnauthenticatedContext } from '../helpers/test-context';
-
-// import { appRouter } from '@/server/trpc/router';
-// import { createCallerFactory } from '@/server/trpc';
+import { validUser, validUser2, passwords, emails } from '../../helpers/test-fixtures';
+import { createTestContext, createUnauthenticatedContext } from '../../helpers/test-context';
+import {
+  registerUser,
+  loginUser,
+  loginUserWithCookies,
+  logoutUser,
+  validateSession,
+  findSessionInDatabase,
+  requestPasswordReset,
+  extractResetToken,
+  resetPassword,
+  getSentEmails,
+  getPasswordHashByEmail,
+  createAuthCaller,
+  simulateSessionInactivity,
+} from '../../helpers/auth-router-helpers';
 
 describe('Auth tRPC Router Integration', () => {
   describe('Registration Flow — S-194', () => {
@@ -271,23 +283,4 @@ describe('Auth tRPC Router Integration', () => {
   });
 });
 
-// Stub declarations — these will be implemented by code agents
-declare function registerUser(input: { email: string; password: string; name: string }): Promise<{
-  success: boolean;
-  message?: string;
-  user: { id: string; email: string };
-}>;
-declare function loginUser(email: string, password: string): Promise<any>;
-declare function loginUserWithCookies(email: string, password: string): Promise<{
-  cookies: Array<{ name: string; httpOnly: boolean; secure: boolean; sameSite: string }>;
-}>;
-declare function logoutUser(sessionToken: string): Promise<void>;
-declare function validateSession(sessionToken: string): Promise<{ valid: boolean }>;
-declare function findSessionInDatabase(sessionToken: string): Promise<unknown | null>;
-declare function requestPasswordReset(email: string): Promise<{ message: string }>;
-declare function extractResetToken(email: string): Promise<string>;
-declare function resetPassword(token: string, newPassword: string): Promise<void>;
-declare function getSentEmails(recipientEmail: string): Promise<Array<{ subject: string }>>;
-declare function getPasswordHashByEmail(email: string): Promise<string>;
-declare function createAuthCaller(ctx: any): any;
-declare function simulateSessionInactivity(sessionToken: string): Promise<void>;
+
