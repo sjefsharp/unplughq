@@ -1,0 +1,37 @@
+{
+  "agent": "frontend-developer",
+  "phase": "P4",
+  "step": 2,
+  "project": "unplughq",
+  "branch": "feat/epic-001-fe",
+  "timestamp": "2026-03-16T12:00:00Z",
+  "tasks": [
+    { "azureId": 235, "title": "[FE] Layout shell with sidebar navigation, top bar, dark mode toggle, and shared UI components", "state": "resolved" },
+    { "azureId": 236, "title": "[FE] Auth pages — signup, login, forgot-password, reset-password, and account settings", "state": "resolved" },
+    { "azureId": 237, "title": "[FE] Server connection wizard — credentials, validation, and provisioning steps", "state": "resolved" },
+    { "azureId": 238, "title": "[FE] Dashboard shell with server tile, empty state, and Pulse Ring health indicator", "state": "resolved" }
+  ],
+  "artifacts": [
+    { "path": "docs/fe-layout-shell.md", "pagesUrl": "https://sjefsharp.github.io/unplughq/fe-layout-shell/" },
+    { "path": "docs/fe-auth-pages.md", "pagesUrl": "https://sjefsharp.github.io/unplughq/fe-auth-pages/" },
+    { "path": "docs/fe-server-wizard.md", "pagesUrl": "https://sjefsharp.github.io/unplughq/fe-server-wizard/" },
+    { "path": "docs/fe-dashboard.md", "pagesUrl": "https://sjefsharp.github.io/unplughq/fe-dashboard/" }
+  ],
+  "filesCreated": 45,
+  "linesAdded": 2942,
+  "qualityGates": {
+    "typecheck": "pass",
+    "lint": "pass"
+  },
+  "wcagRemediations": [
+    "color-text-subtle: slate-400 → slate-500 (≥4.5:1 contrast)",
+    "color-border-base: slate-200 → slate-300 (≥3:1 non-text contrast)",
+    "color-border-subtle: slate-100 → slate-200",
+    "Input fields use border-strong (slate-400) for 3:1 non-text contrast"
+  ],
+  "observations": [],
+  "dependencies": {
+    "blockedBy": ["BE auth/server routers for tRPC data binding", "DBA schema for Auth.js adapter"],
+    "unblocked": ["Testing E2E can run against static pages"]
+  }
+}
