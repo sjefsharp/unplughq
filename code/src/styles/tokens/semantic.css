@@ -7,11 +7,11 @@
 
   --color-text-base: var(--ref-slate-900);
   --color-text-muted: var(--ref-slate-600);
-  --color-text-subtle: var(--ref-slate-400);
+  --color-text-subtle: var(--ref-slate-500);
 
-  --color-border-subtle: var(--ref-slate-100);
-  --color-border-base: var(--ref-slate-200);
-  --color-border-strong: var(--ref-slate-300);
+  --color-border-subtle: var(--ref-slate-200);
+  --color-border-base: var(--ref-slate-300);
+  --color-border-strong: var(--ref-slate-400);
 
   --color-primary-base: var(--ref-indigo-500);
   --color-primary-hover: var(--ref-indigo-600);
@@ -41,11 +41,11 @@
 
   --color-text-base: var(--ref-slate-050);
   --color-text-muted: var(--ref-slate-400);
-  --color-text-subtle: var(--ref-slate-600);
+  --color-text-subtle: var(--ref-slate-500);
 
-  --color-border-subtle: var(--ref-slate-800);
-  --color-border-base: var(--ref-slate-700);
-  --color-border-strong: var(--ref-slate-600);
+  --color-border-subtle: var(--ref-slate-700);
+  --color-border-base: var(--ref-slate-600);
+  --color-border-strong: var(--ref-slate-500);
 
   --color-primary-base: var(--ref-indigo-400);
   --color-primary-hover: var(--ref-indigo-300);

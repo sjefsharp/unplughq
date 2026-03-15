@@ -100,6 +100,10 @@ nav:
     - Build Verification Report — UnplugHQ: build-verification-report.md
     - Database Schema — UnplugHQ: database-schema.md
     - DevOps Infrastructure — CI/CD, Docker, Monitoring Agent, Provisioning: devops-infrastructure.md
+    - FE Auth Pages: fe-auth-pages.md
+    - FE Dashboard Shell & Server Tile: fe-dashboard.md
+    - FE Layout Shell & Shared UI Components: fe-layout-shell.md
+    - FE Server Connection Wizard: fe-server-wizard.md
 - Testing:
     - Test Strategy — P4 Step 1 (TDD Contracts): test-strategy-p4.md
 - Security:
