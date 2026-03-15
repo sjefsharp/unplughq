@@ -1,25 +1,43 @@
 import { router, publicProcedure, protectedProcedure } from '../index';
 import { z } from 'zod';
+import {
+  updateUserProfile,
+  updateNotificationPrefs,
+} from '@/server/services/auth/auth-service';
+import { db } from '@/server/db';
+import { users, sessions } from '@/server/db/schema';
+import { eq } from 'drizzle-orm';
 
 export const authRouter = router({
+  /** Return active session user (id, email, name, tier) — public */
   session: publicProcedure.query(({ ctx }) => {
     return ctx.session;
   }),
 
+  /** Update display name (FR-F4-005) — protected */
   updateProfile: protectedProcedure
     .input(z.object({ name: z.string().min(1).max(100).optional() }))
-    .mutation(async ({ input: _input, ctx: _ctx }) => {
-      // BE agent implements at P4 Step 2
+    .mutation(async ({ input, ctx }) => {
+      if (input.name !== undefined) {
+        await updateUserProfile(ctx.userId, { name: input.name });
+      }
       return { success: true };
     }),
 
+  /** Toggle email alert notifications (FR-F4-005) — protected */
   updateNotificationPrefs: protectedProcedure
     .input(z.object({ emailAlerts: z.boolean() }))
-    .mutation(async ({ input: _input, ctx: _ctx }) => {
+    .mutation(async ({ input, ctx }) => {
+      await updateNotificationPrefs(ctx.userId, { emailAlerts: input.emailAlerts });
       return { success: true };
     }),
 
-  deleteAccount: protectedProcedure.mutation(async ({ ctx: _ctx }) => {
+  /** Schedule tenant data deletion (GDPR — FR-F4-005, NFR-009) — protected */
+  deleteAccount: protectedProcedure.mutation(async ({ ctx }) => {
+    // Delete all sessions first
+    await db.delete(sessions).where(eq(sessions.userId, ctx.userId));
+    // Delete user (cascades to servers, deployments, alerts, audit log)
+    await db.delete(users).where(eq(users.id, ctx.userId));
     return { success: true };
   }),
 });
