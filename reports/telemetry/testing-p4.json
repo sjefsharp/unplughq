@@ -1,0 +1,64 @@
+{
+  "agent": "testing",
+  "phase": "P4",
+  "step": 1,
+  "project": "unplughq",
+  "pi": "PI-1",
+  "sprint": "Sprint 1",
+  "timestamp": "2025-01-01T00:00:00Z",
+  "tasks": {
+    "AB#224": {
+      "title": "Unit/integration test contracts",
+      "state": "active",
+      "files": [
+        "code/src/__tests__/helpers/test-fixtures.ts",
+        "code/src/__tests__/helpers/test-context.ts",
+        "code/src/__tests__/unit/auth/signup-validation.test.ts",
+        "code/src/__tests__/unit/auth/password-hashing.test.ts",
+        "code/src/__tests__/unit/auth/password-reset-tokens.test.ts",
+        "code/src/__tests__/unit/auth/rate-limiting.test.ts",
+        "code/src/__tests__/unit/server/ssh-command-templates.test.ts",
+        "code/src/__tests__/unit/server/os-detection.test.ts",
+        "code/src/__tests__/unit/server/resource-detection.test.ts",
+        "code/src/__tests__/unit/provisioning/job-state-transitions.test.ts",
+        "code/src/__tests__/unit/schemas/zod-schema-validation.test.ts",
+        "code/src/__tests__/unit/security/tenant-isolation.test.ts",
+        "code/src/__tests__/integration/trpc/auth-router.test.ts",
+        "code/src/__tests__/integration/trpc/server-router.test.ts",
+        "code/src/__tests__/integration/queue/bullmq-lifecycle.test.ts"
+      ]
+    },
+    "AB#225": {
+      "title": "E2E test contracts",
+      "state": "active",
+      "files": [
+        "code/e2e/journeys/onboarding-to-dashboard.spec.ts",
+        "code/e2e/auth/auth-flows.spec.ts",
+        "code/e2e/server/connection-wizard.spec.ts",
+        "code/e2e/a11y/wcag-compliance.spec.ts",
+        "code/e2e/a11y/keyboard-navigation.spec.ts",
+        "code/e2e/mobile/responsive.spec.ts"
+      ]
+    },
+    "AB#226": {
+      "title": "Test strategy artifact",
+      "state": "active",
+      "files": [
+        "docs/test-strategy-p4.md"
+      ]
+    }
+  },
+  "metrics": {
+    "totalFiles": 21,
+    "unitTestFiles": 10,
+    "integrationTestFiles": 3,
+    "e2eTestFiles": 6,
+    "helperFiles": 2,
+    "estimatedTestCases": 170,
+    "storyCoverage": "8/8 (100%)",
+    "securityThreatsCovered": ["S-01", "S-02", "I-02", "I-07", "T-01", "D-03", "D-05", "E-02", "E-03", "E-06"],
+    "wcagFindingsCovered": ["1.3.1", "1.3.3", "1.4.1", "1.4.3", "1.4.11", "2.1.1", "2.1.2", "2.4.3", "2.4.7", "2.5.8"]
+  },
+  "observations": [],
+  "blockers": []
+}
