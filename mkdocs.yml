@@ -109,3 +109,5 @@ nav:
     - Test Strategy — P4 Step 1 (TDD Contracts): test-strategy-p4.md
 - Security:
     - Threat Model — UnplugHQ Platform: threat-model.md
+- Uncategorized:
+    - Sprint 1 — P5 Test Execution Report: test-report.md
