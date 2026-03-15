@@ -1,0 +1,22 @@
+# UnplugHQ — Caddy Base Configuration (Caddyfile)
+#
+# Deployed to each user's VPS during provisioning.
+# Admin API is bound to localhost only (T-04 mitigation).
+# ACME is enabled by default for automatic SSL via Let's Encrypt.
+
+{
+	# Admin API — localhost only (T-04: prevents remote Caddy config tampering)
+	admin localhost:2019
+
+	# ACME email for Let's Encrypt certificate notifications
+	email {$ACME_EMAIL:admin@example.com}
+
+	# Use Let's Encrypt production by default
+	# Uncomment the line below for staging during testing:
+	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+# Default catch-all that returns 404 for unknown hosts
+:80 {
+	respond "Not Found" 404
+}

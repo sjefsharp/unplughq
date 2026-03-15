@@ -99,6 +99,7 @@ nav:
 - Engineering:
     - Build Verification Report — UnplugHQ: build-verification-report.md
     - Database Schema — UnplugHQ: database-schema.md
+    - DevOps Infrastructure — CI/CD, Docker, Monitoring Agent, Provisioning: devops-infrastructure.md
 - Testing:
     - Test Strategy — P4 Step 1 (TDD Contracts): test-strategy-p4.md
 - Security:

@@ -1,0 +1,30 @@
+# UnplugHQ — Caddy App Route Template
+#
+# Template for proxying a deployed application container.
+# Variables are substituted by the control plane at deploy time:
+#   {{DOMAIN}}         — The domain pointing to this app (e.g., nextcloud.example.com)
+#   {{CONTAINER_PORT}} — The internal container port to proxy to
+#   {{CONTAINER_NAME}} — Docker container name on the unplughq network
+#
+# Append this block to the Caddyfile for each deployed app.
+
+{{DOMAIN}} {
+	reverse_proxy {{CONTAINER_NAME}}:{{CONTAINER_PORT}}
+
+	# Security headers
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# Access log
+	log {
+		output file /var/log/caddy/{{CONTAINER_NAME}}.log {
+			roll_size 10mb
+			roll_keep 5
+		}
+	}
+}
