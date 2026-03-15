@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import "@/styles/global.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { TRPCProvider } from "@/lib/trpc/provider";
+import { Toaster } from "@/components/ui/toaster";
+import { SkipToContent } from "@/components/skip-to-content";
 
 export const metadata: Metadata = {
   title: "UnplugHQ — Self-Hosting Management Platform",
@@ -22,7 +25,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <SkipToContent />
+        <ThemeProvider>
+          <TRPCProvider>
+            {children}
+            <Toaster />
+          </TRPCProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
