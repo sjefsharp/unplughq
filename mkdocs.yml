@@ -96,6 +96,11 @@ nav:
     - Definition of Done — UnplugHQ PI-1: definition-of-done.md
     - Sprint Health Report — UnplugHQ Sprint 1: sprint-health-report.md
     - Team Working Agreements — UnplugHQ PI-1: team-working-agreements.md
+- Engineering:
+    - FE Auth Pages: fe-auth-pages.md
+    - FE Dashboard Shell & Server Tile: fe-dashboard.md
+    - FE Layout Shell & Shared UI Components: fe-layout-shell.md
+    - FE Server Connection Wizard: fe-server-wizard.md
 - Testing:
     - Test Strategy — P4 Step 1 (TDD Contracts): test-strategy-p4.md
 - Security:
