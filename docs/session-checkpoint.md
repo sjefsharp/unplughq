@@ -8,7 +8,7 @@ workflow-tier: full
 phase: P2
 version: 2.0.0
 status: draft
-azure-devops-id: 169
+azure-devops-id: 180
 date: 2026-03-13
 ---
 
@@ -18,7 +18,9 @@ date: 2026-03-13
 
 - **Phase:** P2 COMPLETE — Gate 3 PASS. Ready for P3 (Backlog Planning).
 - **Branch:** `feat/epic-001-unplughq-platform`
-- **Azure Boards:** Epic AB#169, state `proposed`
+- **Azure DevOps Project:** `unplughq` (dedicated project — migrated from `agentic-framework` area path)
+- **Azure Boards:** Epic AB#180, state `Active`
+- **Features:** F1 AB#181, F2 AB#182, F3 AB#183, F4 AB#184 (all under Epic AB#180)
 - **Next action:** Invoke PO for backlog + delegation briefs, then SM, RTE
 
 ## Completed Gates
@@ -33,15 +35,21 @@ date: 2026-03-13
 
 | ID | Type | Name | State | Azure ID |
 |---|---|---|---|---|
-| epic-001-unplughq-platform | Epic | UnplugHQ — Self-hosting management platform | proposed | AB#169 |
-| task-172-rte-pi-planning | Task | [RTE] PI-1 objectives and risk register | closed | AB#172 |
-| task-173-ba-requirements-analysis | Task | [BA] Requirements elicitation and domain analysis | closed | AB#173 |
-| task-171-sa-solution-assessment | Task | [SA] Solution assessment and architecture overview | closed | AB#171 |
-| task-175-sec-threat-model | Task | [SEC] Threat model and security requirements | closed | AB#175 |
-| task-176-sd-api-contracts | Task | [SD] API contracts and integration design | closed | AB#176 |
-| task-177-cs-content-strategy | Task | [CS] Messaging framework, tone of voice, and content strategy | closed | AB#177 |
-| task-178-ux-design-system | Task | [UX] Design system, wireframes, and interaction patterns | closed | AB#178 |
-| task-179-a11y-wcag-audit | Task | [A11Y] WCAG audit and accessibility guidelines | closed | AB#179 |
+| epic-001-unplughq-platform | Epic | UnplugHQ — Self-hosting management platform | active | AB#180 |
+| feature-server-connection | Feature | Server Connection & Provisioning | new | AB#181 |
+| feature-app-catalog | Feature | Application Catalog & Deployment | new | AB#182 |
+| feature-dashboard-monitoring | Feature | Dashboard & Health Monitoring | new | AB#183 |
+| feature-user-identity | Feature | User Identity & Access | new | AB#184 |
+| task-185-rte-pi-planning | Task | [RTE] PI-1 objectives and risk register | closed | AB#185 |
+| task-186-ba-requirements-analysis | Task | [BA] Requirements elicitation and domain analysis | closed | AB#186 |
+| task-187-sa-solution-assessment | Task | [SA] Solution assessment and architecture overview | closed | AB#187 |
+| task-188-sec-threat-model | Task | [SEC] Threat model and security requirements | closed | AB#188 |
+| task-189-sd-api-contracts | Task | [SD] API contracts and integration design | closed | AB#189 |
+| task-190-cs-content-strategy | Task | [CS] Messaging framework, tone of voice, and content strategy | closed | AB#190 |
+| task-191-ux-design-system | Task | [UX] Design system, wireframes, and interaction patterns | closed | AB#191 |
+| task-192-a11y-wcag-audit | Task | [A11Y] WCAG audit and accessibility guidelines | closed | AB#192 |
+
+**Migration note:** Work items migrated from `agentic-framework` ADO project (AB#169-179) to dedicated `unplughq` ADO project (AB#180-192). Old Epic AB#169 state: Removed.
 
 ## Artifact Registry
 
@@ -86,6 +94,7 @@ date: 2026-03-13
 7. `update-work-item.mjs --remove-tag` reports success but Azure DevOps CLI `--fields System.Tags=...` does not overwrite tags — tag removal unreliable (LOW)
 8. `deploy-artifact.mjs` did not add Discussion entries with FQDNs — RESOLVED (fixed in framework commit eaf6d04)
 9. `deploy-artifact.mjs` had cross-skill dynamic import of `generate-mkdocs-nav.mjs` — RESOLVED (removed in framework commit eaf6d04)
+10. `create-work-item.mjs` idempotency check WIQL query lacks `[System.TeamProject]` filter — finds duplicates across ALL ADO projects, causing false positives when recreating work items in a new project (HIGH)
 
 ## Deferred Items
 
@@ -95,18 +104,18 @@ date: 2026-03-13
 
 All P1 agents delivered:
 
-1. **Business Analyst** (AB#173): Requirements, process models, domain glossary, stakeholder analysis — ✓ Closed
-2. **System Architect** (AB#171): Solution assessment, architecture overview — ✓ Closed
-3. **Security Analyst** (AB#175): Threat model with 30 threats, 57 security requirements — ✓ Closed
-4. **Solution Designer** (AB#176): API contracts with 29 tRPC procedures across 6 routers — ✓ Closed
+1. **Business Analyst** (AB#186): Requirements, process models, domain glossary, stakeholder analysis — ✓ Closed
+2. **System Architect** (AB#187): Solution assessment, architecture overview — ✓ Closed
+3. **Security Analyst** (AB#188): Threat model with 30 threats, 57 security requirements — ✓ Closed
+4. **Solution Designer** (AB#189): API contracts with 29 tRPC procedures across 6 routers — ✓ Closed
 
 ## P2 Delegation Plan — COMPLETE
 
 All P2 agents delivered:
 
-1. **Content Strategist** (AB#177): Messaging framework, tone of voice, copy specs, content hierarchy, SEO structure — ✓ Closed
-2. **UX Designer** (AB#178): Design system (OKLCH three-tier tokens), wireframes (10 screens), interaction patterns — ✓ Closed
-3. **Accessibility** (AB#179): WCAG 2.2 AA audit (622 lines, 5 critical findings), accessibility guidelines (1,261 lines) — ✓ Closed
+1. **Content Strategist** (AB#190): Messaging framework, tone of voice, copy specs, content hierarchy, SEO structure — ✓ Closed
+2. **UX Designer** (AB#191): Design system (OKLCH three-tier tokens), wireframes (10 screens), interaction patterns — ✓ Closed
+3. **Accessibility** (AB#192): WCAG 2.2 AA audit (622 lines, 5 critical findings), accessibility guidelines (1,261 lines) — ✓ Closed
 
 ## P3 Delegation Plan
 
