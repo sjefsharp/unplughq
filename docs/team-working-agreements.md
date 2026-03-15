@@ -7,7 +7,11 @@ work-item-type: epic
 workflow-tier: full
 phase: P3
 version: 1.0.0
-status: draft
+status: approved
+review:
+  evaluator: product-manager
+  gate: 4
+  date: 2026-03-15
 azure-devops-id: 210
 consumed-by:
   - tech-lead

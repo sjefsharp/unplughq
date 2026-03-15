@@ -7,8 +7,12 @@ work-item-type: epic
 workflow-tier: full
 phase: P3
 version: 1.0.0
-status: draft
+status: approved
 azure-devops-id: 193
+review:
+  evaluator: product-manager
+  gate: 4
+  date: 2026-03-15
 consumed-by:
   - scrum-master
   - tech-lead
@@ -141,3 +145,14 @@ Sprint 2 will address F2 (Application Catalog & Deployment) and F3 (Dashboard & 
 ## Definition of Done Reference
 
 Stories are subject to the Definition of Done at `docs/definition-of-done.md`.
+
+## Metrics Collection Plan
+
+| Metric | Method | Frequency | Feed Into |
+|--------|--------|-----------|-----------|
+| WIP | Count of stories in Active state per track in Azure Boards | Daily | SM sprint health report |
+| Cycle Time | Story state transition timestamps (Active → Resolved) via Azure Boards query | Per story completion | RTE flow metrics report |
+| Throughput | Stories completed per week | Weekly | RTE flow metrics, velocity calibration |
+| Velocity | Sum of completed story points at sprint close | Per sprint | Sprint 2 capacity planning |
+| Blocked Time | Duration stories spend in Blocked state | Per occurrence | SM impediment log |
+| Defect Injection Rate | Bugs created during P5 per story | Per P5 cycle | Quality trend analysis |
