@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+*.md
+.env
+.env.*
+!.env.example
+infra/
+e2e/
+.prettierrc
+.prettierignore
+docker-compose.yml

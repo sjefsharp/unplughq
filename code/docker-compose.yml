@@ -4,15 +4,15 @@ services:
     container_name: unplughq-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: unplughq
-      POSTGRES_PASSWORD: unplughq_dev
-      POSTGRES_DB: unplughq
+      POSTGRES_USER: ${POSTGRES_USER:-unplughq}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-unplughq_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-unplughq}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U unplughq -d unplughq"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-unplughq} -d ${POSTGRES_DB:-unplughq}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -21,16 +21,71 @@ services:
     image: valkey/valkey:8-alpine
     container_name: unplughq-valkey
     restart: unless-stopped
-    command: valkey-server --requirepass unplughq_dev_redis
+    command: valkey-server --requirepass ${REDIS_PASSWORD:-unplughq_dev_redis}
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - valkeydata:/data
     healthcheck:
-      test: ["CMD", "valkey-cli", "-a", "unplughq_dev_redis", "ping"]
+      test: ["CMD", "valkey-cli", "-a", "${REDIS_PASSWORD:-unplughq_dev_redis}", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: unplughq-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-unplughq}:${POSTGRES_PASSWORD:-unplughq_dev}@postgres:5432/${POSTGRES_DB:-unplughq}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-unplughq_dev_redis}@valkey:6379
+      AUTH_SECRET: ${AUTH_SECRET:-dev-secret-change-in-production}
+      AUTH_URL: http://localhost:${APP_PORT:-3000}
+      ENCRYPTION_MASTER_KEY: ${ENCRYPTION_MASTER_KEY:-dev-encryption-key-change-in-production}
+      NEXT_PUBLIC_APP_URL: http://localhost:${APP_PORT:-3000}
+      NODE_ENV: development
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: unplughq-worker
+    restart: unless-stopped
+    command: ["node", "--import", "tsx", "src/server/queue/worker.ts"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-unplughq}:${POSTGRES_PASSWORD:-unplughq_dev}@postgres:5432/${POSTGRES_DB:-unplughq}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-unplughq_dev_redis}@valkey:6379
+      ENCRYPTION_MASTER_KEY: ${ENCRYPTION_MASTER_KEY:-dev-encryption-key-change-in-production}
+      NODE_ENV: development
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
 
 volumes:
   pgdata:
