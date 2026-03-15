@@ -63,8 +63,10 @@ nav:
     - Requirements: requirements.md
     - Stakeholder Analysis: stakeholder-analysis.md
 - Program Management:
+    - Dependency Map: dependency-map.md
     - Initial Risk Register: risk-register.md
     - PI Objectives: pi-objectives.md
+    - Program Board: program-board.md
 - System Architecture:
     - Architecture Overview: architecture-overview.md
     - Solution Assessment: solution-assessment.md
