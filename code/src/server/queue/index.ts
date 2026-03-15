@@ -34,15 +34,24 @@ export const monitorQueue = new Queue('monitor', {
   },
 });
 
-// --- Worker stubs (BE agent implements at P4 Step 2) ---
+// --- Worker factories ---
+
+import { handleTestConnection, handleProvisionServer } from './handlers';
 
 export function createProvisionWorker() {
   return new Worker(
     'provision',
-    async (_job: Job) => {
-      // Provision server job handler — BE agent implements
+    async (job: Job) => {
+      switch (job.name) {
+        case 'test-connection':
+          return handleTestConnection(job);
+        case 'provision-server':
+          return handleProvisionServer(job);
+        default:
+          throw new Error(`Unknown provision job: ${job.name}`);
+      }
     },
-    { connection },
+    { connection, concurrency: 3 },
   );
 }
 
@@ -50,7 +59,7 @@ export function createDeployWorker() {
   return new Worker(
     'deploy',
     async (_job: Job) => {
-      // Deploy app job handler — BE agent implements
+      // Deploy worker — implemented in Sprint 2
     },
     { connection },
   );
@@ -60,7 +69,7 @@ export function createMonitorWorker() {
   return new Worker(
     'monitor',
     async (_job: Job) => {
-      // Monitor job handler — BE agent implements
+      // Monitor worker — implemented in Sprint 2
     },
     { connection },
   );
