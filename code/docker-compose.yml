@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: unplughq-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: unplughq
+      POSTGRES_PASSWORD: unplughq_dev
+      POSTGRES_DB: unplughq
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unplughq -d unplughq"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    container_name: unplughq-valkey
+    restart: unless-stopped
+    command: valkey-server --requirepass unplughq_dev_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkeydata:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "-a", "unplughq_dev_redis", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+  valkeydata:

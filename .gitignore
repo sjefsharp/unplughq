@@ -4,10 +4,16 @@ node_modules/
 # Build output
 dist/
 site/
+.next/
+out/
 
 # Environment
 .env
-.env.*
+.env.local
+.env.*.local
+
+# Keep .env.example
+!.env.example
 
 # OS
 .DS_Store
@@ -17,3 +23,22 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+.vscode/
+
+# Test results
+coverage/
+test-results/
+playwright-report/
+
+# Drizzle
+drizzle/
+
+# Worktrees
+.worktrees/
+
+# Debug
+npm-debug.log*
+pnpm-debug.log*
+
+# TypeScript build info
+*.tsbuildinfo

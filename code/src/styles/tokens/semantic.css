@@ -1,0 +1,68 @@
+:root {
+  /* LIGHT MODE (Default) */
+  --color-bg-base: oklch(1.0 0 0);
+  --color-bg-surface: var(--ref-slate-050);
+  --color-bg-surface-hover: var(--ref-slate-100);
+  --color-bg-elevated: var(--ref-slate-050);
+
+  --color-text-base: var(--ref-slate-900);
+  --color-text-muted: var(--ref-slate-600);
+  --color-text-subtle: var(--ref-slate-400);
+
+  --color-border-subtle: var(--ref-slate-100);
+  --color-border-base: var(--ref-slate-200);
+  --color-border-strong: var(--ref-slate-300);
+
+  --color-primary-base: var(--ref-indigo-500);
+  --color-primary-hover: var(--ref-indigo-600);
+  --color-primary-active: var(--ref-indigo-700);
+  --color-primary-subtle: var(--ref-indigo-050);
+  --color-primary-text: var(--ref-indigo-700);
+  --color-on-primary: oklch(1.0 0 0);
+
+  --color-success-base: var(--ref-emerald-500);
+  --color-success-subtle: var(--ref-emerald-050);
+  --color-success-text: var(--ref-emerald-700);
+
+  --color-warning-base: var(--ref-amber-500);
+  --color-warning-subtle: var(--ref-amber-050);
+  --color-warning-text: var(--ref-amber-800);
+
+  --color-critical-base: var(--ref-rose-500);
+  --color-critical-subtle: var(--ref-rose-050);
+  --color-critical-text: var(--ref-rose-700);
+}
+
+[data-theme="dark"] {
+  --color-bg-base: var(--ref-slate-950);
+  --color-bg-surface: var(--ref-slate-900);
+  --color-bg-surface-hover: var(--ref-slate-800);
+  --color-bg-elevated: var(--ref-slate-800);
+
+  --color-text-base: var(--ref-slate-050);
+  --color-text-muted: var(--ref-slate-400);
+  --color-text-subtle: var(--ref-slate-600);
+
+  --color-border-subtle: var(--ref-slate-800);
+  --color-border-base: var(--ref-slate-700);
+  --color-border-strong: var(--ref-slate-600);
+
+  --color-primary-base: var(--ref-indigo-400);
+  --color-primary-hover: var(--ref-indigo-300);
+  --color-primary-active: var(--ref-indigo-200);
+  --color-primary-subtle: oklch(0.20 0.05 270);
+  --color-primary-text: var(--ref-indigo-200);
+  --color-on-primary: var(--ref-slate-950);
+
+  --color-success-base: var(--ref-emerald-400);
+  --color-success-subtle: oklch(0.20 0.05 150);
+  --color-success-text: var(--ref-emerald-200);
+
+  --color-warning-base: var(--ref-amber-400);
+  --color-warning-subtle: oklch(0.20 0.05 60);
+  --color-warning-text: var(--ref-amber-200);
+
+  --color-critical-base: var(--ref-rose-400);
+  --color-critical-subtle: oklch(0.20 0.05 20);
+  --color-critical-text: var(--ref-rose-200);
+}

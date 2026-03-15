@@ -1,0 +1,13 @@
+/* Component-specific tokens — extended by FE agent */
+:root {
+  /* Button tokens */
+  --btn-sm-height: 32px;
+  --btn-md-height: 44px;
+  --btn-lg-height: 52px;
+
+  /* Input tokens */
+  --input-height: 44px;
+
+  /* Card tokens */
+  --card-padding: var(--space-6);
+}

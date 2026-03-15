@@ -1,0 +1,37 @@
+@layer reset, tokens, base, components, utilities;
+
+@import "tailwindcss";
+@import "./tokens/reference.css" layer(tokens);
+@import "./tokens/semantic.css" layer(tokens);
+@import "./tokens/component.css" layer(tokens);
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-bg-base);
+    color: var(--color-text-base);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0ms !important;
+      transition-duration: 0ms !important;
+    }
+  }
+}
