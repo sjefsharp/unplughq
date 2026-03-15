@@ -5,8 +5,8 @@ project-slug: unplughq
 work-item: epic-001-unplughq-platform
 work-item-type: epic
 workflow-tier: full
-phase: P2
-version: 2.0.0
+phase: P3
+version: 3.0.0
 status: draft
 azure-devops-id: 180
 date: 2026-03-13
@@ -16,12 +16,13 @@ date: 2026-03-13
 
 ## Current State
 
-- **Phase:** P2 COMPLETE — Gate 3 PASS. Ready for P3 (Backlog Planning).
+- **Phase:** P3 COMPLETE — Gate 4 PASS. Ready for P4 (Development).
 - **Branch:** `feat/epic-001-unplughq-platform`
-- **Azure DevOps Project:** `unplughq` (dedicated project — migrated from `agentic-framework` area path)
+- **Azure DevOps Project:** `unplughq` (dedicated project)
 - **Azure Boards:** Epic AB#180, state `Active`
 - **Features:** F1 AB#181, F2 AB#182, F3 AB#183, F4 AB#184 (all under Epic AB#180)
-- **Next action:** Invoke PO for backlog + delegation briefs, then SM, RTE
+- **Stories:** 16 stories AB#194-209 (all fields populated in Azure Boards)
+- **Next action:** Read PO's `delegation-briefs-p4.md` and invoke P4 Scrum Team agents (Testing → TL → FE ∥ BE ∥ DBA ∥ DevOps → TL)
 
 ## Completed Gates
 
@@ -30,6 +31,7 @@ date: 2026-03-13
 | Gate 1 | PASS | 2026-03-13 |
 | Gate 2 | PASS | 2026-03-13 |
 | Gate 3 | PASS | 2026-03-13 |
+| Gate 4 | PASS | 2026-03-15 |
 
 ## Work Item Registry
 
@@ -48,6 +50,25 @@ date: 2026-03-13
 | task-190-cs-content-strategy | Task | [CS] Messaging framework, tone of voice, and content strategy | closed | AB#190 |
 | task-191-ux-design-system | Task | [UX] Design system, wireframes, and interaction patterns | closed | AB#191 |
 | task-192-a11y-wcag-audit | Task | [A11Y] WCAG audit and accessibility guidelines | closed | AB#192 |
+| task-193-po-backlog-planning | Task | [PO] Backlog planning, story decomposition, delegation briefs | closed | AB#193 |
+| story-194-user-registration | Story | User Registration | new | AB#194 |
+| story-195-user-authentication | Story | User Authentication | new | AB#195 |
+| story-196-password-reset-flow | Story | Password Reset Flow | new | AB#196 |
+| story-197-account-settings | Story | Account Settings and Notification Preferences | new | AB#197 |
+| story-198-server-connection-wizard | Story | Guided Server Connection Wizard | new | AB#198 |
+| story-199-server-validation | Story | Server Validation and Compatibility Check | new | AB#199 |
+| story-200-server-provisioning | Story | Automated Server Provisioning | new | AB#200 |
+| story-201-server-dashboard-presence | Story | Server Dashboard Presence | new | AB#201 |
+| story-202-app-catalog-browsing | Story | Application Catalog Browsing | new | AB#202 |
+| story-203-app-configuration | Story | Guided App Configuration | new | AB#203 |
+| story-204-app-deployment | Story | Application Deployment with Progress | new | AB#204 |
+| story-205-post-deployment-verification | Story | Post-Deployment Verification | new | AB#205 |
+| story-206-multi-app-coexistence | Story | Multi-App Coexistence | new | AB#206 |
+| story-207-dashboard-overview | Story | Dashboard Overview | new | AB#207 |
+| story-208-health-alerts | Story | Health Alert Notifications | new | AB#208 |
+| story-209-alert-remediation | Story | Alert Management and Guided Remediation | new | AB#209 |
+| task-210-sm-sprint-planning | Task | [SM] Sprint planning, working agreements, definition of done | closed | AB#210 |
+| task-223-rte-program-board | Task | [RTE] Program board and dependency mapping | closed | AB#223 |
 
 **Migration note:** Work items migrated from `agentic-framework` ADO project (AB#169-179) to dedicated `unplughq` ADO project (AB#180-192). Old Epic AB#169 state: Removed.
 
@@ -78,6 +99,17 @@ date: 2026-03-13
 | interaction-patterns.md | UX | P2 | approved | https://sjefsharp.github.io/unplughq/interaction-patterns/ |
 | wcag-audit.md | A11Y | P2 | approved | https://sjefsharp.github.io/unplughq/wcag-audit/ |
 | accessibility-guidelines.md | A11Y | P2 | approved | https://sjefsharp.github.io/unplughq/accessibility-guidelines/ |
+| product-backlog.md | PO | P3 | approved | https://sjefsharp.github.io/unplughq/product-backlog/ |
+| sprint-backlog.md | PO | P3 | approved | https://sjefsharp.github.io/unplughq/sprint-backlog/ |
+| story-map.md | PO | P3 | approved | https://sjefsharp.github.io/unplughq/story-map/ |
+| delegation-briefs-p4.md | PO | P3 | approved | https://sjefsharp.github.io/unplughq/delegation-briefs-p4/ |
+| delegation-briefs-p5.md | PO | P3 | approved | https://sjefsharp.github.io/unplughq/delegation-briefs-p5/ |
+| delegation-briefs-p7.md | PO | P3 | approved | https://sjefsharp.github.io/unplughq/delegation-briefs-p7/ |
+| team-working-agreements.md | SM | P3 | approved | https://sjefsharp.github.io/unplughq/team-working-agreements/ |
+| definition-of-done.md | SM | P3 | approved | https://sjefsharp.github.io/unplughq/definition-of-done/ |
+| sprint-health-report.md | SM | P3 | approved | https://sjefsharp.github.io/unplughq/sprint-health-report/ |
+| program-board.md | RTE | P3 | approved | https://sjefsharp.github.io/unplughq/program-board/ |
+| dependency-map.md | RTE | P3 | approved | https://sjefsharp.github.io/unplughq/dependency-map/ |
 
 ## GitHub Pages Base URL
 
@@ -95,6 +127,7 @@ date: 2026-03-13
 8. `deploy-artifact.mjs` did not add Discussion entries with FQDNs — RESOLVED (fixed in framework commit eaf6d04)
 9. `deploy-artifact.mjs` had cross-skill dynamic import of `generate-mkdocs-nav.mjs` — RESOLVED (removed in framework commit eaf6d04)
 10. `create-work-item.mjs` idempotency check WIQL query lacks `[System.TeamProject]` filter — finds duplicates across ALL ADO projects, causing false positives when recreating work items in a new project (HIGH)
+11. `query-work-items.mjs` `queryByWiql` function lacks `--org` parameter — relies on stale `az devops configure` defaults, causing "Unexpected end of JSON input" warnings (MEDIUM)
 
 ## Deferred Items
 
@@ -117,10 +150,29 @@ All P2 agents delivered:
 2. **UX Designer** (AB#191): Design system (OKLCH three-tier tokens), wireframes (10 screens), interaction patterns — ✓ Closed
 3. **Accessibility** (AB#192): WCAG 2.2 AA audit (622 lines, 5 critical findings), accessibility guidelines (1,261 lines) — ✓ Closed
 
-## P3 Delegation Plan
+## P3 Delegation Plan — COMPLETE
 
-Phase 3 agents (PO → SM → RTE):
+All P3 agents delivered:
 
-1. **Product Owner**: Product backlog, delegation briefs for P4-P7 agents
-2. **Scrum Master**: Sprint planning, definition of done, working agreements
-3. **Release Train Engineer**: Program board, cross-team dependency mapping
+1. **Product Owner** (AB#193): Product backlog (16 stories, Connextra+Gherkin), sprint backlog, story map, 3 delegation briefs (P4/P5/P7) — ✓ Closed
+2. **Scrum Master** (AB#210): Team working agreements, definition of done, sprint health report (AMBER) — ✓ Closed
+3. **Release Train Engineer** (AB#223): Program board with 2-sprint allocation, dependency map with critical path — ✓ Closed
+
+## P4 Delegation Plan
+
+Phase 4 agents per PO's delegation briefs (P4 Step 1: Testing, then P4 Step 2: TL → FE ∥ BE ∥ DBA ∥ DevOps → TL):
+
+1. **Testing**: Test contracts and stubs (P4 Step 1 — before code agents)
+2. **Tech Lead**: Project scaffold, build verification (P4 Step 2 — before parallel code)
+3. **Database Administrator**: Schema design, migrations (P4 Step 2 — parallel)
+4. **Backend Developer**: Auth, SSH, tRPC routers (P4 Step 2 — parallel)
+5. **Frontend Developer**: Auth pages, connection wizard, dashboard (P4 Step 2 — parallel)
+6. **DevOps Engineer**: CI/CD pipeline, Docker dev environment (P4 Step 2 — parallel)
+7. **Tech Lead**: Final verification, sub-branch merge (P4 closeout)
+
+## Framework Fixes This Session
+
+1. **create-work-item.mjs — double `--fields` bug (CRITICAL):** Azure CLI argparse `nargs='*'` treats duplicate `--fields` as replacement, not append. Tags were pushed as a second `--fields`, overwriting Description, AC, StoryPoints, Priority. Fixed: merged tags into single `--fields` push. Commit: `15f886c`.
+2. **create-work-item.mjs — missing `--org`/`--project`:** Create command relied on stale `az devops configure` defaults. Fixed: added explicit `--org` and `--project`. Commit: `15f886c`.
+3. **create-work-item.mjs — AreaPath logic inversion:** Condition was inverted for dedicated vs shared projects (dedicated projects got nested path, shared got root). Fixed: `adoProject === project` → root area path. Commit: `15f886c`.
+4. **az-health-check.mjs — `ensureAreaPath` for dedicated projects:** Accepted optional `adoProject` parameter; skips area creation when slug === adoProject. Commit: `15f886c`.
