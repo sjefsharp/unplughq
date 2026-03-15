@@ -98,6 +98,7 @@ nav:
     - Team Working Agreements — UnplugHQ PI-1: team-working-agreements.md
 - Engineering:
     - Build Verification Report — UnplugHQ: build-verification-report.md
+    - Database Schema — UnplugHQ: database-schema.md
 - Testing:
     - Test Strategy — P4 Step 1 (TDD Contracts): test-strategy-p4.md
 - Security:
