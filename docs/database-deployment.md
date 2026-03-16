@@ -8,7 +8,7 @@ parent-work-item: feature-004-auth-system
 workflow-tier: full
 phase: P7
 version: 1.0.0
-status: draft
+status: approved
 consumed-by:
   - devops-engineer
   - backend-developer

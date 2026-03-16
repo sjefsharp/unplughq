@@ -1,7 +1,7 @@
 ---
 title: "Sprint 1 — P5 Test Execution Report"
 artifact: test-report
-status: draft
+status: approved
 creator: testing
 azure-id: 244
 parent-azure-id: 180

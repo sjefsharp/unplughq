@@ -8,7 +8,7 @@ parent-work-item: epic-001-unplughq-platform
 workflow-tier: full
 phase: P8
 version: 1.0.0
-status: draft
+status: approved
 consumed-by:
   - product-manager
   - product-owner

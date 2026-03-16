@@ -8,7 +8,7 @@ parent-work-item: feature-003-platform-reliability
 workflow-tier: full
 phase: P5
 version: 1.0.0
-status: draft
+status: approved
 consumed-by:
   - product-owner
   - product-manager

@@ -1,7 +1,7 @@
 ---
 artifact: test-strategy-p4
 produced-by: testing
-status: draft
+status: approved
 work-items:
   - AB#224
   - AB#225

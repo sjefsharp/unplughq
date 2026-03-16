@@ -7,7 +7,7 @@ work-item-type: epic
 workflow-tier: full
 phase: P6
 version: 1.0.0
-status: draft
+status: approved
 azure-devops-id: 180
 consumed-by:
   - release-train-engineer

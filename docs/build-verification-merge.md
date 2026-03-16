@@ -8,7 +8,7 @@ parent-work-item: feature-180-sprint-1-implementation
 workflow-tier: full
 phase: P4
 version: 1.0.0
-status: draft
+status: approved
 consumed-by:
   - product-owner
   - product-manager

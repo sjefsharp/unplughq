@@ -8,7 +8,7 @@ parent-work-item: epic-001-unplughq-platform
 workflow-tier: full
 phase: P4
 version: 1.0.0
-status: draft
+status: approved
 azure-devops-id: 236
 ---
 
