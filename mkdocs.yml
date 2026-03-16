@@ -102,6 +102,7 @@ nav:
     - Sprint Health Report — UnplugHQ Sprint 1: sprint-health-report.md
     - Team Working Agreements — UnplugHQ PI-1: team-working-agreements.md
 - Engineering:
+    - Backend Deployment — Production Configuration Guide: backend-deployment.md
     - Build Verification — P4 Step 2 End Merge Integration: build-verification-merge.md
     - Build Verification — P5 Remediation: build-verification-remediation.md
     - Build Verification Report — UnplugHQ: build-verification-report.md
