@@ -6,9 +6,9 @@ work-item: epic-001-unplughq-platform
 work-item-type: epic
 workflow-tier: full
 phase: P1
-version: 1.0.0
-status: approved
-azure-devops-id: 187
+version: 2.0.0
+status: draft
+azure-devops-id: 279
 consumed-by:
   - security-analyst
   - solution-designer
@@ -22,10 +22,15 @@ consumed-by:
   - product-owner
   - content-strategist
   - accessibility
-date: 2026-03-13
+date: 2026-03-16
+review:
+  reviewed-by:
+  reviewed-date:
 ---
 
 # Architecture Overview
+
+> **Version 2.0.0 — PI-2 Extension.** This document extends the PI-1 architecture to support Feature 2 (Application Catalog & Deployment) and Feature 3 (Dashboard & Health Monitoring). PI-1 sections are retained in place; PI-2 additions are marked with `(PI-2)` annotations. See [Solution Assessment v2.0](solution-assessment.md) for the Extend disposition rationale.
 
 ## 1. Introduction and Goals
 
@@ -581,8 +586,8 @@ See [Domain Glossary](domain-glossary.md) for the full ubiquitous language. Arch
 |---------|---------------|--------------|-------------|
 | **Identity & Access** | User accounts, authentication, sessions, authorization, account settings, GDPR compliance | User, Session, PasswordResetToken, NotificationPreference | PI-1 (F4) |
 | **Server Management** | VPS connection, SSH operations, provisioning lifecycle, server health, compatibility validation | Server, SSHCredential, ProvisioningJob, ServerSpecs | PI-1 (F1) |
-| **Application Lifecycle** | App catalog, deployment orchestration, configuration, status management, SSL certificates | AppDefinition, Deployment, AppConfig, Certificate | PI-1 (F2) |
-| **Monitoring & Alerting** | Health metrics collection, threshold evaluation, alert lifecycle, notification dispatch | MetricSnapshot, Alert, AlertRule, Notification | PI-1 (F3) |
+| **Application Lifecycle** | App catalog, deployment orchestration, configuration, status management, SSL certificates | AppDefinition, Deployment, AppConfig, Certificate | **PI-2 (F2)** — implementing |
+| **Monitoring & Alerting** | Health metrics collection, threshold evaluation, alert lifecycle, notification dispatch | MetricSnapshot, Alert, AlertRule, Notification | **PI-2 (F3)** — implementing |
 | **Billing & Entitlement** | Subscription tiers, usage limits, payment processing | Subscription, UsageLimit, Invoice | PI-3+ (stub in PI-1 for tier-gating) |
 
 ### Context Map
@@ -764,6 +769,611 @@ code/src/styles/
 |----------|--------|-----------|
 | Integration approach | Embed Storybook stories via iframe | Zeroheight's standard integration pattern; CSP headers must allow Zeroheight domain as frame-ancestor |
 | CSP requirements | `frame-ancestors 'self' https://*.zeroheight.com` | Allow Zeroheight to embed Storybook; restrict to Zeroheight domain only |
+
+---
+
+## PI-2 Architecture Extensions
+
+> The following sections describe PI-2 additions to the architecture. They extend — not replace — the PI-1 architecture above.
+
+### PI-2.1 App Template Model & Catalog Service
+
+#### App Template Data Model
+
+App templates are declarative TypeScript specifications that define how to deploy and configure each self-hosted application. Templates are authored as `.ts` files exporting objects validated against the `CatalogApp` Zod schema.
+
+**File structure:**
+```
+code/src/catalog/
+├── templates/
+│   ├── nextcloud.ts        # File storage
+│   ├── plausible.ts        # Analytics
+│   ├── ghost.ts            # CMS / blogging
+│   ├── vaultwarden.ts      # Password management
+│   ├── immich.ts           # Photo storage
+│   ├── gitea.ts            # Git hosting
+│   ├── uptime-kuma.ts      # Status monitoring
+│   ├── n8n.ts              # Workflow automation
+│   ├── freshrss.ts         # RSS reader
+│   ├── bookstack.ts        # Documentation / wiki
+│   ├── paperless-ngx.ts    # Document management
+│   ├── homepage.ts         # Dashboard / startpage
+│   ├── actual-budget.ts    # Personal finance
+│   ├── stirling-pdf.ts     # PDF tools
+│   └── mealie.ts           # Recipe management
+├── index.ts                # Aggregated export + validation
+└── schema.ts               # Shared template schema extensions
+```
+
+**Template schema (extends `CatalogApp` from API contracts):**
+
+```typescript
+export interface AppTemplate {
+  id: string;                    // slug e.g. "nextcloud"
+  name: string;
+  description: string;
+  category: AppCategory;
+  version: string;
+  imageDigest: string;           // sha256:... (NFR-018 pinned digest)
+  upstreamUrl: string;
+  minCpuCores: number;
+  minRamGb: number;
+  minDiskGb: number;
+  configSchema: ConfigField[];   // Drives dynamic form generation
+  ports: PortMapping[];          // Internal container ports (not host-exposed)
+  volumes: VolumeMount[];        // /opt/unplughq/data/{containerName}/...
+  envDefaults: Record<string, string>;  // Default environment variables
+  healthCheck: HealthCheckConfig;
+  dependencies?: string[];       // Other templates required (e.g., postgres for some apps)
+  networkMode: 'unplughq';      // Always joined to managed Docker network
+}
+
+type AppCategory = 'file-storage' | 'analytics' | 'cms' | 'password-management'
+  | 'photo-storage' | 'development' | 'monitoring' | 'automation'
+  | 'communication' | 'productivity' | 'media' | 'finance';
+
+interface ConfigField {
+  key: string;
+  label: string;              // Non-technical, user-facing
+  helpText: string;           // Contextual explanation
+  type: 'text' | 'email' | 'password' | 'select' | 'boolean';
+  required: boolean;
+  default?: string;
+  options?: string[];          // For 'select' type
+  validation?: z.ZodType;     // Field-level validation
+}
+```
+
+**Catalog service (`src/server/services/catalog/`):**
+
+| Method | Purpose |
+|--------|---------|
+| `listTemplates(filter?, search?)` | Return all active templates, optionally filtered by category or searched by name/description |
+| `getTemplate(id)` | Return single template with full `configSchema` |
+| `validateConfig(templateId, userConfig)` | Validate user-provided configuration against template's `configSchema` |
+| `checkResourceFit(templateId, serverMetrics)` | Compare template resource requirements against server's available resources |
+
+#### New Database Table: `app_templates`
+
+```sql
+CREATE TABLE app_templates (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug        TEXT NOT NULL UNIQUE,
+  name        TEXT NOT NULL,
+  category    TEXT NOT NULL,
+  version     TEXT NOT NULL,
+  image_digest TEXT NOT NULL,
+  config_schema JSONB NOT NULL DEFAULT '[]',
+  min_cpu_cores REAL NOT NULL DEFAULT 1,
+  min_ram_gb   REAL NOT NULL DEFAULT 0.5,
+  min_disk_gb  REAL NOT NULL DEFAULT 1,
+  upstream_url TEXT NOT NULL,
+  is_active   BOOLEAN NOT NULL DEFAULT true,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_app_templates_category ON app_templates(category);
+CREATE INDEX idx_app_templates_is_active ON app_templates(is_active);
+```
+
+### PI-2.2 Deployment Orchestrator
+
+The deployment orchestrator executes multi-step application deployments on remote servers as an idempotent BullMQ job with a state machine and per-step rollback.
+
+#### Deployment State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> pending : User clicks Deploy
+    pending --> pulling : Job starts
+    pulling --> configuring : Image pulled
+    configuring --> provisioning_ssl : Env file written, container created
+    provisioning_ssl --> starting : Caddy route added, cert issued
+    starting --> running : Container started, health check passed
+    
+    pulling --> failed : Image pull failed
+    configuring --> failed : Config write failed
+    provisioning_ssl --> failed : SSL/routing failed
+    starting --> failed : Health check failed
+    
+    running --> stopped : User stops
+    running --> unhealthy : Health check fails
+    stopped --> running : User starts
+    
+    failed --> pending : User retries
+    running --> removing : User removes
+    removing --> [*]
+```
+
+#### Deployment Job Pipeline
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Web as Next.js (tRPC)
+    participant DB as PostgreSQL
+    participant Queue as BullMQ/Redis
+    participant Worker as deploy-app Handler
+    participant VPS as User's VPS (SSH)
+    participant SSE as SSE Event Bus
+
+    User->>Web: app.deployment.create(catalogAppId, serverId, domain, config)
+    Web->>Web: Validate config against template configSchema (Zod)
+    Web->>Web: Check tier limits (E-03)
+    Web->>DB: Check server status = 'provisioned'
+    Web->>DB: Check resource fit (template vs server metrics)
+    Web->>DB: INSERT deployment (status: pending)
+    Web->>DB: INSERT audit_log (action: deployment.create)
+    Web->>Queue: Enqueue deploy-app job
+    Web->>User: Return deploymentId + status: pending
+
+    Queue->>Worker: Dequeue job
+    
+    Note over Worker: Phase 1 — Pull Image
+    Worker->>DB: Update deployment (status: pulling)
+    Worker->>SSE: deployment.progress {status: pulling, phase: "Downloading your app"}
+    Worker->>VPS: SSH: docker pull <registry>/<image>@sha256:<digest>
+    alt Pull fails
+        Worker->>DB: Update deployment (status: failed)
+        Worker->>DB: INSERT deployment_log (phase: pulling, status: failed)
+        Worker->>SSE: deployment.progress {status: failed}
+    end
+
+    Note over Worker: Phase 2 — Configure
+    Worker->>DB: Update deployment (status: configuring)
+    Worker->>SSE: deployment.progress {status: configuring, phase: "Configuring your app"}
+    Worker->>VPS: SFTP: Write env file to /opt/unplughq/env/<containerName>.env (mode 0600)
+    Worker->>VPS: SSH: docker create --name <containerName> --network unplughq --env-file ... --restart unless-stopped
+    Worker->>VPS: SSH: docker network connect unplughq <containerName> (if not auto-joined)
+    alt Configure fails
+        Worker->>VPS: SSH: docker rm -f <containerName> (cleanup)
+        Worker->>VPS: SFTP: rm /opt/unplughq/env/<containerName>.env (cleanup)
+        Worker->>DB: Update deployment (status: failed)
+    end
+
+    Note over Worker: Phase 3 — SSL + Routing
+    Worker->>DB: Update deployment (status: provisioning-ssl)
+    Worker->>SSE: deployment.progress {status: provisioning-ssl, phase: "Setting up your domain"}
+    Worker->>VPS: SSH tunnel → Caddy Admin API: POST route with @id=unplughq-<containerName>
+    Note over VPS: Caddy auto-provisions Let's Encrypt cert on first request
+    alt Route/SSL fails
+        Worker->>VPS: SSH tunnel → Caddy Admin API: DELETE route @id (cleanup)
+        Worker->>VPS: SSH: docker rm -f <containerName> (cleanup)
+        Worker->>VPS: SFTP: rm env file (cleanup)
+        Worker->>DB: Update deployment (status: failed)
+    end
+
+    Note over Worker: Phase 4 — Start + Health Check
+    Worker->>DB: Update deployment (status: starting)
+    Worker->>SSE: deployment.progress {status: starting, phase: "Starting your app"}
+    Worker->>VPS: SSH: docker start <containerName>
+    Worker->>Worker: HTTP GET https://<domain> (retry 3x, 20s timeout, exponential backoff)
+    alt Health check passes
+        Worker->>DB: Update deployment (status: running, accessUrl: https://<domain>)
+        Worker->>DB: INSERT deployment_log (phase: starting, status: completed)
+        Worker->>DB: INSERT audit_log (action: deployment.running)
+        Worker->>SSE: deployment.progress {status: running}
+    else Health check fails
+        Worker->>DB: Update deployment (status: failed)
+        Worker->>SSE: deployment.progress {status: failed, phase: "Health check failed"}
+    end
+```
+
+#### Rollback Matrix
+
+| Phase | Failure | Rollback Actions |
+|-------|---------|-----------------|
+| pulling | Image pull failed | Clean up partial image: `docker rmi` if present |
+| configuring | Env file write or container create failed | Remove container (`docker rm -f`), delete env file via SFTP |
+| provisioning-ssl | Caddy route or cert failed | Delete Caddy route via Admin API, remove container, delete env file |
+| starting | Container start or health check failed | Stop container, mark deployment as `failed` (preserving for retry) |
+
+#### New Database Table: `deployment_logs`
+
+```sql
+CREATE TABLE deployment_logs (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  deployment_id UUID NOT NULL REFERENCES deployments(id) ON DELETE CASCADE,
+  phase         TEXT NOT NULL,
+  status        TEXT NOT NULL,  -- 'started' | 'completed' | 'failed'
+  message       TEXT,
+  started_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  completed_at  TIMESTAMPTZ
+);
+CREATE INDEX idx_deployment_logs_deployment_id ON deployment_logs(deployment_id);
+```
+
+#### Caddy Route Management Service
+
+```typescript
+// src/server/services/caddy/caddy-service.ts
+interface CaddyService {
+  addRoute(ssh: SSHConnection, opts: {
+    containerName: string;  // [a-z0-9-]+ validated
+    domain: string;         // FQDN validated by Zod
+    internalPort: number;   // From app template
+  }): Promise<void>;
+
+  removeRoute(ssh: SSHConnection, containerName: string): Promise<void>;
+
+  validateConfig(ssh: SSHConnection): Promise<boolean>;
+}
+```
+
+All Caddy Admin API calls go through SSH tunnel to `localhost:2019` on the VPS (never exposed to the network — T-04 mitigation).
+
+### PI-2.3 Health Monitoring Architecture
+
+#### Monitoring Data Flow
+
+```mermaid
+graph LR
+    subgraph Data Plane ["User's VPS"]
+        AGENT["Monitoring Agent<br/>(Docker container)<br/>Every 30s"]
+        DOCKER_API["Docker Engine<br/>/var/run/docker.sock<br/>(read-only)"]
+        HOST["Host OS<br/>/proc, /sys"]
+    end
+
+    subgraph Control Plane
+        INGEST["POST /api/agent/metrics<br/>(Route Handler)"]
+        DB_METRICS[("metrics_snapshots<br/>table")]
+        SSE_BUS["SSE Event Bus"]
+        EVAL["Threshold Evaluator<br/>(BullMQ repeatable<br/>every 60s)"]
+        ALERTS_TBL[("alerts table")]
+        EMAIL_Q["send-alert Job<br/>(BullMQ)"]
+        EMAIL_SVC["Email Service<br/>(shared with auth)"]
+        DASH["Dashboard<br/>(SSE consumer)"]
+    end
+
+    HOST -->|"/proc/stat, /proc/meminfo,<br/>df, /proc/net/dev"| AGENT
+    DOCKER_API -->|"docker ps --format json<br/>docker system df"| AGENT
+    AGENT -->|"HTTPS POST<br/>(Bearer token auth)"| INGEST
+    INGEST -->|"Zod strict parse"| DB_METRICS
+    INGEST -->|"Emit metrics.update"| SSE_BUS
+    SSE_BUS -->|"Push to browser"| DASH
+    EVAL -->|"Query latest metrics"| DB_METRICS
+    EVAL -->|"Threshold breach?"| ALERTS_TBL
+    EVAL -->|"Enqueue if alert created"| EMAIL_Q
+    EMAIL_Q --> EMAIL_SVC
+```
+
+#### Monitoring Agent Contract (PI-2 Extension)
+
+The PI-1 monitoring agent already pushes `MetricsSnapshot` payloads with a `containers` array. PI-2 extends the agent to populate per-container `diskUsageBytes` (via `docker system df -v --format json`) and ensure accurate `status` reporting.
+
+**Agent upgrade path:** The provisioning worker checks agent version on each metrics push via a custom header (`X-Agent-Version`). If the agent is outdated, a BullMQ job enqueues an agent update (pull new image, restart container) — no manual VPS access required.
+
+#### Threshold Evaluation Engine
+
+```typescript
+// src/server/queue/handlers/process-metrics.ts
+// Runs as BullMQ repeatable job every 60 seconds
+
+interface AlertThreshold {
+  metric: 'cpu' | 'ram' | 'disk' | 'app-status';
+  operator: 'gt' | 'lt' | 'eq';
+  value: number;
+  durationSeconds: number;  // Sustained breach duration
+  severity: 'info' | 'warning' | 'critical';
+  alertType: AlertType;
+}
+
+// PI-2 fixed defaults (configurable per-server in PI-3)
+const DEFAULT_THRESHOLDS: AlertThreshold[] = [
+  { metric: 'cpu',  operator: 'gt', value: 90, durationSeconds: 300, severity: 'critical', alertType: 'cpu-critical' },
+  { metric: 'ram',  operator: 'gt', value: 90, durationSeconds: 0,   severity: 'critical', alertType: 'ram-critical' },
+  { metric: 'disk', operator: 'gt', value: 85, durationSeconds: 0,   severity: 'critical', alertType: 'disk-critical' },
+  { metric: 'cpu',  operator: 'gt', value: 80, durationSeconds: 0,   severity: 'warning',  alertType: 'cpu-critical' },
+  { metric: 'disk', operator: 'gt', value: 80, durationSeconds: 0,   severity: 'warning',  alertType: 'disk-critical' },
+  // app-unavailable: container status != 'running' for >60s — evaluated from containers array
+];
+```
+
+**Alert deduplication:** Before creating a new alert, the evaluator checks for an existing active (non-dismissed) alert with the same `server_id` + `type`. If one exists, no duplicate is created. This prevents alert storm during sustained threshold breaches.
+
+**Stale data handling:** If no `MetricsSnapshot` exists for a server within 120 seconds:
+1. Dashboard displays "Data stale" badge with timestamp of last received metric
+2. If stale >5 minutes: `server-unreachable` alert is generated
+
+#### New Database Table: `alert_rules`
+
+```sql
+CREATE TABLE alert_rules (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  server_id        UUID REFERENCES servers(id) ON DELETE CASCADE,  -- NULL = global default
+  metric           TEXT NOT NULL,
+  operator         TEXT NOT NULL CHECK (operator IN ('gt', 'lt', 'eq')),
+  threshold        REAL NOT NULL,
+  duration_seconds INTEGER NOT NULL DEFAULT 0,
+  severity         alert_severity NOT NULL,
+  alert_type       alert_type NOT NULL,
+  is_active        BOOLEAN NOT NULL DEFAULT true,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_alert_rules_server_id ON alert_rules(server_id);
+```
+
+PI-2 populates this table with fixed default rules (`server_id = NULL` = applies to all servers). PI-3 adds per-server customisation.
+
+### PI-2.4 Alert System Design
+
+#### Alert Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> created : Threshold breached
+    created --> notified : Email sent (if user pref enabled)
+    created --> active : Email disabled or failed
+    notified --> active : Email delivered
+    active --> acknowledged : User acknowledges
+    active --> dismissed : User dismisses
+    acknowledged --> dismissed : User dismisses
+    dismissed --> [*] : Condition clears
+    
+    note right of dismissed : If condition re-occurs\nafter clear, new alert created
+```
+
+#### Alert Email Pipeline
+
+```mermaid
+graph TD
+    EVAL["Threshold Evaluator"] -->|"Alert created"| DB["alerts table"]
+    EVAL -->|"User has emailAlerts: true?"| CHECK{"Notification<br/>prefs check"}
+    CHECK -->|"Yes"| QUEUE["BullMQ: send-alert job"]
+    CHECK -->|"No"| SKIP["Skip email, dashboard only"]
+    QUEUE --> WORKER["Alert Email Handler"]
+    WORKER -->|"Success"| UPDATE["Update alert: notificationSent=true"]
+    WORKER -->|"Failure"| DLQ["Dead Letter Queue<br/>(max 3 retries)"]
+    DLQ -->|"Retry"| WORKER
+    DLQ -->|"Exhausted"| LOG["Log failure, alert.notificationSent=false"]
+```
+
+#### Notification Service Abstraction
+
+PI-1 has email integration for password reset only. PI-2 introduces a shared notification service:
+
+```typescript
+// src/server/services/notification/email-service.ts
+interface EmailService {
+  sendPasswordReset(to: string, resetUrl: string): Promise<void>;
+  sendAlertNotification(to: string, alert: {
+    type: AlertType;
+    severity: AlertSeverity;
+    serverName: string;
+    appName?: string;
+    currentValue: string;
+    threshold: string;
+    dashboardUrl: string;
+    remediationSteps: string[];
+  }): Promise<void>;
+  sendAlertResolved(to: string, alert: {
+    type: AlertType;
+    serverName: string;
+    resolvedAt: Date;
+  }): Promise<void>;
+}
+```
+
+Templates use the same transactional email provider (configured via environment variables) with distinct HTML templates per email type.
+
+### PI-2.5 Updated C4 — Container Diagram
+
+```mermaid
+graph TD
+    subgraph Control Plane ["UnplugHQ Control Plane (PI-2)"]
+        WEB["Next.js Application<br/>(Web UI + API Routes + SSE)<br/>TypeScript, React 19, Server Components"]
+        WORKER["Background Worker<br/>(BullMQ consumers)<br/>Provisioning, Deployment,<br/>Metrics Processing, Alerts"]
+        DB[("PostgreSQL 17<br/>users, servers, deployments,<br/>app_templates, deployment_logs,<br/>alerts, alert_rules, audit_log,<br/>metrics_snapshots")]
+        CACHE[("Redis / Valkey<br/>Job queue, sessions,<br/>rate limiting")]
+    end
+
+    subgraph Data Plane ["User's VPS"]
+        CADDY["Caddy 2.x<br/>(Reverse Proxy + Auto-SSL)<br/>Admin API on localhost:2019"]
+        AGENT["Monitoring Agent v2<br/>(container)<br/>Host + per-container metrics"]
+        DOCKER["Docker Engine<br/>unplughq network"]
+        APP1["App Container 1<br/>(e.g., Nextcloud)"]
+        APP2["App Container 2<br/>(e.g., Plausible)"]
+        APP3["App Container 3<br/>(e.g., Vaultwarden)"]
+    end
+
+    WEB -->|"Read/Write"| DB
+    WEB -->|"Enqueue jobs"| CACHE
+    WORKER -->|"Consume jobs"| CACHE
+    WORKER -->|"Read/Write"| DB
+    WORKER -->|"SSH: deploy, configure,<br/>Caddy Admin API"| DOCKER
+    AGENT -->|"HTTPS POST /api/agent/metrics<br/>(Bearer token, every 30s)"| WEB
+    CADDY --> APP1
+    CADDY --> APP2
+    CADDY --> APP3
+    DOCKER --> APP1
+    DOCKER --> APP2
+    DOCKER --> APP3
+    DOCKER --> CADDY
+    DOCKER --> AGENT
+```
+
+### PI-2.6 Updated C4 — Component Diagram (Next.js App)
+
+```mermaid
+graph TD
+    subgraph NextApp ["Next.js Application (PI-2)"]
+        subgraph Pages ["Pages (App Router)"]
+            AUTH_P["Auth Pages<br/>(login, signup, reset)"]
+            DASH["Dashboard Page<br/>(server overview, app tiles,<br/>resource gauges, alerts)"]
+            CATALOG["Catalog Page<br/>(browse apps, search,<br/>filter by category)"]
+            WIZARD["Deployment Wizard<br/>(dynamic config from<br/>template configSchema)"]
+            SERVER["Server Setup Wizard"]
+            SETTINGS["Settings Pages<br/>(account, notifications,<br/>audit log)"]
+            ALERTS["Alert Management<br/>(list, detail, remediation)"]
+        end
+
+        subgraph API ["API Layer"]
+            AUTH_API["auth.* router"]
+            SERVER_API["server.* router"]
+            CATALOG_API["app.catalog.* router (PI-2)"]
+            DEPLOY_API["app.deployment.* router (PI-2)"]
+            MONITOR_API["monitor.* router (PI-2)"]
+            ALERTS_API["monitor.alerts.* router (PI-2)"]
+            DOMAIN_API["domain.* router"]
+            USER_API["user.* router"]
+            METRICS_EP["POST /api/agent/metrics"]
+            SSE_EP["GET /api/events"]
+        end
+
+        subgraph Middleware ["Cross-Cutting Middleware (PI-2)"]
+            CSRF["CSRF Middleware<br/>(double-submit cookie)"]
+            AUDIT["Audit Middleware<br/>(log all mutations)"]
+            RATE["Rate Limiter"]
+        end
+
+        subgraph Services ["Domain Services"]
+            SSH_SVC["SSH Service"]
+            PROVISION_SVC["Provisioning Service"]
+            DEPLOY_SVC["Deployment Service (PI-2)"]
+            CADDY_SVC["Caddy Service (PI-2)"]
+            MONITOR_SVC["Monitoring Service (PI-2)"]
+            CATALOG_SVC["Catalog Service (PI-2)"]
+            NOTIFICATION_SVC["Notification Service (PI-2)"]
+        end
+    end
+
+    DASH --> MONITOR_API
+    DASH --> ALERTS_API
+    CATALOG --> CATALOG_API
+    WIZARD --> DEPLOY_API
+    ALERTS --> ALERTS_API
+    SETTINGS --> USER_API
+
+    CATALOG_API --> CATALOG_SVC
+    DEPLOY_API --> DEPLOY_SVC
+    MONITOR_API --> MONITOR_SVC
+    ALERTS_API --> MONITOR_SVC
+    MONITOR_API --> NOTIFICATION_SVC
+```
+
+### PI-2.7 Updated Background Worker Components
+
+```mermaid
+graph TD
+    subgraph Worker ["Background Worker Process (PI-2)"]
+        QUEUE["BullMQ Queue Consumer"]
+
+        subgraph PI1Jobs ["PI-1 Job Handlers"]
+            PROV_JOB["Provision Server Job<br/>(install Docker, Caddy, Agent)"]
+            CONN_JOB["Test Connection Job<br/>(SSH connect + detect specs)"]
+        end
+
+        subgraph PI2Jobs ["PI-2 Job Handlers"]
+            DEPLOY_JOB["Deploy App Job (PI-2)<br/>(pull → configure → SSL → start → health check)"]
+            METRICS_JOB["Process Metrics Job (PI-2)<br/>(threshold evaluation, every 60s, repeatable)"]
+            ALERT_JOB["Send Alert Job (PI-2)<br/>(email dispatch + DLQ retry)"]
+            AGENT_UPDATE["Update Agent Job (PI-2)<br/>(deploy updated monitoring agent)"]
+        end
+    end
+
+    QUEUE --> PROV_JOB
+    QUEUE --> CONN_JOB
+    QUEUE --> DEPLOY_JOB
+    QUEUE --> METRICS_JOB
+    QUEUE --> ALERT_JOB
+    QUEUE --> AGENT_UPDATE
+```
+
+### PI-2.8 Architecture Decisions (PI-2)
+
+#### ADR-006: TypeScript App Templates (PI-2)
+
+**Status:** Proposed
+**Context:** PI-2 requires a declarative format for 15+ self-hostable application definitions that drive the catalog UI, configuration forms, deployment pipeline, and resource validation. Options: TypeScript objects, YAML files, JSON Schema.
+**Decision:** Use TypeScript objects with `CatalogApp` Zod validation, stored in `src/catalog/templates/`.
+**Consequences:** Full type safety from template definition through deployment pipeline. Compile-time error detection. IDE autocomplete for template authors. Templates can use TypeScript features (computed values, shared utilities) without a custom DSL. Trade-off: higher contribution barrier than YAML, but acceptable for a curated catalog model where all additions go through PR review.
+
+#### ADR-007: SSE for Real-Time Dashboard (PI-2)
+
+**Status:** Proposed
+**Context:** PI-2 dashboard requires real-time metric updates, alert notifications, and deployment progress push. Options: SSE, WebSocket, polling.
+**Decision:** Use Server-Sent Events with polling fallback, extending the PI-1 `sseEventBus`.
+**Consequences:** Reuses existing production-proven SSE infrastructure. Unidirectional push (server→client) matches the dashboard's read-heavy consumption pattern. Auto-reconnect via `EventSource` API requires zero custom re-connection logic. Polling fallback (60s interval via `monitor.dashboard` query) handles SSE-incompatible environments. Trade-off: if future features require client→server push (e.g., collaborative dashboard editing), WebSocket would be re-evaluated.
+
+#### ADR-008: SSH Exec for Container Orchestration (PI-2)
+
+**Status:** Proposed
+**Context:** Deployment operations (pull, create, start, stop, remove containers; configure Caddy; write env files) must execute on remote user servers. Options: direct SSH exec, SSH + agent service, Docker remote API.
+**Decision:** Extend PI-1's SSH exec pattern with parameterized command templates and SFTP for file writes.
+**Consequences:** Zero new infrastructure on user's VPS beyond what PI-1 provisioning already installs. Zod-validated inputs prevent injection. BullMQ state machine provides retry/resume for reliability. Per-step rollback handles partial failures. Trade-off: SSH session management adds complexity vs. a local agent, but avoids the agent distribution/update/security surface entirely.
+
+#### ADR-009: Additive Schema Migration Strategy (PI-2)
+
+**Status:** Proposed
+**Context:** PI-2 requires 3 new database tables and potential modifications to support bug fixes. Existing PI-1 tables (9 tables, 226 tests) must remain stable.
+**Decision:** PI-2 schema changes are exclusively additive (new tables only). No PI-1 table modifications unless strictly required for bug fixes (BF-001 through BF-005). Migration tested against PI-1 production schema snapshot.
+**Consequences:** Zero risk of breaking existing F1/F4 functionality from schema changes. New tables (`app_templates`, `deployment_logs`, `alert_rules`) coexist with existing tables. Bug fix migrations (e.g., adding `csrf_token` column if needed) are isolated and reversible. Trade-off: some denormalization may be needed rather than adding columns to existing tables.
+
+### PI-2.9 New tRPC Router Map
+
+PI-2 implements the procedures already specified in PI-1 API contracts but not yet coded:
+
+| Router | Procedure | Type | PI-2 Status |
+|--------|-----------|------|-------------|
+| `app.catalog.list` | List/filter/search catalog entries | query | **New** |
+| `app.catalog.get` | Get template with `configSchema` | query | **New** |
+| `app.deployment.list` | List deployed apps (tenant-scoped) | query | **New** |
+| `app.deployment.get` | Get deployment detail | query | **New** |
+| `app.deployment.create` | Validate config, check limits, enqueue job | mutation | **New** |
+| `app.deployment.stop` | Stop container via SSH | mutation | **New** |
+| `app.deployment.start` | Start container via SSH | mutation | **New** |
+| `app.deployment.remove` | Remove app + cleanup (confirmation required) | mutation | **New** |
+| `monitor.dashboard` | Latest metrics + app statuses for all servers | query | **New** |
+| `monitor.serverMetrics` | Time-series metrics for a server | query | **New** |
+| `monitor.appStatus` | Container status for a deployed app | query | **New** |
+| `monitor.alerts.list` | Active/recent alerts for tenant | query | **New** |
+| `monitor.alerts.dismiss` | Dismiss acknowledged alert | mutation | **New** |
+| `user.auditLog` | Paginated audit events | query | **New** |
+| `user.exportConfig` | Generate Docker Compose + Caddyfile export | mutation | **New** |
+
+Existing PI-1 routers (`auth.*`, `server.*`, `domain.*`) remain unchanged unless modified by bug fixes.
+
+### PI-2.10 Cross-Cutting Middleware Additions
+
+| Middleware | Purpose | Applied To | Bug Fix |
+|------------|---------|------------|---------|
+| CSRF (`src/server/trpc/middleware/csrf.ts`) | Double-submit cookie validation on all mutations | All tRPC mutations | BF-001 (AB#258) |
+| Audit (`src/server/trpc/middleware/audit.ts`) | Log all destructive operations to `audit_log` table | All protected mutations | BF-004 (AB#262) |
+
+Both middleware integrate into the existing tRPC middleware pipeline (`protectedProcedure`). The CSRF middleware validates the `X-CSRF-Token` header against a session-bound token. The audit middleware logs `action`, `targetType`, `targetId`, `tenantId`, and `outcome` after procedure execution.
+
+### PI-2.11 Recommended External Skills
+
+The following skills from the skills.sh ecosystem could enhance PI-2 development. The Tech Lead should evaluate availability via `search-skills.mjs` at P4 setup:
+
+| Skill | Relevance | Target Agent(s) |
+|-------|-----------|-----------------|
+| `docker-compose` | Validate generated Docker Compose export files for vendor independence (NFR-005) | Testing, Backend |
+| `playwright-test` | Accelerate Playwright E2E setup — critical for R24 mitigation | Testing |
+| `drizzle-orm` | Current Drizzle ORM API docs for additive migration patterns | DBA, Backend |
+| `nextjs` | Current Next.js 15 App Router docs for SSE streaming, Route Handlers, Server Actions | Frontend, Backend |
+| `tailwindcss` | Tailwind CSS v4 docs for utility patterns in new dashboard components | Frontend |
 
 ---
 
