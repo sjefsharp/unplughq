@@ -106,6 +106,7 @@ nav:
     - Build Verification — P5 Remediation: build-verification-remediation.md
     - Build Verification Report — UnplugHQ: build-verification-report.md
     - Database Schema — UnplugHQ: database-schema.md
+    - Deployment Runbook — UnplugHQ Sprint 1: deployment-runbook.md
     - DevOps Infrastructure — CI/CD, Docker, Monitoring Agent, Provisioning: devops-infrastructure.md
     - FE Auth Pages: fe-auth-pages.md
     - FE Dashboard Shell & Server Tile: fe-dashboard.md
