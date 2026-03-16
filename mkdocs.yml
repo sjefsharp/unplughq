@@ -102,10 +102,10 @@ nav:
     - Sprint Backlog — UnplugHQ PI-2 Sprint 2: sprint-backlog.md
     - Story Map — UnplugHQ PI-2: story-map.md
 - Scrum:
-    - Definition of Done — UnplugHQ PI-1: definition-of-done.md
+    - Definition of Done — UnplugHQ PI-2 Sprint 2: definition-of-done.md
     - Sprint 1 Retrospective Report — UnplugHQ: retrospective-report.md
-    - Sprint Health Report — UnplugHQ Sprint 1: sprint-health-report.md
-    - Team Working Agreements — UnplugHQ PI-1: team-working-agreements.md
+    - Sprint Health Report — UnplugHQ PI-2 Sprint 2: sprint-health-report.md
+    - Team Working Agreements — UnplugHQ PI-2 Sprint 2: team-working-agreements.md
 - Engineering:
     - Backend Deployment — Production Configuration Guide: backend-deployment.md
     - Build Verification — P4 Step 2 End Merge Integration: build-verification-merge.md
