@@ -560,3 +560,39 @@ Two **critical** security bugs MUST be fixed before production deployment:
 ### Decision
 
 **PASS** — PI-2 initialized correctly. PI-1 archived. Product vision updated with Sprint 2 scope. RTE produced PI-2 objectives and risk register. Feature branch created. Proceeding to Phase 1 (Discovery & Analysis).
+
+---
+
+## Gate 2 (PI-2) — P1 (Discovery & Analysis) → P2 (Content & Design)
+
+**Evaluated:** 2026-03-16
+**Evaluator:** Product Manager
+**Result:** PASS
+
+### Checklist
+
+| # | Criterion | Status | Evidence |
+|---|-----------|--------|----------|
+| 1 | `solution-assessment.md` updated with PI-2 comparison matrix | PASS | v2.0.0 — PI continuation EXTEND disposition, 3 new components evaluated. AB#279 |
+| 2 | `architecture-overview.md` updated for Sprint 2 | PASS | v2.0.0 — app catalog, deployment pipeline, monitoring subsystems added. AB#279 |
+| 3 | `requirements.md` updated for Sprint 2 stories | PASS | v2.0.0 — 8 new user stories with acceptance criteria. AB#278 |
+| 4 | `threat-model.md` updated for Sprint 2 attack surfaces | PASS | v2.0.0 — deployment/monitoring threats, 57 security requirements. AB#280 |
+| 5 | `api-contracts.md` updated with Sprint 2 procedures | PASS | v2.0.0 — 21 new tRPC procedures (37 total), 4 new routers. AB#281 |
+| 6 | BA requirements achievable within SA architecture | PASS | All Sprint 2 features map to existing + extended architecture |
+| 7 | No technology prescriptions from PM | PASS | All tech decisions made by SA |
+| 8 | All P1 agents have Tasks in Azure Boards | PASS | BA AB#278, SA AB#279, SEC AB#280, SD AB#281 |
+| 9 | Framework validation — core validators | PASS | Checklist, Frontmatter, State Machine, Agent Structure, Self-Approval, Azure Boards Sync — all PASS |
+| 10 | Git working tree clean | PASS | `git status` clean on `feat/pi-2-sprint-2` |
+
+### P1 Artifacts Produced (PI-2)
+
+| Agent | Artifact | Task |
+|-------|----------|------|
+| Business Analyst | `requirements.md` v2.0.0, `process-models.md` v2.0.0, `domain-glossary.md` v2.0.0 | AB#278 |
+| System Architect | `solution-assessment.md` v2.0.0, `architecture-overview.md` v2.0.0 | AB#279 |
+| Security Analyst | `threat-model.md` v2.0.0 | AB#280 |
+| Solution Designer | `api-contracts.md` v2.0.0 | AB#281 |
+
+### Decision
+
+**PASS** — All 4 P1 agents produced complete PI-2 artifacts. Architecture extends PI-1 stack with app catalog, deployment pipeline, and health monitoring subsystems. 37 total tRPC procedures. Security requirements cover new deployment and monitoring attack surfaces. Proceeding to Phase 2 (Content & Design).
