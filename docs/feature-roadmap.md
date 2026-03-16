@@ -28,9 +28,10 @@ Priority framework: **WSJF (Weighted Shortest Job First)** — maximizing value 
 
 ---
 
-## 🟢 NOW — PI-1 (Launch MVP)
+## 🟢 NOW — PI-1 (Launch MVP) ✅ DELIVERED
 
 > Goal: A single user can connect a VPS, deploy their first self-hosted app, and see it running — all without touching a terminal.
+> **Status:** Sprint 1 delivered. 8/8 stories, 226/226 tests, 9/9 gates PASS.
 
 ### Feature 1: Server Connection & Provisioning
 **Value:** Foundational — nothing works without server connectivity
@@ -71,7 +72,29 @@ Priority framework: **WSJF (Weighted Shortest Job First)** — maximizing value 
 
 ---
 
-## 🟡 NEXT — PI-2 (Operational Maturity)
+## � NOW — PI-2 (Sprint 2: App Catalog + Dashboard)
+
+> Goal: User can browse, configure, and deploy self-hosted apps from a curated catalog, then monitor all deployed apps and server health from a unified dashboard.
+> **Scope:** 8 stories (AB#202–209), 54 SP estimated. Features F2 + F3. Plus 5 deferred bugs from Sprint 1.
+
+### Feature 2: Application Catalog & Deployment (AB#182)
+**Stories:** AB#202 (Catalog Browsing, 5 SP), AB#203 (Guided Config, 5 SP), AB#204 (Deployment + Progress, 13 SP), AB#205 (Post-Deploy Verification, 5 SP), AB#206 (Multi-App Coexistence, 5 SP)
+**Total:** 33 SP across 5 stories
+
+### Feature 3: Dashboard & Health Monitoring (AB#183)
+**Stories:** AB#207 (Dashboard Overview, 8 SP), AB#208 (Health Alerts, 8 SP), AB#209 (Alert Remediation, 5 SP)
+**Total:** 21 SP across 3 stories
+
+### Deferred Bug Fixes (from PI-1)
+- AB#258: CSRF token validation (HIGH)
+- AB#259: Input sanitization for server connection strings (HIGH)
+- AB#260: Secrets rotation mechanism (HIGH)
+- AB#262: Audit logging for privileged operations (HIGH)
+- AB#251: Focus management on route transitions (MEDIUM)
+
+---
+
+## 🟡 NEXT — PI-3 (Operational Maturity)
 
 > Goal: Self-hosted setups stay healthy over time without manual intervention.
 
