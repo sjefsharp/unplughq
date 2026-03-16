@@ -6,13 +6,9 @@ work-item: epic-001-unplughq-platform
 work-item-type: epic
 workflow-tier: full
 phase: P3
-version: 1.0.0
-status: approved
-review:
-  evaluator: product-manager
-  gate: 4
-  date: 2026-03-15
-azure-devops-id: 210
+version: 2.0.0
+status: draft
+azure-devops-id: 286
 consumed-by:
   - tech-lead
   - frontend-developer
@@ -23,10 +19,10 @@ consumed-by:
   - product-owner
   - security-analyst
   - accessibility
-date: 2026-03-15
+date: 2026-03-16
 ---
 
-# Definition of Done — UnplugHQ PI-1
+# Definition of Done — UnplugHQ PI-2 Sprint 2
 
 This is the authoritative Definition of Done for all UnplugHQ stories. Every item in this checklist must be satisfied before a story is considered complete. Referenced by `product-backlog.md`, `sprint-backlog.md`, and all delegation briefs.
 
@@ -52,6 +48,7 @@ This is the authoritative Definition of Done for all UnplugHQ stories. Every ite
 - [ ] **Test contracts satisfied** — every Gherkin acceptance criterion in `product-backlog.md` for the story has a corresponding passing test
 - [ ] **No placeholder tests** — every `it()` / `test()` block contains executable assertions with meaningful messages; `expect(true).toBe(true)` is prohibited
 - [ ] **Security test coverage** — tests exist for threat model mitigations relevant to the story (see Threat Model mapping in product backlog)
+- [ ] **SSE event tests** — stories involving real-time updates (S-204, S-207, S-208) have tests verifying SSE event emission, delivery, and client-side rendering
 
 ## 3. Security Compliance
 
@@ -118,6 +115,31 @@ Derived from `docs/wcag-audit.md` — WCAG 2.2 Level AA conformance.
 
 ---
 
+## 10. Deployment Feature Compliance (Sprint 2)
+
+Applies to stories involving application deployment, health monitoring, and alert management (S-204, S-205, S-206, S-207, S-208, S-209).
+
+- [ ] **Deployment rollback tested** — deployment failure at any state transition (pulling, configuring, provisioning-ssl, starting) triggers cleanup: container removal, Caddy route removal, environment file cleanup. Rollback is verified by a test that simulates failure at each phase.
+- [ ] **Health check endpoints verified** — post-deployment health check (HTTP GET to app endpoint) confirms the app responds with 200 before marking deployment as "running". Health check includes retry with backoff (3 attempts, 5s/10s/20s intervals). Timeout and permanent failure transition to "failed" state.
+- [ ] **Alert thresholds configurable** — alert evaluation thresholds (CPU >90%, RAM >90%, disk >85%, app unavailable, server unreachable) are configurable per tenant, not hardcoded. Default thresholds are documented in schema comments.
+- [ ] **Deployment state machine complete** — every state transition in `DeploymentStatus` (pending→pulling→configuring→provisioning-ssl→starting→running/failed) has unit tests for both success and failure paths. No dead-end states — every non-terminal state has a defined timeout and failure transition.
+- [ ] **Multi-app isolation verified** — deploying or stopping one app does not affect other running apps on the same server. Container names, ports, Caddy routes, and environment files are isolated per app.
+- [ ] **SSE event delivery verified** — real-time events (`deployment.progress`, `metrics.update`, `alert.created`, `alert.dismissed`) are emitted at the correct state transitions and delivered to connected clients. Fallback to polling verified when SSE connection drops.
+- [ ] **Alert lifecycle complete** — alerts can be created (threshold breach), acknowledged (user action), dismissed (with re-trigger prevention window), and auto-resolved (when metric returns to normal). Email notifications sent for new critical alerts when notification preference is enabled.
+- [ ] **P4 self-review completed** — the code agent completed the P4 Self-Review Checklist (team-working-agreements.md §8.4) before requesting TL merge
+
+---
+
+## 11. Bug Fix Compliance (Sprint 2 — Track E)
+
+Applies to deferred PI-1 bugs (AB#258, AB#259, AB#260, AB#262, AB#251).
+
+- [ ] **Regression test exists** — every bug fix has a dedicated regression test that reproduces the original failure and verifies the fix
+- [ ] **No side effects** — bug fix does not introduce new behavior or change existing API contracts; scope bounded to original AC from SEC/A11Y audit
+- [ ] **Merged before feature code** — bug fix merged to `feat/pi-2-sprint-2` before any F2/F3 feature code that exercises the affected path
+
+---
+
 ## Applicability Matrix
 
 Not every DoD item applies to every agent's deliverable. The matrix below indicates which sections are mandatory per agent role.
@@ -133,6 +155,8 @@ Not every DoD item applies to every agent's deliverable. The matrix below indica
 | 7. Integration | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 8. Deployment Readiness | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 9. Work Item Lifecycle | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 10. Deployment Features | ✓ (schema) | ✓ | ✓ (UI) | ✓ (pipeline) | ✓ (verifies) |
+| 11. Bug Fix Compliance | — | ✓ (SEC bugs) | ✓ (A11Y bug) | ✓ (sudoers bug) | ✓ (regression tests) |
 
 ## Workflow Observations
 
