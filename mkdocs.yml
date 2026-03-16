@@ -84,6 +84,7 @@ nav:
     - UnplugHQ Wireframes & Layout Specifications: wireframes.md
 - Accessibility:
     - Accessibility Implementation Guidelines — UnplugHQ Platform: accessibility-guidelines.md
+    - P5 WCAG 2.2 AA Compliance Audit — UnplugHQ Sprint 1: accessibility-report.md
     - WCAG 2.2 AA Compliance Audit — UnplugHQ Platform: wcag-audit.md
 - Product Ownership:
     - Delegation Briefs — Phase 4 (Implementation): delegation-briefs-p4.md
