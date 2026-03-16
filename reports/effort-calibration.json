@@ -1,0 +1,46 @@
+{
+  "entries": [
+    {
+      "date": "2026-03-16T08:45:46.813Z",
+      "sessionId": "session-1773416061507",
+      "totalHumanEffortHours": 56,
+      "duration": "234685s",
+      "efficiencyRatio": 0.9,
+      "totalInvocations": 9,
+      "totalPremiumRequests": 11,
+      "totalEstimatedInputTokens": 0,
+      "totalEstimatedOutputTokens": 0,
+      "totalToolCalls": 3,
+      "actualTokenUsage": {
+        "source": "debug-log",
+        "promptTokens": 0,
+        "completionTokens": 0,
+        "totalTokens": 0,
+        "requestsByModel": {
+          "gpt-4o-mini-2024-07-18": {
+            "requests": 3,
+            "totalDurationMs": 3761
+          },
+          "gpt-4o-mini": {
+            "requests": 111,
+            "totalDurationMs": 75838
+          },
+          "claude-opus-4.6": {
+            "requests": 429,
+            "totalDurationMs": 5528068
+          },
+          "gpt-5.4": {
+            "requests": 13,
+            "totalDurationMs": 225108
+          },
+          "claude-sonnet-4.6": {
+            "requests": 10,
+            "totalDurationMs": 575486
+          }
+        },
+        "totalRequests": 566,
+        "totalDurationMs": 6408261
+      }
+    }
+  ]
+}

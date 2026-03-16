@@ -2,11 +2,224 @@
   "sessionId": "session-1773416061507",
   "startedAt": "2026-03-13T15:34:21.507Z",
   "projectSlug": "unplughq",
-  "agentInvocations": [],
-  "totalPremiumRequests": 0,
-  "totalInvocations": 0,
-  "invocationsByAgent": {},
-  "modelUsage": {},
+  "agentInvocations": [
+    {
+      "agent": "Release Train Engineer",
+      "model": "gpt-5.4",
+      "costMultiplier": 1,
+      "timestamp": "2026-03-13T13-31-release-train-engineer",
+      "phase": "P0",
+      "workItem": "_project",
+      "artifactsProduced": [
+        "pi-objectives.md",
+        "risk-register.md"
+      ],
+      "artifactsConsumed": [
+        "product-vision.md",
+        "feature-roadmap.md"
+      ],
+      "humanEffortEstimate": {
+        "hours": 10,
+        "rationale": "Calibrated within the RTE 8-16h range for a new-epic P0 engagement covering PI objectives, initial risk framing, dependency coordination, and current-source research, with no cross-ART dependencies yet but significant first-PI ambiguity."
+      },
+      "frameworkObservations": [
+        {
+          "area": "skills",
+          "observation": "Azure Boards health check returned NOT_FOUND for project 'unplughq', which blocks the mandatory Task-First lifecycle for delegated specialist work even when artifact production is otherwise ready to proceed.",
+          "suggestion": "Add a documented contingency path for early-phase artifact work when Azure project registration lags repo initialization, or add a pre-delegation validation step that fails before specialist invocation begins."
+        }
+      ],
+      "estimatedInputTokens": null,
+      "estimatedOutputTokens": null
+    },
+    {
+      "agent": "Security Analyst",
+      "model": "claude-opus-4.6",
+      "costMultiplier": 3,
+      "timestamp": "2026-03-13T14-30-security-analyst",
+      "phase": "P1",
+      "workItem": "epic-001-unplughq-platform",
+      "artifactsProduced": [
+        "threat-model.md"
+      ],
+      "artifactsConsumed": [
+        "product-vision.md",
+        "solution-assessment.md",
+        "architecture-overview.md",
+        "requirements.md"
+      ],
+      "humanEffortEstimate": {
+        "hours": 24,
+        "rationale": "Comprehensive STRIDE threat model covering 6 STRIDE categories with 30 threats identified across control plane, data plane, and 9 trust boundaries. Full security requirements specification with 57 requirements mapped to OWASP ASVS v4.0 and NIST CSF 2.0. Attack tree analysis, HTTP security header policy definition, SRI requirements, and security testing plan. Complexity driven by multi-tenant SaaS architecture with SSH key management and Docker orchestration — high-security domain requiring deep analysis of remote code execution surfaces."
+      },
+      "frameworkObservations": [],
+      "estimatedInputTokens": null,
+      "estimatedOutputTokens": null
+    },
+    {
+      "agent": "Content Strategist",
+      "model": "gemini-3.1-pro",
+      "costMultiplier": 1,
+      "timestamp": "2026-03-14T12-00-content-strategist",
+      "phase": "P2",
+      "workItem": "task-cs-messaging-framework",
+      "artifactsProduced": [
+        "messaging-framework.md",
+        "tone-of-voice.md",
+        "copy-specs.md",
+        "content-hierarchy.md",
+        "seo-structure.md"
+      ],
+      "artifactsConsumed": [
+        "product-vision.md",
+        "requirements.md",
+        "domain-glossary.md",
+        "stakeholder-analysis.md",
+        "feature-roadmap.md"
+      ],
+      "humanEffortEstimate": {
+        "hours": 12,
+        "rationale": "Comprehensive content strategy synthesis across messaging, microcopy definitions covering specific edge case constraints, tone of voice boundaries, and macro SEO alignment based on the provided BA/PM inputs."
+      },
+      "frameworkObservations": [
+        {
+          "area": "agents",
+          "observation": "Content Strategist agent cannot automatically verify completion of Work Item states without direct CI access or terminal permissions.",
+          "suggestion": "Allow agents a read-only terminal or direct Azure Boards API integration context to self-validate if terminal tools are withheld."
+        }
+      ],
+      "estimatedInputTokens": null,
+      "estimatedOutputTokens": null
+    },
+    {
+      "agent": "Release Train Engineer",
+      "model": "gpt-5.4",
+      "costMultiplier": 1,
+      "timestamp": "2026-03-15T14-41-release-train-engineer",
+      "phase": "P3",
+      "workItem": "task-223-rte-program-board-dependency-map",
+      "artifactsProduced": [
+        "program-board.md",
+        "dependency-map.md"
+      ],
+      "artifactsConsumed": [
+        "product-vision.md",
+        "architecture-overview.md",
+        "solution-assessment.md",
+        "feature-roadmap.md",
+        "product-backlog.md",
+        "sprint-backlog.md",
+        "sprint-health-report.md",
+        "story-map.md",
+        "risk-register.md",
+        "pi-objectives.md",
+        "requirements.md",
+        "team-working-agreements.md",
+        "definition-of-done.md"
+      ],
+      "humanEffortEstimate": {
+        "hours": 10,
+        "rationale": "RTE P3 synthesis required full-fidelity reading of upstream planning artifacts, reconciliation of a sprint-allocation contradiction, dependency and milestone analysis across two sprints, and production of two self-contained coordination artifacts."
+      },
+      "frameworkObservations": [
+        {
+          "area": "docs",
+          "observation": "The invocation context places AB#207 in Sprint 1 and AB#201 in Sprint 2, but current draft P3 planning artifacts still show the reverse allocation.",
+          "suggestion": "Add an explicit reconciliation step in P3 before RTE program-board work so PO and SM artifacts reflect the latest committed sprint allocation."
+        }
+      ],
+      "estimatedInputTokens": null,
+      "estimatedOutputTokens": null
+    },
+    {
+      "agent": "backend-developer",
+      "model": "claude-sonnet-4.6",
+      "costMultiplier": 1,
+      "timestamp": "2026-03-15T00:00:00Z",
+      "phase": "P4",
+      "workItem": null,
+      "artifactsProduced": [],
+      "artifactsConsumed": [],
+      "humanEffortEstimate": null,
+      "frameworkObservations": [],
+      "estimatedInputTokens": null,
+      "estimatedOutputTokens": null
+    },
+    {
+      "agent": "dba",
+      "model": "claude-sonnet-4.6",
+      "costMultiplier": 1,
+      "timestamp": "2026-03-15T16:20:00.000Z",
+      "phase": "P4",
+      "workItem": null,
+      "artifactsProduced": [],
+      "artifactsConsumed": [],
+      "humanEffortEstimate": null,
+      "frameworkObservations": [],
+      "estimatedInputTokens": null,
+      "estimatedOutputTokens": null
+    },
+    {
+      "agent": "devops-engineer",
+      "model": "claude-sonnet-4.6",
+      "costMultiplier": 1,
+      "timestamp": "2026-03-15T00:00:00Z",
+      "phase": "P4",
+      "workItem": null,
+      "artifactsProduced": [],
+      "artifactsConsumed": [],
+      "humanEffortEstimate": null,
+      "frameworkObservations": [],
+      "estimatedInputTokens": null,
+      "estimatedOutputTokens": null
+    },
+    {
+      "agent": "tech-lead",
+      "model": "claude-sonnet-4.6",
+      "costMultiplier": 1,
+      "timestamp": "2025-07-23T00:00:00Z",
+      "phase": "P4",
+      "workItem": null,
+      "artifactsProduced": [],
+      "artifactsConsumed": [],
+      "humanEffortEstimate": null,
+      "frameworkObservations": [],
+      "estimatedInputTokens": null,
+      "estimatedOutputTokens": null
+    },
+    {
+      "agent": "testing",
+      "model": "claude-sonnet-4.6",
+      "costMultiplier": 1,
+      "timestamp": "2025-01-01T00:00:00Z",
+      "phase": "P4",
+      "workItem": null,
+      "artifactsProduced": [],
+      "artifactsConsumed": [],
+      "humanEffortEstimate": null,
+      "frameworkObservations": [],
+      "estimatedInputTokens": null,
+      "estimatedOutputTokens": null
+    }
+  ],
+  "totalPremiumRequests": 11,
+  "totalInvocations": 9,
+  "invocationsByAgent": {
+    "Release Train Engineer": 2,
+    "Security Analyst": 1,
+    "Content Strategist": 1,
+    "backend-developer": 1,
+    "dba": 1,
+    "devops-engineer": 1,
+    "tech-lead": 1,
+    "testing": 1
+  },
+  "modelUsage": {
+    "gpt-5.4": 2,
+    "claude-opus-4.6": 1,
+    "gemini-3.1-pro": 1,
+    "claude-sonnet-4.6": 5
+  },
   "toolUsage": {
     "total": 3,
     "byCategory": {
@@ -19,91 +232,31 @@
     }
   },
   "localExecutionDetected": false,
-  "endedAt": "2026-03-13T15:34:21.650Z",
-  "duration": "0s",
+  "endedAt": "2026-03-16T08:45:46.813Z",
+  "duration": "234685s",
   "endOfSessionGitState": {
     "branch": "main",
     "clean": false,
     "uncommittedFiles": [
-      "M .github/agents/accessibility.agent.md",
-      "M .github/agents/backend-developer.agent.md",
-      "M .github/agents/business-analyst.agent.md",
-      "M .github/agents/content-strategist.agent.md",
-      "M .github/agents/database-administrator.agent.md",
-      "M .github/agents/devops-engineer.agent.md",
-      "M .github/agents/frontend-developer.agent.md",
-      "M .github/agents/product-manager.agent.md",
-      "M .github/agents/product-owner.agent.md",
-      "M .github/agents/release-train-engineer.agent.md",
-      "M .github/agents/scrum-master.agent.md",
-      "M .github/agents/security-analyst.agent.md",
-      "M .github/agents/solution-designer.agent.md",
-      "M .github/agents/system-architect.agent.md",
-      "M .github/agents/tech-lead.agent.md",
-      "M .github/agents/testing.agent.md",
-      "M .github/agents/ux-designer.agent.md",
-      "M .github/copilot-instructions.md",
-      "M .github/hooks/scripts/__tests__/hook-contracts.test.mjs",
-      "M .github/hooks/scripts/__tests__/security.test.mjs",
-      "M .github/hooks/scripts/__tests__/validate-artifact.test.mjs",
-      "M .github/hooks/scripts/hook-adapter.mjs",
-      "M .github/hooks/scripts/prohibited-patterns.json",
-      "M .github/instructions/artifact-convention.instructions.md",
-      "M .github/instructions/design-tooling.instructions.md",
-      "M .github/instructions/output-formats.instructions.md",
-      "M .github/instructions/pm-session-management.instructions.md",
-      "M .github/instructions/quality-standards.instructions.md",
-      "M .github/instructions/solution-assessment.instructions.md",
-      "M .github/skills/artifact-validation/SKILL.md",
-      "M .github/skills/azure-boards/SKILL.md",
-      "M .github/skills/azure-boards/scripts/batch-sync.mjs",
-      "M .github/skills/azure-boards/scripts/create-work-item.mjs",
-      "M .github/skills/azure-boards/scripts/deploy-artifact.mjs",
-      "M .github/skills/azure-boards/tests/deploy-artifact.test.mjs",
-      "M .github/skills/azure-boards/tests/query-work-items.test.mjs",
-      "M .github/skills/delivery-reporting/SKILL.md",
-      "M .github/skills/delivery-reporting/scripts/generate-report.mjs",
-      "M .github/skills/delivery-reporting/tests/security.test.mjs",
-      "M .github/skills/framework-review/scripts/manage-enhancements.mjs",
-      "M .github/skills/framework-validation/scripts/validate-acceptance-evidence.mjs",
-      "M .github/skills/framework-validation/scripts/validate-artifact-hierarchy-links.mjs",
-      "M .github/skills/framework-validation/scripts/validate-artifact-links.mjs",
-      "M .github/skills/framework-validation/scripts/validate-azure-sync.mjs",
-      "M .github/skills/framework-validation/scripts/validate-checklists.mjs",
-      "M .github/skills/framework-validation/scripts/validate-containment.mjs",
-      "M .github/skills/framework-validation/scripts/validate-deferred-items.mjs",
-      "M .github/skills/framework-validation/scripts/validate-frontmatter.mjs",
-      "M .github/skills/framework-validation/scripts/validate-gate-automation.mjs",
-      "M .github/skills/framework-validation/scripts/validate-gate-evidence.mjs",
-      "M .github/skills/framework-validation/scripts/validate-self-approval.mjs",
-      "M .github/skills/framework-validation/scripts/validate-state-machine.mjs",
-      "M .github/skills/framework-validation/scripts/validate-work-item-content.mjs",
-      "M .github/skills/framework-validation/scripts/validate-work-item-prerequisite.mjs",
-      "M .github/skills/project-scaffold/SKILL.md",
-      "M .github/skills/project-scaffold/scripts/migrate-project.mjs",
-      "M .github/skills/project-scaffold/scripts/resolve-project.mjs",
-      "M .github/skills/project-scaffold/scripts/scaffold-project.mjs",
-      "M .github/skills/project-scaffold/tests/migrate-project.test.mjs",
-      "M .github/skills/project-scaffold/tests/resolve-project.test.mjs",
-      "M .github/skills/project-scaffold/tests/scaffold-project.test.mjs",
-      "M .github/skills/session-management/SKILL.md",
-      "M .github/skills/session-management/scripts/create-work-item.mjs",
-      "M .github/skills/session-management/scripts/session-start.mjs",
-      "M .github/skills/session-management/tests/security.test.mjs",
-      "M AGENTS.md",
-      "M docs/artifact-reference.md",
-      "M docs/azure-boards-integration.md",
-      "M docs/branching-strategy.md",
-      "M docs/evaluator-protocol.md",
-      "M docs/gate-automation.md",
-      "M docs/management-reporting.md",
-      "M docs/phase-execution.md",
-      "M docs/pi-continuation-protocol.md",
-      "M docs/project-initialization.md",
-      "M docs/quality-gates.md",
-      "M docs/work-item-management.md",
-      "M docs/workflow-enforcement.md",
-      "?? reports/"
+      "?? .github/skills/authjs-skills/",
+      "?? .github/skills/bullmq-specialist/",
+      "?? .github/skills/docker-expert/",
+      "?? .github/skills/drizzle-orm/",
+      "?? .github/skills/find-skills/",
+      "?? .github/skills/nextjs-app-router-patterns/",
+      "?? .github/skills/playwright-best-practices/",
+      "?? .github/skills/postgresql-optimization/",
+      "?? .github/skills/redis-development/",
+      "?? .github/skills/security-best-practices/",
+      "?? .github/skills/shadcn/",
+      "?? .github/skills/tailwind-design-system/",
+      "?? .github/skills/trpc-type-safety/",
+      "?? .github/skills/typescript-advanced-types/",
+      "?? .github/skills/vercel-react-best-practices/",
+      "?? .github/skills/vitest/",
+      "?? .github/skills/web-accessibility/",
+      "?? .github/skills/zod/",
+      "?? skills-lock.json"
     ]
   },
   "actualTokenUsage": {
@@ -135,5 +288,196 @@
     },
     "totalRequests": 566,
     "totalDurationMs": 6408261
-  }
+  },
+  "humanEffortByPhase": {
+    "P0": 10,
+    "P1": 24,
+    "P2": 12,
+    "P3": 10
+  },
+  "humanEffortByAgent": {
+    "Release Train Engineer": 20,
+    "Security Analyst": 24,
+    "Content Strategist": 12
+  },
+  "totalHumanEffortHours": 56,
+  "frameworkObservations": [
+    {
+      "agent": "Release Train Engineer",
+      "phase": "P0",
+      "area": "skills",
+      "observation": "Azure Boards health check returned NOT_FOUND for project 'unplughq', which blocks the mandatory Task-First lifecycle for delegated specialist work even when artifact production is otherwise ready to proceed.",
+      "suggestion": "Add a documented contingency path for early-phase artifact work when Azure project registration lags repo initialization, or add a pre-delegation validation step that fails before specialist invocation begins."
+    },
+    {
+      "agent": "Content Strategist",
+      "phase": "P2",
+      "area": "agents",
+      "observation": "Content Strategist agent cannot automatically verify completion of Work Item states without direct CI access or terminal permissions.",
+      "suggestion": "Allow agents a read-only terminal or direct Azure Boards API integration context to self-validate if terminal tools are withheld."
+    },
+    {
+      "agent": "Release Train Engineer",
+      "phase": "P3",
+      "area": "docs",
+      "observation": "The invocation context places AB#207 in Sprint 1 and AB#201 in Sprint 2, but current draft P3 planning artifacts still show the reverse allocation.",
+      "suggestion": "Add an explicit reconciliation step in P3 before RTE program-board work so PO and SM artifacts reflect the latest committed sprint allocation."
+    }
+  ],
+  "endOfSessionValidation": {
+    "overall": "FAIL",
+    "results": [
+      {
+        "name": "Checklist Validation",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Frontmatter Validation",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "State Machine Validation",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Cross-Reference Validation",
+        "status": "FAIL",
+        "detailCount": 61
+      },
+      {
+        "name": "Agent Structure Validation",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Gate Automation Paths",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Self-Approval Detection",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Deferred Items Tracking",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Gate Evidence Verification",
+        "status": "SKIP",
+        "detailCount": 0
+      },
+      {
+        "name": "Skill Structure Validation",
+        "status": "FAIL",
+        "detailCount": 62
+      },
+      {
+        "name": "Work Item Content",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Code Anti-Patterns",
+        "status": "SKIP",
+        "detailCount": 0
+      },
+      {
+        "name": "Security Headers",
+        "status": "SKIP",
+        "detailCount": 0
+      },
+      {
+        "name": "Design Token Compliance",
+        "status": "SKIP",
+        "detailCount": 0
+      },
+      {
+        "name": "Consumed-By Validation",
+        "status": "SKIP",
+        "detailCount": 0
+      },
+      {
+        "name": "Enhancement Candidates",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Framework Observations",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Emoji Detection",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Acceptance Evidence",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Test Contract Completeness",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Artifact Links",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Telemetry Markers",
+        "status": "FAIL",
+        "detailCount": 50
+      },
+      {
+        "name": "Installed Skills",
+        "status": "FAIL",
+        "detailCount": 34
+      },
+      {
+        "name": "Architecture Conformance",
+        "status": "SKIP",
+        "detailCount": 0
+      },
+      {
+        "name": "Build Verification",
+        "status": "SKIP",
+        "detailCount": 0
+      },
+      {
+        "name": "Azure Boards Sync",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Work Item Prerequisite",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Artifact Hierarchy Links",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Artifact Lifecycle",
+        "status": "PASS",
+        "detailCount": 0
+      },
+      {
+        "name": "Project Containment",
+        "status": "PASS",
+        "detailCount": 1
+      }
+    ]
+  },
+  "efficiencyRatio": 0.9
 }
