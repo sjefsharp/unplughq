@@ -58,6 +58,7 @@ nav:
     - Feature Roadmap: feature-roadmap.md
     - Go/No-Go Brief — UnplugHQ Sprint 1: go-no-go-brief.md
     - Management Report — UnplugHQ Sprint 1: management-report.md
+    - PI-1 Summary — UnplugHQ Platform: pi-1-summary.md
     - Product Vision: product-vision.md
     - UnplugHQ v0.1.0 — Sprint 1 Release Notes: release-notes.md
 - Business Analysis:
@@ -67,11 +68,11 @@ nav:
     - Stakeholder Analysis: stakeholder-analysis.md
 - Program Management:
     - Dependency Map: dependency-map.md
-    - Initial Risk Register: risk-register.md
     - P6 Flow Metrics Report — UnplugHQ Sprint 1: flow-metrics-report.md
     - P8 Framework Review — UnplugHQ Sprint 1: framework-review.md
     - PI Objectives: pi-objectives.md
     - Program Board: program-board.md
+    - Risk Register: risk-register.md
 - System Architecture:
     - Architecture Overview: architecture-overview.md
     - Solution Assessment: solution-assessment.md
