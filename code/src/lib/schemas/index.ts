@@ -95,9 +95,9 @@ export const CatalogApp = z.object({
   description: z.string(),
   category: z.string(),
   version: z.string(),
-  minCpuCores: z.number(),
-  minRamGb: z.number(),
-  minDiskGb: z.number(),
+  minCpuCores: z.number().nonnegative(),
+  minRamGb: z.number().nonnegative(),
+  minDiskGb: z.number().nonnegative(),
   upstreamUrl: z.string().url(),
   imageDigest: z.string().regex(/^sha256:[a-f0-9]{64}$/),
   configSchema: z.array(

@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Dashboard — UnplugHQ",
+};
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusIndicator } from "@/components/status-indicator";
 import { Skeleton } from "@/components/ui/skeleton";

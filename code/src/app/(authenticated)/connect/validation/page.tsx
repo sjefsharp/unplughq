@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Validate Connection (Step 2 of 3) — UnplugHQ",
+};
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PulseRing } from "@/components/pulse-ring";
 

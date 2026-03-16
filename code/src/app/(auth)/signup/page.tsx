@@ -76,11 +76,14 @@ export default function SignupPage() {
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Minimum 8 characters"
                       autoComplete="new-password"
+                      aria-describedby="password-requirements"
                       {...field}
                     />
                   </FormControl>
+                  <p id="password-requirements" className="text-[length:var(--text-sm-fs)] text-[var(--color-text-muted)]">
+                    Minimum 8 characters
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}

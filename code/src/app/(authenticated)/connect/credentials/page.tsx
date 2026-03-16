@@ -97,7 +97,8 @@ export default function CredentialsPage() {
             )}
           />
 
-          <FormField
+          <fieldset>
+            <FormField
             control={form.control}
             name="authMethod"
             render={({ field }) => (
@@ -127,6 +128,7 @@ export default function CredentialsPage() {
               </FormItem>
             )}
           />
+          </fieldset>
 
           <FormField
             control={form.control}
