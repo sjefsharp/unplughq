@@ -11,9 +11,11 @@ out/
 .env
 .env.local
 .env.*.local
+.env.production
 
-# Keep .env.example
+# Keep templates
 !.env.example
+!.env.production.template
 
 # OS
 .DS_Store

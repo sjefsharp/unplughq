@@ -5,8 +5,11 @@ node_modules
 .env
 .env.*
 !.env.example
+!.env.production.template
 infra/
 e2e/
 .prettierrc
 .prettierignore
 docker-compose.yml
+docker-compose.production.yml
+Dockerfile.worker
