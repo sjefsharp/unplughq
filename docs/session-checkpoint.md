@@ -5,9 +5,9 @@ project-slug: unplughq
 work-item: epic-001-unplughq-platform
 work-item-type: epic
 workflow-tier: full
-phase: P8
-version: 4.0.0
-status: approved
+phase: P0
+version: 5.0.0
+status: draft
 azure-devops-id: 180
 date: 2026-03-13
 ---
@@ -16,17 +16,15 @@ date: 2026-03-13
 
 ## Current State
 
-- **Phase:** P8 COMPLETE — All 9 Gates PASS. Delivery closed.
-- **Branch:** `main` (feature branch merged and deleted)
+- **PI:** PI-2 (Sprint 2)
+- **Phase:** P0 — PI-2 initialization in progress
+- **Branch:** `feat/pi-2-sprint-2` (from `main` at `967b284`)
 - **Azure DevOps Project:** `unplughq` (dedicated project)
-- **Azure Boards:** Epic AB#180, state `Closed`
-- **Features:** F1 AB#181, F2 AB#182, F3 AB#183, F4 AB#184
-- **Stories Sprint 1:** 8 stories AB#194-201 (all accepted, delivered)
-- **Stories Sprint 2:** 8 stories AB#202-209 (deferred)
-- **Tasks:** 41+ across P0-P8 (AB#185-193, AB#210-276)
-- **Bugs:** 16 total — 11 fixed Sprint 1, 5 deferred Sprint 2
-- **Tests:** 226/226 passing
-- **Next action:** Sprint 2 planning (PI-2)
+- **Azure Boards:** Epic AB#180, state `Active` (reopened for PI-2)
+- **Features PI-2:** F2 AB#182 (App Catalog), F3 AB#183 (Dashboard Monitoring)
+- **Stories Sprint 2:** 8 stories AB#202-209 (54 SP estimated)
+- **Deferred Bugs:** AB#251, AB#258, AB#259, AB#260, AB#262
+- **Next action:** Complete P0, delegate RTE, then begin P1
 
 ## Completed Gates
 
