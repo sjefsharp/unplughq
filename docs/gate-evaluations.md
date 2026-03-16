@@ -624,3 +624,31 @@ Two **critical** security bugs MUST be fixed before production deployment:
 ### Decision
 
 **PASS** — All 3 P2 agents produced comprehensive PI-2 content, design, and accessibility artifacts. Proceeding to Phase 3 (Planning).
+
+---
+
+## Gate 4 (PI-2) — P3 (Planning) → P4 (Build)
+
+**Evaluated:** 2026-03-16
+**Evaluator:** Product Manager
+**Result:** PASS
+
+### Checklist
+
+| # | Criterion | Status | Evidence |
+|---|-----------|--------|----------|
+| 1 | Product backlog updated for Sprint 2 | PASS | 8 stories + 5 deferred bugs with AC. AB#285 |
+| 2 | Sprint backlog with capacity plan | PASS | 71 SP across 3 tracks (Catalog 33, Dashboard 21, Bugs 17). AB#285 |
+| 3 | Delegation briefs for P4, P5, P7 | PASS | Complete agent-level briefs for all 6 P4 agents. AB#285 |
+| 4 | Story branches created | PASS | 8 story branches off `feat/pi-2-sprint-2`. AB#285 |
+| 5 | Working agreements updated | PASS | Bug-first sequencing, SSE testing, P4 self-review. AB#286 |
+| 6 | DoD updated for deployment features | PASS | 8 new deployment criteria + bug fix compliance. AB#286 |
+| 7 | Sprint health initialized | PASS | AMBER — deliberate overcommit with 15 SP safety valve. AB#286 |
+| 8 | Program board updated | PASS | 3-track assignment, 6 milestones, critical path. AB#287 |
+| 9 | Dependency map updated | PASS | Inter-story, cross-track, schema, external deps. AB#287 |
+| 10 | All P3 agents have Tasks | PASS | PO AB#285, SM AB#286, RTE AB#287 |
+| 11 | Git working tree clean | PASS | All committed on `feat/pi-2-sprint-2` |
+
+### Decision
+
+**PASS** — Sprint 2 planning complete. 71 SP across 13 work items with bug-first sequencing. Delegation briefs ready. Proceeding to Phase 4 (Build).
