@@ -93,14 +93,14 @@ nav:
     - P5 WCAG 2.2 AA Compliance Audit — UnplugHQ Sprint 1: accessibility-report.md
     - WCAG 2.2 AA Compliance Audit — UnplugHQ Platform: wcag-audit.md
 - Product Ownership:
-    - Delegation Briefs — Phase 4 (Implementation): delegation-briefs-p4.md
-    - Delegation Briefs — Phase 5 (Verification): delegation-briefs-p5.md
-    - Delegation Briefs — Phase 7 (Deployment): delegation-briefs-p7.md
+    - Delegation Briefs — Phase 4 (Implementation) — PI-2 Sprint 2: delegation-briefs-p4.md
+    - Delegation Briefs — Phase 5 (Verification) — PI-2 Sprint 2: delegation-briefs-p5.md
+    - Delegation Briefs — Phase 7 (Deployment) — PI-2 Sprint 2: delegation-briefs-p7.md
     - P5 Bug Remediation — Triage & Delegation Briefs: delegation-briefs-remediation.md
-    - Product Backlog — UnplugHQ PI-1: product-backlog.md
+    - Product Backlog — UnplugHQ PI-2 Sprint 2: product-backlog.md
     - Sprint 1 Acceptance Report — UnplugHQ: acceptance-report.md
-    - Sprint Backlog — UnplugHQ Sprint 1: sprint-backlog.md
-    - Story Map — UnplugHQ PI-1: story-map.md
+    - Sprint Backlog — UnplugHQ PI-2 Sprint 2: sprint-backlog.md
+    - Story Map — UnplugHQ PI-2: story-map.md
 - Scrum:
     - Definition of Done — UnplugHQ PI-1: definition-of-done.md
     - Sprint 1 Retrospective Report — UnplugHQ: retrospective-report.md
