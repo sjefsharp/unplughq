@@ -2,19 +2,19 @@
 artifact: wcag-audit
 produced-by: accessibility
 project-slug: unplughq
-work-item: task-179-a11y-wcag-audit-guidelines
+work-item: task-284-a11y-pi2-wcag-audit
 work-item-type: task
 parent-work-item: epic-001-unplughq-platform
 workflow-tier: full
 phase: P2
-version: 1.0.0
-status: approved
+version: 2.0.0
+status: draft
 consumed-by:
   - frontend-developer
   - testing
   - ux-designer
-date: 2026-03-14
-azure-devops-id: 192
+date: 2026-03-16
+azure-devops-id: 284
 ---
 
 # WCAG 2.2 AA Compliance Audit — UnplugHQ Platform
@@ -26,8 +26,8 @@ azure-devops-id: 192
 This audit evaluates the UnplugHQ design system, wireframe specifications, and interaction patterns against **WCAG 2.2 Level AA** success criteria. The audit covers:
 
 - **Design System** (`design-system.md`): OKLCH color tokens, contrast matrix, typography scale, spacing system, component sizing, elevation model, motion tokens
-- **Wireframes** (`wireframes.md`): 10 core screens — Onboarding Welcome, Server Connection Wizard (Steps 1–3), Main Dashboard, App Marketplace, App Detail/Install, Deployment Progress Modal, App Management, Server Health Detail, Global Settings
-- **Interaction Patterns** (`interaction-patterns.md`): Deployment progress, server health pulse, real-time metrics, toast notifications, form validation, modal dialogs, skeleton loading, drag to reorder, contextual menus, mobile-specific patterns
+- **Wireframes** (`wireframes.md`): 19 screens — PI-1 Screens 1–10 (Onboarding, Server Connection, Dashboard, Marketplace, App Detail, Deployment, App Management, Server Health, Settings) + PI-2 Sprint 2 Screens 11–19 (App Catalog Browse & Search, App Detail Page, Configuration Wizard, Deployment Progress, Post-Deployment Verification, Multi-App Management, Dashboard Overview, Alert Management, Guided Remediation)
+- **Interaction Patterns** (`interaction-patterns.md`): PI-1 patterns (deployment progress, server health pulse, real-time metrics, toast notifications, form validation, modal dialogs, skeleton loading, drag to reorder, contextual menus, mobile-specific) + PI-2 patterns (SSE deployment progress, dashboard SSE refresh, alert notification flow, multi-app port conflict resolution, configuration wizard navigation, catalog search & filter)
 
 ### 1.2 Methodology
 
@@ -44,10 +44,11 @@ This audit evaluates the UnplugHQ design system, wireframe specifications, and i
 | `requirements.md` | NFR-003 (WCAG 2.1 AA), NFR-008 (mobile-first responsive, 375px min viewport) |
 | `architecture-overview.md` | Web platform, PWA capability, Next.js 16 with Server Components |
 | `design-system.md` | OKLCH color ramps, semantic tokens, contrast matrix, typography, component specs |
-| `wireframes.md` | 10 screen wireframes with layout specs and interaction notes |
-| `interaction-patterns.md` | Animation tokens, focus management, ARIA live regions, reduced motion |
+| `wireframes.md` | 19 screen wireframes (10 PI-1 + 9 PI-2 Sprint 2) with layout specs and interaction notes |
+| `interaction-patterns.md` | Animation tokens, focus management, ARIA live regions, reduced motion, PI-2 SSE patterns, alert flows |
 | `threat-model.md` | Auth flows, session handling, error messaging security (no user enumeration) |
 | `content-hierarchy.md` | Information architecture, heading structure per section |
+| `requirements.md` (v2) | PI-2 requirements: F2 (App Catalog & Deployment), F3 (Dashboard & Health Monitoring), cross-cutting BF-005 (focus management) |
 
 ---
 
@@ -507,6 +508,128 @@ No context identified where users are asked to re-enter previously provided info
 
 ---
 
+## PI-2 Sprint 2 Screen-by-Screen Findings
+
+### Screen 11: App Catalog Browse & Search (`/catalog`) — AB#202
+
+| # | Finding | WCAG SC | Severity |
+|---|---------|---------|----------|
+| 1 | Search input needs `aria-live="polite"` result count region: "[N] apps found" or "No apps match your search." Must be announced after debounce (300ms) completes, not on every keystroke. | 4.1.3 | Serious |
+| 2 | Category filter chips must use `role="tablist"` / `role="tab"` with `aria-selected` if mutually exclusive, or `role="group"` with `aria-pressed` toggle buttons. Arrow key navigation within chip group required. | 4.1.2 | Moderate |
+| 3 | App card grid: focus order must follow visual reading order (left-to-right, top-to-bottom). Cards should be reachable via Tab. Consider `role="list"` / `role="listitem"` for the grid. | 2.4.3 | Moderate |
+| 4 | "Deploy ->" buttons across multiple cards need unique accessible names: `aria-label="Deploy Nextcloud"`, `aria-label="Deploy Plausible"`. | 2.4.4 | Moderate |
+| 5 | Resource requirement text ("Needs 2GB, 10GB disk") within cards must use semantic structure: `<dl>` or `role="group"` with `aria-label="Resource requirements"`. | 1.3.1 | Moderate |
+| 6 | Category chip horizontal scrolling on mobile requires a non-scroll alternative (overflow indicator or "More" button) for keyboard users. | 2.1.1 | Moderate |
+| 7 | Empty search state message must appear within the `aria-live` region so screen readers announce "No apps match your search. Try a different term or browse by category." | 4.1.3 | Moderate |
+| 8 | Grid result crossfade animation must respect `prefers-reduced-motion` — instant swap, no fade delay. | 2.3.1 | Minor |
+
+### Screen 12: App Detail Page (`/catalog/[app-slug]`) — AB#202
+
+| # | Finding | WCAG SC | Severity |
+|---|---------|---------|----------|
+| 1 | Requirements table (Memory, Storage, CPU) must use `<dl>` (definition list) or `<table>` with proper `<th>` headers. Not decorative cards. | 1.3.1 | Moderate |
+| 2 | "Open-source project" external link must have `aria-label="View Nextcloud source code (opens in new tab)"` and an external link icon. | 2.4.4 | Minor |
+| 3 | Breadcrumb "Catalog > Nextcloud" must use `<nav aria-label="Breadcrumb">` with `<ol>/<li>` structure. `aria-current="page"` on the current page. | 1.3.1 | Moderate |
+| 4 | "Deploy Nextcloud" CTA button must include the app name: `aria-label="Deploy Nextcloud"`. | 2.4.4 | Minor |
+| 5 | Version number ("Version 28.0.4") should be in a `<dl>` alongside other metadata for structured reading. | 1.3.1 | Minor |
+
+### Screen 13: App Configuration Wizard (`/catalog/[app-slug]/configure`) — AB#203
+
+| # | Finding | WCAG SC | Severity |
+|---|---------|---------|----------|
+| 1 | Multi-step indicator `(1)-----(2)-----(3)-----(4)` must use `<nav aria-label="Configuration progress">` with `<ol>`. Each step: `aria-current="step"` on active, `aria-label="Step 1 of 4, Server selection, completed"` for completed steps. | 4.1.2 | Serious |
+| 2 | Server selection cards (radio pattern) must use `role="radiogroup"` with `aria-label="Select deployment server"`. Each card is a `role="radio"` with `aria-checked`. Arrow keys navigate between options. | 4.1.2 | Serious |
+| 3 | Dynamic form fields generated from `configSchema` must programmatically expose their labels via `<label for>`. Help text ("The address where you'll access this app.") must be linked via `aria-describedby`. | 2.4.6 | Serious |
+| 4 | Resource warning banner ("Your server may not have enough resources") must use `role="alert"` for immediate announcement. | 4.1.3 | Moderate |
+| 5 | On step transition, focus must move to the first interactive element of the new step. The `aria-live="polite"` announcement region must announce "Step 2 of 4: Settings". | 2.4.3 | Serious |
+| 6 | "Edit" links on summary screen (Step 3) must include context: `aria-label="Edit server selection"`, `aria-label="Edit app settings"`. | 2.4.4 | Moderate |
+| 7 | Information banner ("We've filled in sensible defaults") must use `role="note"` or be within a `<p>` with an info icon that is `aria-hidden="true"` alongside visible text. | 1.3.1 | Minor |
+| 8 | Back/Continue buttons must maintain consistent label pattern. "< Back" needs `aria-label="Go back to previous step"`. | 2.4.4 | Minor |
+
+### Screen 14: Deployment Progress (`/deployments/[deployment-id]`) — AB#204
+
+| # | Finding | WCAG SC | Severity |
+|---|---------|---------|----------|
+| 1 | Progress bar must use `role="progressbar"` with `aria-valuenow` (0–100), `aria-valuemin="0"`, `aria-valuemax="100"`, and `aria-valuetext` describing the current phase in plain language: "60 percent — Securing your domain". | 4.1.2 | Serious |
+| 2 | SSE phase updates must announce via `aria-live="polite"` region. **Debounce announcements to max 1 per 5 seconds** to avoid overwhelming screen readers during rapid SSE events. Combine pending updates into a single announcement. | 4.1.3 | Serious |
+| 3 | Phase step list must use `<ol>` with each phase as `<li>`. Completed phases: `aria-label="Preparing — completed"`. Active phase: `aria-label="Securing — in progress"`. Pending phases: `aria-label="Starting — pending"`. | 1.3.1 | Serious |
+| 4 | Connector lines between phase icons are decorative — mark `aria-hidden="true"`. | 1.1.1 | Minor |
+| 5 | DNS warning banner ("Your domain doesn't point to this server yet") must use `role="status"` — not `role="alert"` — since it is informational, not urgent. | 4.1.3 | Moderate |
+| 6 | "You can leave this page" text is informational guidance — no ARIA needed but ensure it is part of the natural reading order. | 1.3.2 | Minor |
+| 7 | Deployment failed state: error detail panel must have `role="alert"` and focus must move to the error message. "Try again" button must be keyboard-focusable and labelled `aria-label="Retry deployment of Nextcloud"`. | 4.1.3 | Serious |
+| 8 | On success, "Open Nextcloud" and "Dashboard" buttons must have unique labels. Focus should move to the success announcement heading. | 2.4.3 | Moderate |
+| 9 | Reconnection status ("Reconnecting...") must be announced via `aria-live="assertive"` since it indicates potential data staleness. | 4.1.3 | Moderate |
+| 10 | Retry badge ("Attempt 2") must be announced to screen readers — include within the live region or as `aria-label` modification on the progress heading. | 4.1.3 | Minor |
+
+### Screen 15: Post-Deployment Verification (`/deployments/[deployment-id]`) — AB#205
+
+| # | Finding | WCAG SC | Severity |
+|---|---------|---------|----------|
+| 1 | Verification checklist must use `<ol>` with each check item as `<li>`. Each check result must pair icon+color with text: "Container started — passed", "App responding — failed". | 1.3.1 | Serious |
+| 2 | Check result icons (✓, X, ⚠) must be `aria-hidden="true"` with visible text carrying the meaning. Color alone must not convey pass/fail status. | 1.4.1, 1.3.3 | Serious |
+| 3 | Sequential check result announcements must use `aria-live="polite"` region. Stagger announcements to 1 per 2 seconds to avoid overlap. | 4.1.3 | Moderate |
+| 4 | DNS failure guidance box must use semantic structure: `<section aria-label="Troubleshooting">` with step-by-step text. | 1.3.1 | Moderate |
+| 5 | Verification status badges need combined color + text + icon: green checkmark with "Passed" text; red X with "Failed" text; amber triangle with "Warning" text. | 1.4.1 | Serious |
+| 6 | Access URL link ("https://files.mydomain.com") must have `aria-label="Open Nextcloud at files.mydomain.com (opens in new tab)"` if opening externally. | 2.4.4 | Minor |
+
+### Screen 16: Multi-App Management View (`/dashboard` or `/apps`) — AB#206
+
+| # | Finding | WCAG SC | Severity |
+|---|---------|---------|----------|
+| 1 | Table must use `<table>` with `<thead>/<th>` headers, `<caption>` describing the table ("Deployed applications on My Production Server"), and `scope="col"` on each header cell. | 1.3.1 | Serious |
+| 2 | If columns are sortable, column headers must use `aria-sort="ascending"`, `aria-sort="descending"`, or `aria-sort="none"`. The sort control must be a `<button>` within the `<th>`. | 4.1.2 | Moderate |
+| 3 | Per-row kebab menu buttons must have unique labels: `aria-label="Actions for Nextcloud"`, `aria-label="Actions for Plausible"`. | 2.4.4 | Moderate |
+| 4 | Mini resource bars within table cells: must use `role="meter"` with `aria-valuenow`, `aria-valuemin`, `aria-valuemax`, `aria-label="Nextcloud CPU usage"`, `aria-valuetext="12 percent"`. Color-only threshold indication is insufficient — add text or icon at warning/critical thresholds. | 4.1.2, 1.4.1 | Serious |
+| 5 | Total row must use `<tfoot>` with `<th scope="row">TOTAL</th>` to distinguish from data rows. | 1.3.1 | Moderate |
+| 6 | Mobile card stack transformation: when table rows become cards below breakpoint, the key-value pairs must maintain programmatic associations via `<dl>` or `aria-label` on each value referencing its label. | 1.3.1 | Moderate |
+| 7 | Resource warning banner at bottom ("Your server is using 75% of its memory") must use `role="status"` with `aria-live="polite"`. | 4.1.3 | Moderate |
+| 8 | "Add app" link must have `aria-label="Add a new app to this server"` for context clarity. | 2.4.4 | Minor |
+
+### Screen 17: Dashboard Overview — Multi-Server (`/dashboard`) — AB#207
+
+| # | Finding | WCAG SC | Severity |
+|---|---------|---------|----------|
+| 1 | Resource gauges (CPU, Memory, Storage, Network) must use `role="meter"` (not `progressbar`) with `aria-valuenow`, `aria-valuemin="0"`, `aria-valuemax="100"`, `aria-label="CPU usage"`, `aria-valuetext="32 percent"`. When crossing threshold: `aria-valuetext="72 percent — warning: high utilization"`. | 4.1.2 | Serious |
+| 2 | Gauge color coding (green <70%, amber 70-89%, red ≥90%) must always pair with visible text percentage values and threshold text labels. Color-blind-safe: add pattern fills or icon indicators alongside colors for each threshold tier. | 1.4.1, 1.3.3 | Serious |
+| 3 | Alert banner ("2 active alerts") must use `role="alert"` if critical, or `role="status"` if informational. "View all" link: `aria-label="View all 2 active alerts"`. | 4.1.3 | Serious |
+| 4 | Notification bell badge count must be announced: `aria-label="Notifications, 2 unread"`. Badge number update should use `aria-live="polite"` region (not on the button itself — use a sibling live region). | 4.1.2 | Moderate |
+| 5 | "Last updated" timestamp must update in an `aria-live="off"` region — do NOT auto-announce frequent timestamp changes. Users query on demand. | 4.1.3 | Minor |
+| 6 | Stale data indicator ("Data may be outdated") must use `role="alert"` since it indicates a degraded state the user needs to know about. | 4.1.3 | Moderate |
+| 7 | App card status indicators ("Running", "Unhealthy") with per-app resource mini-bars: same `role="meter"` and text label requirements as Screen 16. | 4.1.2, 1.4.1 | Serious |
+| 8 | SSE metric updates must NOT be in live regions — they update too frequently and would overwhelm screen readers. Current values should be readable on focus/query. | 4.1.3 | Moderate |
+| 9 | "Open" buttons on app cards must include app name: `aria-label="Open Nextcloud"`. | 2.4.4 | Minor |
+| 10 | Empty dashboard state ("No apps running yet") should be within a `role="status"` region with the call-to-action button as the primary focus target. | 4.1.3 | Minor |
+
+### Screen 18: Alert Management Page (`/alerts`) — AB#208
+
+| # | Finding | WCAG SC | Severity |
+|---|---------|---------|----------|
+| 1 | Alert severity badges (`[CRITICAL]`, `[WARNING]`, `[INFO]`) must use color + text + icon. Critical: red + "Critical" + error icon. Warning: amber + "Warning" + triangle icon. Info: blue + "Info" + info icon. Never badge color alone. | 1.4.1, 1.3.3 | Serious |
+| 2 | Alert list must use `role="list"` or semantic `<ul>/<li>`. Each alert row: `<article aria-label="Critical alert: High storage usage, 12 minutes ago">`. | 1.3.1 | Moderate |
+| 3 | Expand/collapse chevron `[v]` must use `aria-expanded="true/false"` on the trigger button with `aria-controls` pointing to the detail panel ID. `aria-label="Expand details for High storage usage alert"`. | 4.1.2 | Serious |
+| 4 | New real-time alerts arriving via SSE must inject into an `aria-live="assertive"` region for critical alerts, `aria-live="polite"` for warnings/info. Announcement: "New critical alert: Plausible not responding." | 4.1.3 | Serious |
+| 5 | "Acknowledge" and "Dismiss" buttons need context: `aria-label="Acknowledge high storage usage alert"`, `aria-label="Dismiss high storage usage alert"`. | 2.4.4 | Moderate |
+| 6 | "View remediation" navigation link: `aria-label="View remediation steps for high storage usage"`. | 2.4.4 | Moderate |
+| 7 | Alert detail panel (expanded state): gauge visualization must use `role="meter"` with `aria-valuetext="87 percent, threshold 85 percent"`. Threshold comparison text must be visible, not color-only. | 4.1.2, 1.4.1 | Serious |
+| 8 | Alert list sorting (critical first, then newest) must be programmatically conveyed — consider `aria-label` on the list container: "Active alerts, sorted by severity then time". | 1.3.1 | Minor |
+| 9 | Recent/dismissed section: visually faded alerts must still meet minimum contrast (4.5:1 for text). 80% opacity on `--color-text-base` (13.8:1 → ~11:1) passes. Verify dismissed text token combinations. | 1.4.3 | Moderate |
+| 10 | Empty state ("No active alerts. Everything is running smoothly.") must be within an `aria-live="polite"` region if it appears after the last alert is dismissed. | 4.1.3 | Minor |
+
+### Screen 19: Guided Remediation Page (`/alerts/[alert-id]/remediation`) — AB#209
+
+| # | Finding | WCAG SC | Severity |
+|---|---------|---------|----------|
+| 1 | Remediation steps must use `<ol>` (ordered list) to convey sequence. Each step is a `<li>` containing step description and any sub-content (tables, action buttons). | 1.3.1 | Serious |
+| 2 | Page must use a `<main>` landmark with nested structure: `<header>` for alert context, `<nav>` for back link, `<section aria-label="Remediation steps">` for the step sequence. | 1.3.1 | Moderate |
+| 3 | Inline action buttons ("Restart Plausible") must include the app name: `aria-label="Restart Plausible"`. After the action executes, a toast or inline status update must announce the result in an `aria-live="polite"` region: "Plausible is back online" or "Restart didn't work. Try the next step." | 4.1.3 | Serious |
+| 4 | Per-app disk usage table must use `<table>` with `<caption>`, `<th scope="col">` headers (App, Storage, % Total), and `<tfoot>` for any aggregate row. | 1.3.1 | Moderate |
+| 5 | Escalation path box ("If this doesn't resolve it…") must use a `<section aria-label="Next steps if this doesn't work">` or `<aside>` landmark to distinguish it from the primary step sequence. | 1.3.1 | Moderate |
+| 6 | "Back to alerts" link must be a standard `<a>` with `aria-label="Back to alerts list"`. Ghost style is acceptable but must meet minimum contrast (3:1 for large text or 4.5:1 for normal text). | 2.4.4 | Minor |
+| 7 | After inline action (e.g., restart), focus must remain on the action button or move to the status result. Do not steal focus away from the remediation step the user is on. | 2.4.3 | Moderate |
+| 8 | Step progress tracking: if the user has completed step 1 and moved to step 2 visually, the semantic structure (ordered list items) inherently conveys this. No additional progress ARIA is needed beyond the `<ol>` structure. | 1.3.1 | Minor |
+
+---
+
 ## 7. WCAG 2.2 AA Compliance Matrix
 
 | SC | Name | Level | Status | Evidence |
@@ -562,7 +685,23 @@ No context identified where users are asked to re-enter previously provided info
 | 4.1.2 | Name, Role, Value | A | **Needs Work** | Multiple components need ARIA roles/states |
 | 4.1.3 | Status Messages | AA | **Needs Work** | Deployment, toasts, status badges need live regions |
 
-**Summary:** 14 Pass, 28 Needs Work, 6 N/A, 0 Fail (criteria that completely fail remediably — `--color-text-subtle` contrast is the closest to outright failure)
+**PI-1 Summary:** 14 Pass, 28 Needs Work, 6 N/A, 0 Fail (criteria that completely fail remediably — `--color-text-subtle` contrast is the closest to outright failure)
+
+### PI-2 Sprint 2 — Additional Findings Impact on Compliance Matrix
+
+| SC | Name | PI-1 Status | PI-2 Impact | Combined Status |
+|----|------|-------------|-------------|-----------------|
+| 1.1.1 | Non-text Content | Needs Work | New: gauge SVG, phase connector lines, verification icons | **Needs Work** |
+| 1.3.1 | Info and Relationships | Needs Work | New: catalog card structure, wizard step lists, deployment phase lists, multi-app table semantics, alert list structure, remediation step ordered lists | **Needs Work** |
+| 1.3.3 | Sensory Characteristics | Needs Work | New: gauge threshold colors, verification badge colors, alert severity badge colors | **Needs Work** |
+| 1.4.1 | Use of Color | Needs Work | New: gauge threshold (green/amber/red), alert severity (critical/warning/info), verification pass/fail — all require text+icon alternatives | **Needs Work** |
+| 2.1.1 | Keyboard | Needs Work | New: category chip navigation, server selection card radio pattern | **Needs Work** |
+| 2.4.3 | Focus Order | Needs Work | New: wizard step transitions, deployment success focus, post-action focus in remediation | **Needs Work** |
+| 2.4.4 | Link Purpose (In Context) | Needs Work | New: "Deploy" buttons per card, "Edit" links on summary, action buttons per alert, remediation inline actions | **Needs Work** |
+| 4.1.2 | Name, Role, Value | Needs Work | New: gauge `role="meter"`, wizard step `aria-current`, sortable column headers, alert expand/collapse, notification bell badge | **Needs Work** |
+| 4.1.3 | Status Messages | Needs Work | New: SSE phase announcements (debounced), search result counts, resource warnings, alert arrivals (severity-based `aria-live`), verification result announcements, stale data indicator | **Needs Work** |
+
+**PI-2 Combined Summary:** 14 Pass, 28 Needs Work, 6 N/A, 0 Fail. PI-2 Sprint 2 does not introduce new passing criteria but deepens the "Needs Work" areas with 9 new screens requiring implementation attention. Overall WCAG 2.2 AA compliance posture is consistent — the same pattern of strong structural foundations with implementation detail gaps carries through to Sprint 2.
 
 ---
 
@@ -601,6 +740,43 @@ No context identified where users are asked to re-enter previously provided info
 | 17 | Consistent help mechanism | 3.2.6 | All | Add "Help" link to sidebar or footer consistently. |
 | 18 | Card borders need minimum 3:1 contrast | 1.4.11 | Dashboard, Marketplace | Strengthen `--color-border-subtle` for card boundaries. |
 | 19 | Focus obscured by sidebar/toasts | 2.4.11 | All | Add `scroll-padding-left`; position toasts to avoid focus. |
+
+### Sprint 2 — Priority 1 (Critical — Must fix before P4 Sprint 2 implementation)
+
+| # | Issue | WCAG SC | Affected Screens | Fix |
+|---|-------|---------|-----------------|-----|
+| S2-1 | **SSE deployment progress announcements overwhelm screen readers** | 4.1.3 | Screen 14 (Deployment Progress) | Debounce `aria-live="polite"` announcements to max 1 per 5 seconds. Combine pending SSE events into a single announcement: "Securing your domain — 60% complete". Never announce raw SSE events directly. |
+| S2-2 | **Gauge threshold color-only indication** | 1.4.1 | Screen 17 (Dashboard), Screen 16 (Multi-App Table) | Resource gauges (green/amber/red) must always pair with visible text percentage AND threshold text: "72% — Warning". Add pattern fills (hatched for warning, crosshatched for critical) for color-blind users. |
+| S2-3 | **Alert severity badges color-only** | 1.4.1, 1.3.3 | Screen 18 (Alert Management) | Badge must combine color + text + icon: "CRITICAL" (red + X icon), "WARNING" (amber + triangle icon), "INFO" (blue + info icon). Text label is mandatory, not optional. |
+| S2-4 | **Configuration wizard step indicator missing ARIA** | 4.1.2 | Screen 13 (Configuration Wizard) | Step indicator must use `<nav aria-label="Configuration progress">` with `<ol>`. `aria-current="step"` on active step. Each step label includes context: "Step 1 of 4, Server selection, completed". |
+| S2-5 | **Verification checklist pass/fail relies on color + icon only** | 1.4.1, 1.3.3 | Screen 15 (Post-Deployment Verification) | Each check result needs visible text: "Container started — Passed", "App not responding — Failed". Icons supplemental, text mandatory. |
+
+### Sprint 2 — Priority 2 (Serious — Must fix during P4 Sprint 2)
+
+| # | Issue | WCAG SC | Affected Screens | Fix |
+|---|-------|---------|-----------------|-----|
+| S2-6 | Deployment progress bar ARIA | 4.1.2 | Screen 14 | `role="progressbar"` with `aria-valuenow`, `aria-valuetext` using plain language phase descriptions. |
+| S2-7 | Phase step list semantics | 1.3.1 | Screen 14 | Use `<ol>` with `aria-label` per phase conveying status: completed/in-progress/pending. |
+| S2-8 | Catalog search result announcements | 4.1.3 | Screen 11 | `aria-live="polite"` region announces result count after debounce. |
+| S2-9 | Multi-app table header semantics | 1.3.1 | Screen 16 | `<table>` with `<caption>`, `<th scope="col">`, sortable headers with `aria-sort`. |
+| S2-10 | Mini resource bars in table cells | 4.1.2 | Screen 16 | Each bar: `role="meter"` with `aria-valuenow`, `aria-label="Nextcloud CPU usage"`, `aria-valuetext`. |
+| S2-11 | Alert expand/collapse ARIA | 4.1.2 | Screen 18 | `aria-expanded`, `aria-controls` on trigger. Focus moves to detail panel on expand. |
+| S2-12 | Real-time alert notification announcements | 4.1.3 | Screen 18 | Critical alerts: `aria-live="assertive"`. Warnings/info: `aria-live="polite"`. |
+| S2-13 | Remediation step structure | 1.3.1 | Screen 19 | `<ol>` for steps, inline action buttons with app-name context, landmark structure. |
+| S2-14 | Wizard form labels from configSchema | 2.4.6 | Screen 13 | Dynamic forms must generate `<label for>` + `aria-describedby` for help text. |
+| S2-15 | Unique accessible names for per-card Deploy buttons | 2.4.4 | Screen 11 | `aria-label="Deploy {AppName}"` on each card's Deploy button. |
+
+### Sprint 2 — Priority 3 (Moderate — Fix during P4/P5 Sprint 2)
+
+| # | Issue | WCAG SC | Affected Screens | Fix |
+|---|-------|---------|-----------------|-----|
+| S2-16 | Notification bell badge accessibility | 4.1.2 | Screen 17 | `aria-label="Notifications, 2 unread"` on bell button. Badge count updates in sibling `aria-live` region. |
+| S2-17 | Category filter chip keyboard pattern | 4.1.2 | Screen 11 | `role="tablist"`/`role="tab"` with arrow key navigation. Or `role="group"` with `aria-pressed` toggles. |
+| S2-18 | Stale data indicator | 4.1.3 | Screen 17 | Use `role="alert"` for degraded state notification. |
+| S2-19 | Dashboard SSE metric updates not in live regions | 4.1.3 | Screen 17 | Confirm real-time metric values are NOT announced. Values readable on focus only. |
+| S2-20 | Dismissed alerts contrast | 1.4.3 | Screen 18 | Faded alerts at 80% opacity still pass 4.5:1. Verify all token pairs. |
+| S2-21 | Remediation escalation box | 1.3.1 | Screen 19 | Use `<aside>` or `<section aria-label>` to distinguish from primary step flow. |
+| S2-22 | App detail breadcrumb structure | 1.3.1 | Screen 12 | `<nav aria-label="Breadcrumb">` with `<ol>/<li>` and `aria-current="page"`. |
 
 ---
 
