@@ -117,6 +117,7 @@ nav:
     - Frontend Deployment — Production Build & Bundle Analysis: frontend-deployment.md
     - P5 Build Verification Report — UnplugHQ Sprint 1: build-verification-p5.md
 - Testing:
+    - Smoke Test Report — UnplugHQ Sprint 1: smoke-test-report.md
     - Test Strategy — P4 Step 1 (TDD Contracts): test-strategy-p4.md
 - Security:
     - Threat Model — UnplugHQ Platform: threat-model.md
