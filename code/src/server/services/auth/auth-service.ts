@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { db } from '@/server/db';
-import { users, verificationTokens } from '@/server/db/schema';
+import { users, verificationTokens, sessions } from '@/server/db/schema';
 import { hashPassword } from '@/server/services/auth/password-hashing';
 import { eq, and, gt } from 'drizzle-orm';
 import { logger } from '@/server/lib/logger';
@@ -135,6 +135,15 @@ export async function resetPassword(params: {
     .update(users)
     .set({ passwordHash, updatedAt: new Date() })
     .where(eq(users.email, tokenRecord.identifier));
+
+  // AB#254: Invalidate all active sessions for this user
+  const user = await db.query.users.findFirst({
+    where: eq(users.email, tokenRecord.identifier),
+    columns: { id: true },
+  });
+  if (user) {
+    await db.delete(sessions).where(eq(sessions.userId, user.id));
+  }
 
   // Invalidate ALL tokens for this identifier (one-time use)
   await db

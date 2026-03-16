@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { db } from '@/server/db';
 import { servers, metricsSnapshots } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { checkRateLimit } from '@/server/lib/rate-limit';
+import { checkRateLimit, recordRateLimitHit } from '@/server/lib/rate-limit';
 import { sseEventBus } from '@/server/lib/sse-event-bus';
 import type { MetricsSnapshot } from '@/lib/schemas';
 import { logger } from '@/server/lib/logger';
@@ -70,6 +70,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       },
     );
   }
+  await recordRateLimitHit(`metrics:${server.id}`, 60_000);
 
   // Parse and validate body (I-06: strict mode)
   let body: unknown;

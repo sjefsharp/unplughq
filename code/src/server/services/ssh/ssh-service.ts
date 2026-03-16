@@ -111,8 +111,9 @@ function resolveCommand(template: SSHCommandTemplate): string {
     case 'docker-ps':
       return 'docker ps --format json';
     case 'write-env-file': {
-      // Write via heredoc — no concatenation with user content
-      return `cat > ${shellEscape(template.params.path)} << 'UNPLUGHQ_ENV_EOF'\n${template.params.content}\nUNPLUGHQ_ENV_EOF`;
+      // AB#255: Base64 encode to prevent heredoc injection
+      const encoded = Buffer.from(template.params.content).toString('base64');
+      return `echo ${shellEscape(encoded)} | base64 -d > ${shellEscape(template.params.path)}`;
     }
     case 'caddy-add-route': {
       const { routeId, domain, upstream } = template.params;

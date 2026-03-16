@@ -4,7 +4,7 @@ import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { db } from '@/server/db';
 import { users } from '@/server/db/schema';
 import { verifyPassword } from '@/server/services/auth/password-hashing';
-import { isAccountLocked } from '@/server/lib/rate-limit';
+import { isAccountLocked, recordFailedLogin, clearFailedLogins } from '@/server/lib/rate-limit';
 import { logger } from '@/server/lib/logger';
 import { eq } from 'drizzle-orm';
 
@@ -43,12 +43,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const validPassword = await verifyPassword(user.passwordHash, password);
+        const validPassword = await verifyPassword(password, user.passwordHash);
         if (!validPassword) {
+          await recordFailedLogin(email);
           logger.info({ email }, 'Failed login attempt');
           return null;
         }
 
+        await clearFailedLogins(email);
         logger.info({ userId: user.id }, 'Successful login');
 
         return {

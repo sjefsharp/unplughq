@@ -82,7 +82,10 @@ cat > "$SUDOERS_FILE" <<'SUDOERS'
 # UnplugHQ — limited sudo for the unplughq service user (E-04)
 # Only Docker CLI, specific package management, and service control.
 unplughq ALL=(root) NOPASSWD: /usr/bin/docker, /usr/bin/docker-compose
-unplughq ALL=(root) NOPASSWD: /usr/bin/apt-get update, /usr/bin/apt-get install *
+unplughq ALL=(root) NOPASSWD: /usr/bin/apt-get update
+unplughq ALL=(root) NOPASSWD: /usr/bin/apt-get install -y ca-certificates curl gnupg lsb-release debian-keyring debian-archive-keyring apt-transport-https
+unplughq ALL=(root) NOPASSWD: /usr/bin/apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+unplughq ALL=(root) NOPASSWD: /usr/bin/apt-get install -y caddy
 unplughq ALL=(root) NOPASSWD: /usr/bin/systemctl start caddy, /usr/bin/systemctl stop caddy, /usr/bin/systemctl restart caddy, /usr/bin/systemctl reload caddy
 unplughq ALL=(root) NOPASSWD: /usr/bin/systemctl start docker, /usr/bin/systemctl stop docker, /usr/bin/systemctl restart docker
 SUDOERS
