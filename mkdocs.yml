@@ -105,6 +105,7 @@ nav:
     - Build Verification — P4 Step 2 End Merge Integration: build-verification-merge.md
     - Build Verification — P5 Remediation: build-verification-remediation.md
     - Build Verification Report — UnplugHQ: build-verification-report.md
+    - Database Deployment — Production PostgreSQL 17 Configuration: database-deployment.md
     - Database Schema — UnplugHQ: database-schema.md
     - Deployment Runbook — UnplugHQ Sprint 1: deployment-runbook.md
     - DevOps Infrastructure — CI/CD, Docker, Monitoring Agent, Provisioning: devops-infrastructure.md
