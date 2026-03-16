@@ -2,20 +2,20 @@
 artifact: accessibility-guidelines
 produced-by: accessibility
 project-slug: unplughq
-work-item: task-179-a11y-wcag-audit-guidelines
+work-item: task-284-a11y-pi2-wcag-audit
 work-item-type: task
 parent-work-item: epic-001-unplughq-platform
 workflow-tier: full
 phase: P2
-version: 1.0.0
-status: approved
+version: 2.0.0
+status: draft
 consumed-by:
   - frontend-developer
   - backend-developer
   - testing
   - tech-lead
-date: 2026-03-14
-azure-devops-id: 192
+date: 2026-03-16
+azure-devops-id: 284
 ---
 
 # Accessibility Implementation Guidelines — UnplugHQ Platform
@@ -928,9 +928,19 @@ The design system defines (Section 7):
 | App status | `polite` | `status` | App card, App management | "Running", "Stopped", etc. |
 | Deployment progress | `polite` | — | Deployment modal `<p>` | "Current task: Pulling image…" |
 | Deployment log | `polite` | `log` | Deployment modal log area | Streaming log entries |
+| Deployment phase | `polite` | — | Deployment progress `<p>` (debounced) | "Securing your domain — 60% complete" (max 1 per 5s) |
 | Wizard step | `polite` | — | Hidden announcement div | "Step 2 of 3: Validation" |
 | Search results count | `polite` | `status` | Below search input | "5 applications found" |
+| Catalog search results | `polite` | `status` | Below catalog search input | "6 apps found" or "No apps match your search" |
 | Form errors | — | `alert` | Below form fields | Validation error messages |
+| Resource gauge threshold | — | — | Dashboard gauge (NOT live) | Values readable on focus; not announced in real time |
+| Alert arrival (critical) | `assertive` | `alert` | Alert banner / bell dropdown | "New critical alert: Plausible not responding" |
+| Alert arrival (warning/info) | `polite` | `status` | Alert banner / bell dropdown | "New warning: Storage at 82%" |
+| Verification results | `polite` | `status` | Verification checklist area | "Container started — passed" (staggered 1 per 2s) |
+| Resource warning banner | `polite` | `status` | Multi-app table / wizard | "Your server is using 75% of its memory" |
+| Stale data indicator | `assertive` | `alert` | Dashboard timestamp area | "Data may be outdated. Last update: 2 minutes ago" |
+| Notification bell badge | `polite` | — | Sibling to bell button | "2 unread notifications" |
+| Remediation action result | `polite` | `status` | Inline within remediation step | "Plausible is back online" or "Restart didn't work" |
 
 **Rules:**
 - Live regions must exist in the DOM before content is injected. Do not add `aria-live` dynamically.
@@ -947,6 +957,15 @@ The design system defines (Section 7):
 | Deployment Modal | Modal title → Progress bar → Current task → Log → Cancel button |
 | Settings | Skip link → Sidebar nav → Tab list → Active tab panel content |
 | App Management | Skip link → Sidebar nav → App title + status → Action buttons → Resource panels → Environment variables |
+| Catalog Browse (PI-2) | Skip link → Sidebar nav → Page title → Search input → Category filters → Result count → App card grid (L→R, top→bottom) |
+| App Detail (PI-2) | Skip link → Sidebar nav → Breadcrumb → App icon + title → Description → Requirements table → Deploy button |
+| Configuration Wizard (PI-2) | Back button → Step indicator → Step heading → Form fields (top→bottom) → Resource warning (if any) → Continue button |
+| Deployment Progress (PI-2) | Page heading → Progress bar → Phase step list (completed → active → pending) → DNS warning (if any) → Background navigation hint |
+| Verification (PI-2) | Page heading → Verification checklist (sequential items) → Status summary → Action buttons |
+| Multi-App Table (PI-2) | Skip link → Sidebar nav → App count + server → Table caption → Column headers → Data rows (top→bottom) → Total row → Resource warning |
+| Dashboard Overview (PI-2) | Skip link → Sidebar nav → Alert banner (if any) → Server status → Resource gauges → App card grid → Last updated timestamp |
+| Alert Management (PI-2) | Skip link → Sidebar nav → Page heading → Active alert list (severity-sorted) → Expanded alert detail (if any) → Recent/dismissed section |
+| Guided Remediation (PI-2) | Back link → Page heading → Alert context → Remediation steps (ordered: 1 → 2 → 3) → Escalation box |
 
 ### 7.3 Visually Hidden Utility Class
 
@@ -1198,6 +1217,15 @@ Run these tools in the CI pipeline and during development:
 | 8. App Management | Action buttons, resource panels | Status badge, masked env var labels | Panels stack | — | — |
 | 9. Server Health | Charts, disconnect button | Chart alt text, data table, activity log | Charts reflow | Metric threshold color | Chart tooltip |
 | 10. Settings | Tab navigation, form controls | Tab roles, fieldset/legend, danger zone | Form stacks | — | — |
+| 11. Catalog Browse (PI-2) | Search input, category chips (Arrow keys), grid cards (Tab), Deploy buttons | Search result count announcement, unique Deploy labels, category tab selection | Grid → single column | Category filter contrast | Result crossfade respects reduced motion |
+| 12. App Detail (PI-2) | Breadcrumb, Deploy button, external link | Requirements structure, breadcrumb nav, Deploy label includes app name | Two-col → single-col | — | — |
+| 13. Config Wizard (PI-2) | Step indicator, server cards (Arrow keys as radio), form fields, Back/Continue | Step announcements, dynamic field labels, resource warning, server selection | Form stacks at narrow width | — | Step slide transitions respect reduced motion |
+| 14. Deployment Progress (PI-2) | Phase list, retry button on failure | Debounced phase announcements (max 1/5s), progress bar valuetext, failure alert | Stepper stacks | — | Phase animations, progress bar fill respect reduced motion |
+| 15. Verification (PI-2) | Action buttons (Open App, Dashboard) | Sequential check result announcements, status text not color-only | Checklist stacks | Pass/fail badge contrast | Check result stagger respects reduced motion |
+| 16. Multi-App Table (PI-2) | Table cells, sortable headers, per-row kebab menus | Table caption, column headers, meter valuetexts, unique action labels | Table → card stack | Mini-bar colors + text | — |
+| 17. Dashboard Overview (PI-2) | Alert banner, gauge values, app cards, bell button | Gauge meter labels, alert banner, bell badge count, stale data alert | Gauges 4-up → 2x2 → scroll | Gauge threshold colors + text | Gauge tween, alert slide respect reduced motion |
+| 18. Alert Management (PI-2) | Alert rows (Enter to expand), Acknowledge/Dismiss buttons | Severity badges (text+icon), expand/collapse state, real-time alert arrivals | List stacks | Dismissed alert at 80% opacity | Alert arrival animation respects reduced motion |
+| 19. Remediation (PI-2) | Inline action buttons (Restart), back link | Step list ordering, action result announcements, escalation box landmark | Single column stacks | Ghost link contrast | — |
 
 ---
 
@@ -1222,16 +1250,16 @@ Run these tools in the CI pipeline and during development:
 ### 11.2 Testing Priority
 
 **Before every release:**
-1. NVDA + Firefox (Windows) — full user journey UJ1–UJ4
-2. VoiceOver + Safari (macOS) — full user journey UJ1–UJ4
-3. Keyboard-only (no AT) — all 10 screens
+1. NVDA + Firefox (Windows) — full user journey UJ1–UJ4 (all 19 screens)
+2. VoiceOver + Safari (macOS) — full user journey UJ1–UJ4 (all 19 screens)
+3. Keyboard-only (no AT) — all 19 screens
 
 **Before major releases (PI boundaries):**
-4. VoiceOver + Safari (iOS) — mobile responsive, all 10 screens
-5. JAWS + Chrome (Windows) — auth flows, dashboard, deployment
-6. TalkBack + Chrome (Android) — mobile responsive, all 10 screens
-7. ZoomText at 200% — dashboard, forms, charts
-8. macOS Voice Control — button activation, form filling
+4. VoiceOver + Safari (iOS) — mobile responsive, all 19 screens
+5. JAWS + Chrome (Windows) — auth flows, dashboard, deployment, alert management
+6. TalkBack + Chrome (Android) — mobile responsive, all 19 screens
+7. ZoomText at 200% — dashboard, forms, charts, gauges, alert detail panels
+8. macOS Voice Control — button activation, form filling, alert acknowledge/dismiss
 
 ### 11.3 Known AT Interaction Notes
 
@@ -1259,3 +1287,1008 @@ For developers implementing these guidelines during P4:
 7. **Data visualization:** Chart alternatives, meter roles, threshold announcements.
 8. **Settings:** Tab pattern, checkbox groups, theme toggle.
 9. **Integration tests:** axe-core in CI, keyboard flow tests, screen reader scripts.
+10. **PI-2 Sprint 2 components (after PI-1 foundation):** Catalog card grid, configuration wizard stepper, deployment progress with SSE, verification checklist, multi-app table, dashboard gauges, alert management, remediation guides.
+
+---
+
+## 13. PI-2 Sprint 2 — ARIA Patterns by Component
+
+### 13.1 Catalog App Card (Screen 11 — AB#202)
+
+Cards in the catalog grid contain: app icon, title, description, category badge, resource requirements, and deploy button.
+
+```html
+<section aria-label="Application catalog" class="catalog-grid">
+  <p class="catalog-count" role="status" aria-live="polite" aria-atomic="true">
+    6 apps found
+  </p>
+
+  <ul class="catalog-list" role="list">
+    <li>
+      <article class="catalog-card" aria-label="Nextcloud — File sync and share platform">
+        <img
+          src="/icons/nextcloud.svg"
+          alt="Nextcloud logo"
+          width="48"
+          height="48"
+        />
+        <h3 class="catalog-card__title">Nextcloud</h3>
+        <p class="catalog-card__desc">File sync & share platform</p>
+        <span class="catalog-card__category">[File Storage]</span>
+        <dl class="catalog-card__requirements" aria-label="Resource requirements">
+          <dt class="sr-only">Memory</dt>
+          <dd>2 GB</dd>
+          <dt class="sr-only">Storage</dt>
+          <dd>10 GB disk</dd>
+        </dl>
+        <a
+          href="/catalog/nextcloud"
+          class="btn btn-primary btn-sm"
+          aria-label="Deploy Nextcloud"
+        >
+          Deploy →
+        </a>
+      </article>
+    </li>
+    <!-- Additional cards -->
+  </ul>
+</section>
+```
+
+**Rules:**
+- Wrap the grid in a `<section aria-label="Application catalog">` for landmark navigation.
+- Use `<ul>/<li>` for the card list — cards are items in a collection.
+- Each card is an `<article>` with `aria-label="{App Name} — {Description}"`.
+- Resource requirements use `<dl>` with visually hidden `<dt>` terms and visible `<dd>` values.
+- Deploy buttons MUST include the app name in `aria-label` to distinguish between cards.
+- Result count uses `aria-live="polite"` with `aria-atomic="true"` so the full count is re-announced on update.
+
+### 13.2 Catalog Search with Live Results (Screen 11 — AB#202)
+
+```html
+<div class="catalog-search-wrapper">
+  <label for="catalog-search" class="sr-only">Search applications</label>
+  <input
+    type="search"
+    id="catalog-search"
+    class="search-input"
+    placeholder="Search apps by name or description…"
+    aria-label="Search applications"
+    aria-describedby="catalog-search-hint"
+    aria-controls="catalog-results"
+    autocomplete="off"
+  />
+  <span id="catalog-search-hint" class="sr-only">
+    Results update as you type. Press Escape to clear search.
+  </span>
+</div>
+
+<!-- Result count — always present in DOM, updated after 300ms debounce -->
+<p id="catalog-results" class="catalog-count" role="status" aria-live="polite" aria-atomic="true">
+  6 apps found
+</p>
+```
+
+**Rules:**
+- `aria-controls` links the search input to the results region.
+- Result count region exists in the DOM at page load — never dynamically added/removed.
+- Update the count text ONLY after the 300ms debounce completes. Never announce mid-typing.
+- Empty state: "No apps match your search. Try a different term or browse by category."
+- Clear button (X icon inside input): `aria-label="Clear search"`.
+
+### 13.3 Category Filter Chips (Screen 11 — AB#202)
+
+```html
+<div role="tablist" aria-label="Filter by category" class="category-chips">
+  <button
+    role="tab"
+    aria-selected="true"
+    class="chip chip--active"
+    id="cat-all"
+    aria-controls="catalog-grid"
+  >
+    All
+  </button>
+  <button
+    role="tab"
+    aria-selected="false"
+    class="chip"
+    id="cat-file-storage"
+    aria-controls="catalog-grid"
+    tabindex="-1"
+  >
+    File Storage
+  </button>
+  <button
+    role="tab"
+    aria-selected="false"
+    class="chip"
+    id="cat-analytics"
+    aria-controls="catalog-grid"
+    tabindex="-1"
+  >
+    Analytics
+  </button>
+  <!-- Additional categories -->
+</div>
+```
+
+**Keyboard interaction:**
+| Key | Action |
+|-----|--------|
+| ArrowRight | Move focus to next chip |
+| ArrowLeft | Move focus to previous chip |
+| Home | Move focus to first chip ("All") |
+| End | Move focus to last chip |
+| Enter / Space | Activate focused chip, filter results |
+
+**Rules:**
+- Use `role="tablist"` / `role="tab"` since categories are mutually exclusive (one active at a time).
+- `aria-selected="true"` on the active chip only.
+- Roving `tabindex`: active chip has `tabindex="0"`, others have `tabindex="-1"`.
+- On mobile horizontal scroll: provide visible overflow indicators. Arrow keys wrap at boundaries.
+
+### 13.4 Configuration Wizard Stepper (Screen 13 — AB#203)
+
+Extends the PI-1 wizard pattern (Section 2.9) to a 4-step deployment wizard.
+
+```html
+<nav aria-label="Configuration progress" class="stepper">
+  <ol class="stepper__list">
+    <li class="stepper__step stepper__step--complete">
+      <span class="stepper__indicator" aria-hidden="true">✓</span>
+      <span class="stepper__label">
+        Server
+        <span class="sr-only">— completed</span>
+      </span>
+    </li>
+    <li class="stepper__step stepper__step--current" aria-current="step">
+      <span class="stepper__indicator" aria-hidden="true">2</span>
+      <span class="stepper__label">
+        Settings
+        <span class="sr-only">— current step</span>
+      </span>
+    </li>
+    <li class="stepper__step">
+      <span class="stepper__indicator" aria-hidden="true">3</span>
+      <span class="stepper__label">
+        Review
+        <span class="sr-only">— upcoming</span>
+      </span>
+    </li>
+    <li class="stepper__step">
+      <span class="stepper__indicator" aria-hidden="true">4</span>
+      <span class="stepper__label">
+        Deploy
+        <span class="sr-only">— upcoming</span>
+      </span>
+    </li>
+  </ol>
+</nav>
+
+<!-- Step announcement region -->
+<div aria-live="polite" class="sr-only" id="wizard-step-announcement">
+  Step 2 of 4: Settings — Configure your app
+</div>
+```
+
+**Server selection cards (Step 1) — radio pattern:**
+```html
+<fieldset>
+  <legend>Deploy to</legend>
+  <p class="form-hint">Choose which server to deploy this app on.</p>
+  <div role="radiogroup" aria-label="Select deployment server" class="server-cards">
+    <label class="server-card server-card--selected">
+      <input type="radio" name="server" value="prod" checked class="sr-only" />
+      <span class="server-card__name">My Production Server</span>
+      <span class="server-card__ip">192.168.1.100</span>
+      <span class="server-card__specs">4 CPU, 8GB, 60GB free</span>
+      <span class="server-card__status">
+        <span class="status-dot status-dot--healthy" aria-hidden="true"></span>
+        Healthy
+      </span>
+    </label>
+    <label class="server-card">
+      <input type="radio" name="server" value="dev" class="sr-only" />
+      <span class="server-card__name">Dev Server</span>
+      <span class="server-card__ip">10.0.0.5</span>
+      <span class="server-card__specs">2 CPU, 4GB, 30GB free</span>
+      <span class="server-card__status">
+        <span class="status-dot status-dot--healthy" aria-hidden="true"></span>
+        Healthy
+      </span>
+    </label>
+  </div>
+</fieldset>
+```
+
+**Rules:**
+- Server cards use native `<input type="radio">` wrapped in `<label>` for maximum AT compatibility.
+- The radio input is visually hidden (`.sr-only`) — the styled card serves as the visual indicator.
+- Arrow keys navigate between server options per native radio group behavior.
+- On step transition: update the `aria-live` announcement region, then move focus to the first interactive element of the new step.
+
+### 13.5 SSE Deployment Progress (Screen 14 — AB#204)
+
+Extends the PI-1 deployment modal pattern (Section 2.5) for full-page SSE-driven progress.
+
+```html
+<main id="main" tabindex="-1" aria-label="Deployment progress for Nextcloud">
+  <h1>Deploying Nextcloud to My Production Server</h1>
+
+  <div
+    role="progressbar"
+    aria-valuenow="60"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuetext="60 percent — Securing your domain"
+    aria-label="Overall deployment progress"
+    class="progress-bar"
+  >
+    <div class="progress-bar__fill" style="width: 60%"></div>
+  </div>
+
+  <!-- Debounced announcement region — max 1 update per 5 seconds -->
+  <div aria-live="polite" class="sr-only" id="deployment-announcement">
+    Securing your domain — 60% complete
+  </div>
+
+  <ol class="deployment-phases" aria-label="Deployment phases">
+    <li class="phase phase--complete" aria-label="Preparing — completed">
+      <span class="phase__icon phase__icon--success" aria-hidden="true">✓</span>
+      <div class="phase__content">
+        <strong>Preparing</strong>
+        <p>Getting everything ready for your app.</p>
+      </div>
+    </li>
+    <li class="phase phase--complete" aria-label="Downloading — completed">
+      <span class="phase__icon phase__icon--success" aria-hidden="true">✓</span>
+      <div class="phase__content">
+        <strong>Downloading</strong>
+        <p>Your app has been downloaded.</p>
+      </div>
+    </li>
+    <li class="phase phase--complete" aria-label="Configuring — completed">
+      <span class="phase__icon phase__icon--success" aria-hidden="true">✓</span>
+      <div class="phase__content">
+        <strong>Configuring</strong>
+        <p>Your settings have been applied.</p>
+      </div>
+    </li>
+    <li class="phase phase--active" aria-label="Securing — in progress">
+      <span class="phase__icon phase__icon--active" aria-hidden="true">
+        <!-- Pulse ring animation -->
+      </span>
+      <div class="phase__content">
+        <strong>Securing</strong>
+        <p>Setting up a secure connection for your domain.</p>
+      </div>
+    </li>
+    <li class="phase phase--pending" aria-label="Starting — pending">
+      <span class="phase__icon phase__icon--pending" aria-hidden="true">○</span>
+      <div class="phase__content">
+        <strong>Starting</strong>
+      </div>
+    </li>
+    <li class="phase phase--pending" aria-label="Running — pending">
+      <span class="phase__icon phase__icon--pending" aria-hidden="true">○</span>
+      <div class="phase__content">
+        <strong>Running</strong>
+      </div>
+    </li>
+  </ol>
+
+  <!-- DNS warning — informational, not urgent -->
+  <div role="status" class="dns-warning" aria-live="polite">
+    Your domain doesn't point to this server yet. The app will deploy,
+    but it won't be reachable until DNS propagates.
+  </div>
+</main>
+```
+
+**SSE announcement debouncing implementation:**
+```typescript
+let lastAnnouncementTime = 0;
+let pendingAnnouncement: string | null = null;
+const ANNOUNCEMENT_INTERVAL = 5000; // 5 seconds minimum between announcements
+
+function announcePhaseUpdate(phase: string, description: string, percent: number) {
+  const announcement = `${description} — ${percent}% complete`;
+  const now = Date.now();
+
+  if (now - lastAnnouncementTime >= ANNOUNCEMENT_INTERVAL) {
+    // Enough time has passed — announce immediately
+    updateLiveRegion(announcement);
+    lastAnnouncementTime = now;
+    pendingAnnouncement = null;
+  } else {
+    // Too soon — queue for next interval
+    pendingAnnouncement = announcement;
+    setTimeout(() => {
+      if (pendingAnnouncement) {
+        updateLiveRegion(pendingAnnouncement);
+        lastAnnouncementTime = Date.now();
+        pendingAnnouncement = null;
+      }
+    }, ANNOUNCEMENT_INTERVAL - (now - lastAnnouncementTime));
+  }
+}
+
+function updateLiveRegion(text: string) {
+  const el = document.getElementById('deployment-announcement');
+  if (el) el.textContent = text;
+}
+```
+
+**Rules:**
+- Progress bar: update `aria-valuenow` and `aria-valuetext` on every SSE event, but the live region announcement is debounced to max 1 per 5 seconds.
+- Phase list connector lines between icons are `aria-hidden="true"` — purely decorative.
+- On failure: focus moves to the error message. "Try again" button gets `aria-label="Retry deployment of {AppName}"`.
+- On success: focus moves to the success heading. "Open {AppName}" button is the primary CTA.
+- Reconnection: announce via `aria-live="assertive"`: "Connection lost. Reconnecting…" and "Reconnected. Resuming live updates."
+
+### 13.6 Post-Deployment Verification Checklist (Screen 15 — AB#205)
+
+```html
+<section aria-label="Deployment verification" class="verification">
+  <h2>Verification</h2>
+
+  <!-- Staggered result announcements — 1 per 2 seconds -->
+  <div aria-live="polite" class="sr-only" id="verification-announcement">
+    Container started — passed
+  </div>
+
+  <ol class="verification-list">
+    <li class="verification-item verification-item--pass">
+      <span class="verification-icon" aria-hidden="true">✓</span>
+      <span class="verification-text">
+        Container started
+        <span class="verification-result">— Passed</span>
+      </span>
+    </li>
+    <li class="verification-item verification-item--pass">
+      <span class="verification-icon" aria-hidden="true">✓</span>
+      <span class="verification-text">
+        Secure connection active
+        <span class="verification-result">— Passed</span>
+      </span>
+    </li>
+    <li class="verification-item verification-item--fail">
+      <span class="verification-icon" aria-hidden="true">✗</span>
+      <span class="verification-text">
+        App responding at https://files.mydomain.com
+        <span class="verification-result">— Failed</span>
+      </span>
+    </li>
+    <li class="verification-item verification-item--warning">
+      <span class="verification-icon" aria-hidden="true">⚠</span>
+      <span class="verification-text">
+        Domain resolving correctly
+        <span class="verification-result">— Warning: DNS not propagated</span>
+      </span>
+    </li>
+  </ol>
+</section>
+```
+
+**Rules:**
+- Icons (✓, ✗, ⚠) are `aria-hidden="true"`. The `<span class="verification-result">` carries the accessible meaning: "Passed", "Failed", "Warning".
+- Color alone NEVER indicates pass/fail. The text "Passed"/"Failed"/"Warning" is mandatory.
+- Stagger live region announcements to 1 per 2 seconds to give screen readers time to speak each result.
+- On all checks complete, announce summary: "Verification complete. 3 of 4 checks passed."
+
+### 13.7 Multi-App Management Table (Screen 16 — AB#206)
+
+```html
+<table class="app-table" aria-label="Deployed applications on My Production Server">
+  <caption class="sr-only">
+    3 apps running on My Production Server. Sorted by app name.
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col" class="app-table__icon-col">
+        <span class="sr-only">App icon</span>
+      </th>
+      <th scope="col">
+        <button class="table-sort" aria-sort="ascending">
+          App
+          <span class="sort-icon" aria-hidden="true">▲</span>
+        </button>
+      </th>
+      <th scope="col">Status</th>
+      <th scope="col">
+        <button class="table-sort" aria-sort="none">
+          CPU
+          <span class="sort-icon" aria-hidden="true">⇕</span>
+        </button>
+      </th>
+      <th scope="col">Memory</th>
+      <th scope="col">Disk</th>
+      <th scope="col">
+        <span class="sr-only">Actions</span>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <img src="/icons/nextcloud.svg" alt="Nextcloud logo" width="24" height="24" />
+      </td>
+      <td>
+        <strong>Nextcloud</strong>
+        <br /><span class="text-muted">files.my.dev</span>
+      </td>
+      <td>
+        <span class="status-badge status-badge--running" role="status" aria-live="polite">
+          <span class="status-dot" aria-hidden="true"></span>
+          Running
+        </span>
+      </td>
+      <td>
+        <div
+          role="meter"
+          aria-label="Nextcloud CPU usage"
+          aria-valuenow="12"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuetext="12 percent"
+        >
+          <div class="mini-bar"><div class="mini-bar__fill" style="width: 12%"></div></div>
+          <span class="mini-bar__label">12%</span>
+        </div>
+      </td>
+      <td>
+        <div
+          role="meter"
+          aria-label="Nextcloud memory usage"
+          aria-valuenow="1200"
+          aria-valuemin="0"
+          aria-valuemax="8192"
+          aria-valuetext="1.2 gigabytes"
+        >
+          <div class="mini-bar"><div class="mini-bar__fill" style="width: 15%"></div></div>
+          <span class="mini-bar__label">1.2 GB</span>
+        </div>
+      </td>
+      <td>
+        <div
+          role="meter"
+          aria-label="Nextcloud disk usage"
+          aria-valuenow="8"
+          aria-valuemin="0"
+          aria-valuemax="80"
+          aria-valuetext="8 gigabytes"
+        >
+          <div class="mini-bar"><div class="mini-bar__fill" style="width: 10%"></div></div>
+          <span class="mini-bar__label">8 GB</span>
+        </div>
+      </td>
+      <td>
+        <button
+          type="button"
+          class="btn btn-ghost btn-icon"
+          aria-label="Actions for Nextcloud"
+          aria-haspopup="menu"
+          aria-expanded="false"
+        >
+          <span aria-hidden="true">⋯</span>
+        </button>
+      </td>
+    </tr>
+    <!-- Additional rows -->
+  </tbody>
+  <tfoot>
+    <tr>
+      <td></td>
+      <th scope="row">TOTAL</th>
+      <td></td>
+      <td><strong>16%</strong></td>
+      <td><strong>1.6 GB</strong></td>
+      <td><strong>10.5 GB</strong></td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+```
+
+**Mobile responsive card transformation:**
+```html
+<!-- Below 768px breakpoint, each table row becomes a card -->
+<div class="app-card-mobile" role="group" aria-label="Nextcloud">
+  <dl class="app-card-mobile__details">
+    <dt>Status</dt>
+    <dd><span class="status-badge">Running</span></dd>
+    <dt>CPU</dt>
+    <dd>12%</dd>
+    <dt>Memory</dt>
+    <dd>1.2 GB</dd>
+    <dt>Disk</dt>
+    <dd>8 GB</dd>
+  </dl>
+  <button aria-label="Actions for Nextcloud" aria-haspopup="menu">⋯</button>
+</div>
+```
+
+**Rules:**
+- Sortable headers: `<button>` within `<th>` with `aria-sort` attribute (ascending/descending/none).
+- Mini resource bars: `role="meter"` (not `progressbar`). Each bar includes a visible text label alongside the visual fill.
+- `<tfoot>` with `<th scope="row">` for the total row distinguishes it from data.
+- Mobile: `<dl>` preserves key-value semantic associations when table layout breaks down.
+
+### 13.8 Dashboard Resource Gauges (Screen 17 — AB#207)
+
+```html
+<div class="gauges" role="group" aria-label="Server resource utilization">
+  <div class="gauge">
+    <div
+      role="meter"
+      aria-label="CPU usage"
+      aria-valuenow="32"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuetext="32 percent"
+      class="gauge__bar"
+    >
+      <div class="gauge__fill gauge__fill--normal" style="width: 32%"></div>
+    </div>
+    <span class="gauge__value">32%</span>
+    <span class="gauge__label">CPU</span>
+  </div>
+
+  <div class="gauge">
+    <div
+      role="meter"
+      aria-label="Memory usage"
+      aria-valuenow="68"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuetext="68 percent"
+      class="gauge__bar"
+    >
+      <div class="gauge__fill gauge__fill--normal" style="width: 68%"></div>
+    </div>
+    <span class="gauge__value">68%</span>
+    <span class="gauge__label">Memory</span>
+  </div>
+
+  <div class="gauge">
+    <div
+      role="meter"
+      aria-label="Storage usage"
+      aria-valuenow="72"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuetext="72 percent — warning: high utilization"
+      class="gauge__bar"
+    >
+      <div class="gauge__fill gauge__fill--warning" style="width: 72%"></div>
+    </div>
+    <span class="gauge__value">72%</span>
+    <span class="gauge__label">Storage</span>
+    <span class="gauge__threshold-label" aria-hidden="true">⚠</span>
+  </div>
+
+  <div class="gauge">
+    <div
+      role="meter"
+      aria-label="Network throughput"
+      aria-valuenow="1.2"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuetext="1.2 megabytes per second"
+      class="gauge__bar"
+    >
+      <div class="gauge__fill gauge__fill--normal" style="width: 1.2%"></div>
+    </div>
+    <span class="gauge__value">1.2 MB/s</span>
+    <span class="gauge__label">Network</span>
+  </div>
+</div>
+```
+
+**Color-blind-safe threshold indication:**
+
+| Threshold | Color Token | Pattern Fill | Icon | Text Addition |
+|-----------|-------------|-------------|------|---------------|
+| Normal (<70%) | `--color-success-base` | Solid fill | None | — |
+| Warning (70–89%) | `--color-warning-base` | Diagonal hatch (45°) | ⚠ triangle | "— warning" appended to `aria-valuetext` |
+| Critical (≥90%) | `--color-critical-base` | Cross-hatch (45° + 135°) | ✗ circle | "— critical" appended to `aria-valuetext` |
+
+```css
+/* Pattern fills for color-blind safety */
+.gauge__fill--warning {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--color-warning-base),
+    var(--color-warning-base) 3px,
+    transparent 3px,
+    transparent 6px
+  );
+}
+
+.gauge__fill--critical {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--color-critical-base),
+    var(--color-critical-base) 2px,
+    transparent 2px,
+    transparent 5px
+  ),
+  repeating-linear-gradient(
+    135deg,
+    var(--color-critical-base),
+    var(--color-critical-base) 2px,
+    transparent 2px,
+    transparent 5px
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gauge__fill {
+    transition: none;
+  }
+}
+```
+
+**Rules:**
+- Gauges use `role="meter"` — never `role="progressbar"` (meters measure a known range, progress bars track task completion).
+- `aria-valuetext` includes threshold context when crossed: "72 percent — warning: high utilization".
+- Pattern fills (hatched/crosshatched) provide a non-color visual distinction for color-blind users.
+- Visible text percentage is always shown alongside the bar fill.
+- Gauge values are NOT in `aria-live` regions — they update too frequently via SSE and would overwhelm screen readers. Users query values by focusing the gauge.
+- When crossing a threshold, a one-time announcement via a separate debounced live region is acceptable: "Storage has reached warning level: 72%".
+
+### 13.9 Alert Notification (Screen 18 — AB#208)
+
+```html
+<section aria-label="Active alerts" class="alert-management">
+  <h2>Active Alerts</h2>
+
+  <!-- Priority-based live region for new alert arrivals -->
+  <div id="alert-live-critical" aria-live="assertive" class="sr-only"></div>
+  <div id="alert-live-polite" aria-live="polite" class="sr-only"></div>
+
+  <ul class="alert-list" aria-label="Active alerts, sorted by severity then time">
+    <li class="alert-row alert-row--critical">
+      <button
+        class="alert-row__trigger"
+        aria-expanded="false"
+        aria-controls="alert-detail-1"
+        aria-label="Critical alert: High storage usage, 12 minutes ago. Expand for details."
+      >
+        <span class="severity-badge severity-badge--critical">
+          <svg aria-hidden="true" class="severity-icon"><!-- X icon --></svg>
+          CRITICAL
+        </span>
+        <span class="alert-row__title">High storage usage</span>
+        <span class="alert-row__context">Production Server</span>
+        <span class="alert-row__time">
+          <time datetime="2026-03-16T10:48:00Z">12 min ago</time>
+        </span>
+        <span class="alert-row__chevron" aria-hidden="true">▾</span>
+      </button>
+
+      <div id="alert-detail-1" class="alert-detail" hidden>
+        <p>Storage is at 87% (threshold: 85%)</p>
+        <div
+          role="meter"
+          aria-label="Storage utilization"
+          aria-valuenow="87"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuetext="87 percent, threshold is 85 percent"
+        >
+          <div class="gauge__fill gauge__fill--critical" style="width: 87%"></div>
+        </div>
+        <p>Affecting: My Production Server</p>
+        <p>Detected at: <time datetime="2026-03-16T10:48:00Z">10:48 AM today</time></p>
+        <div class="alert-detail__actions">
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            aria-label="Acknowledge high storage usage alert"
+          >
+            Acknowledge
+          </button>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            aria-label="Dismiss high storage usage alert"
+          >
+            Dismiss
+          </button>
+          <a
+            href="/alerts/1/remediation"
+            class="btn btn-primary btn-sm"
+            aria-label="View remediation steps for high storage usage"
+          >
+            View remediation →
+          </a>
+        </div>
+      </div>
+    </li>
+    <!-- Additional alert rows -->
+  </ul>
+</section>
+```
+
+**Severity-based live region routing:**
+```typescript
+function announceNewAlert(severity: 'critical' | 'warning' | 'info', summary: string) {
+  const regionId = severity === 'critical'
+    ? 'alert-live-critical'   // aria-live="assertive"
+    : 'alert-live-polite';    // aria-live="polite"
+
+  const region = document.getElementById(regionId);
+  if (region) {
+    region.textContent = `New ${severity} alert: ${summary}`;
+  }
+}
+```
+
+**Rules:**
+- Severity badges combine color + text + icon: never color alone.
+- Critical alerts inject into `aria-live="assertive"` for immediate interruption. Warning/info use `aria-live="polite"`.
+- Expand/collapse uses `aria-expanded` on the trigger button, `aria-controls` linking to the detail panel.
+- On expand: focus moves to the detail panel content. On collapse: focus returns to the trigger button.
+- Action buttons include the alert title in `aria-label` for context.
+- Notification bell button: `aria-label="Notifications, 2 unread"`. Use a sibling hidden `aria-live="polite"` region to announce badge count changes — not on the button itself.
+
+### 13.10 Guided Remediation (Screen 19 — AB#209)
+
+```html
+<main id="main" tabindex="-1">
+  <nav aria-label="Breadcrumb" class="breadcrumb">
+    <ol>
+      <li><a href="/alerts" aria-label="Back to alerts list">← Back to alerts</a></li>
+    </ol>
+  </nav>
+
+  <header>
+    <h1>Free up storage space</h1>
+    <p>Storage is at 87% on My Production Server.</p>
+  </header>
+
+  <section aria-label="Remediation steps">
+    <ol class="remediation-steps">
+      <li class="remediation-step">
+        <strong>Review which apps use the most storage.</strong>
+        <table class="remediation-table" aria-label="Per-app disk usage breakdown">
+          <caption class="sr-only">Disk usage by application on My Production Server</caption>
+          <thead>
+            <tr>
+              <th scope="col">App</th>
+              <th scope="col">Storage</th>
+              <th scope="col">% Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Nextcloud</td>
+              <td>8.0 GB</td>
+              <td>62%</td>
+            </tr>
+            <tr>
+              <td>Plausible</td>
+              <td>2.1 GB</td>
+              <td>16%</td>
+            </tr>
+            <tr>
+              <td>Vaultwarden</td>
+              <td>0.4 GB</td>
+              <td>3%</td>
+            </tr>
+            <tr>
+              <td>System</td>
+              <td>2.5 GB</td>
+              <td>19%</td>
+            </tr>
+          </tbody>
+        </table>
+      </li>
+      <li class="remediation-step">
+        <strong>Remove files you no longer need from within each app.</strong>
+      </li>
+      <li class="remediation-step">
+        <strong>If storage is still full, consider upgrading your server's disk.</strong>
+        <aside class="escalation-box" aria-label="Additional help if this doesn't resolve the issue">
+          <p>
+            If this doesn't resolve it, check your VPS provider's
+            storage upgrade options.
+          </p>
+        </aside>
+      </li>
+    </ol>
+  </section>
+
+  <!-- Inline action result announcements -->
+  <div aria-live="polite" class="sr-only" id="remediation-result"></div>
+</main>
+```
+
+**App-unavailable remediation with inline action:**
+```html
+<li class="remediation-step">
+  <strong>Try restarting the app.</strong>
+  <button
+    type="button"
+    class="btn btn-primary btn-sm"
+    aria-label="Restart Plausible"
+    id="restart-plausible-btn"
+  >
+    Restart Plausible
+  </button>
+</li>
+```
+
+**Post-action focus management:**
+```typescript
+async function handleRestart(appName: string, buttonEl: HTMLElement) {
+  buttonEl.setAttribute('aria-busy', 'true');
+  buttonEl.disabled = true;
+  buttonEl.textContent = 'Restarting…';
+
+  try {
+    await restartApp(appName);
+    // Announce success — focus stays on the button area
+    announceResult(`${appName} is back online.`);
+    buttonEl.textContent = 'Restarted ✓';
+    buttonEl.removeAttribute('aria-busy');
+  } catch {
+    announceResult(`Restart didn't work. Try the next step.`);
+    buttonEl.textContent = 'Restart Plausible';
+    buttonEl.disabled = false;
+    buttonEl.removeAttribute('aria-busy');
+    buttonEl.focus(); // Return focus to retry
+  }
+}
+
+function announceResult(message: string) {
+  const el = document.getElementById('remediation-result');
+  if (el) el.textContent = message;
+}
+```
+
+**Rules:**
+- Remediation steps use `<ol>` — the ordered list conveys sequence.
+- Inline action buttons include the app name in `aria-label`.
+- After inline action: focus stays near the action button. Never steal focus to a different step.
+- Action result is announced via `aria-live="polite"` region.
+- Escalation boxes use `<aside>` within the step `<li>` for semantic distinction.
+- Tables within steps use `<caption>` + `<th scope="col">` for full accessibility.
+
+---
+
+## 14. PI-2 Sprint 2 — Implementation Guidelines
+
+### 14.1 Real-Time SSE Updates Without Overwhelming Screen Readers
+
+**Problem:** SSE events can fire multiple times per second during deployment or metric updates. Routing every event to an `aria-live` region would make the interface unusable for screen reader users.
+
+**Solution — Debounced announcement pattern:**
+
+| Context | Announce? | `aria-live` | Debounce | Content |
+|---------|-----------|------------|----------|---------|
+| Deployment phase change | Yes | `polite` | 5 seconds | "{Phase description} — {percent}% complete" |
+| Deployment failure | Yes | `assertive` | Immediate | "Deployment failed at {phase}. {Error description}" |
+| Deployment success | Yes | `polite` | Immediate | "Deployment complete. {AppName} is running." |
+| Dashboard metric update | **No** | `off` / none | — | Values readable on focus only |
+| Metric threshold crossing | Yes (once) | `polite` | Deduplicated | "Storage has reached warning level: 72%" |
+| New alert arrival | Yes | Severity-based | Immediate | "New {severity} alert: {summary}" |
+| Alert auto-resolution | Yes | `polite` | 5 seconds | "Resolved: {summary}" |
+| SSE reconnection | Yes | `assertive` | Immediate | "Connection lost. Reconnecting…" |
+| Stale data detection | Yes | `assertive` | Immediate | "Data may be outdated. Last update: {timestamp}" |
+
+**Implementation rules:**
+1. Maintain a single debounce timer per live region. New events reset the timer.
+2. Never announce the same content twice in succession (deduplicate).
+3. On `prefers-reduced-motion: reduce`, the debounce interval can be extended to 10 seconds for non-critical updates.
+4. Provide a "Refresh" button as an alternative — users can query current state manually.
+
+### 14.2 Dashboard Gauge Color Semantics and Alternatives
+
+**Problem:** Gauge threshold colors (green/amber/red) are meaningful but inaccessible to color-blind users and invisible to screen readers.
+
+**Three-layer approach:**
+
+1. **Text:** Always display the numeric percentage AND the threshold label ("Warning", "Critical") as visible text. `aria-valuetext` includes both: "72 percent — warning: high utilization".
+2. **Pattern:** At warning threshold, add a diagonal hatch pattern to the gauge fill. At critical, use cross-hatch. These patterns are visible to users who cannot distinguish green from amber/red.
+3. **Icon:** Display a ⚠ triangle icon at warning level and ✗ circle icon at critical level adjacent to the gauge. Icon is supplemental — never the sole indicator.
+
+**CSS token mapping for thresholds:**
+```css
+:root {
+  --gauge-normal-bg: var(--color-success-base);
+  --gauge-warning-bg: var(--color-warning-base);
+  --gauge-critical-bg: var(--color-critical-base);
+}
+```
+
+### 14.3 Alert Severity Communication (Not Color-Alone)
+
+**Severity indicators MUST combine all three channels:**
+
+| Severity | Color | Icon | Text | Badge HTML |
+|----------|-------|------|------|------------|
+| Critical | `--color-critical-base` (rose-500) | ✗ circle (filled) | "CRITICAL" | `<span class="severity-badge severity-badge--critical"><svg aria-hidden="true">…</svg> CRITICAL</span>` |
+| Warning | `--color-warning-base` (amber-500) | ⚠ triangle | "WARNING" | `<span class="severity-badge severity-badge--warning"><svg aria-hidden="true">…</svg> WARNING</span>` |
+| Info | `--color-primary-base` (indigo-500) | ℹ circle | "INFO" | `<span class="severity-badge severity-badge--info"><svg aria-hidden="true">…</svg> INFO</span>` |
+
+**Screen reader ordering:** Icon → text. Icon is `aria-hidden="true"` — the text label carries the meaning. For compound labels: "Critical alert: High storage usage" — severity first, then summary.
+
+### 14.4 Multi-Step Deployment Progress for Screen Readers
+
+**On each phase transition (debounced):**
+1. Update `aria-valuenow` and `aria-valuetext` on the progress bar.
+2. Update the debounced live region with the phase description.
+3. Update the `aria-label` on the active phase `<li>` from "pending" to "in progress".
+4. Update the completed phase `<li>` label from "in progress" to "completed".
+
+**On completion:**
+- Announce "Deployment complete. {AppName} is running at {URL}."
+- Move focus to the success heading or primary CTA.
+
+**On failure:**
+- Announce (assertive): "Deployment failed at {phase}. {Error description}."
+- Move focus to the error detail panel.
+- Remaining phases marked with `aria-label="{Phase} — not started"`.
+
+### 14.5 Keyboard-Driven Catalog Browsing with Grid Navigation
+
+**Tab order through catalog page:**
+1. Skip link → Sidebar → Page heading → Search input → Category filters → First card → (Tab through cards) → Deploy button per card.
+
+**Within category filter chips:**
+- Arrow keys navigate between chips (roving tabindex).
+- Enter/Space activates the focused chip.
+- Tab exits the chip group to the next focusable element.
+
+**Within card grid:**
+- Each card is focusable (the card link or the Deploy button).
+- Tab moves through cards in reading order (left→right, top→bottom).
+- Enter activates the focused card's Deploy link.
+
+**Search interaction:**
+- Typing updates results after 300ms debounce.
+- Result count is announced via live region.
+- Escape clears the search input and restores full catalog.
+- Down Arrow from search input moves focus to the first result card.
+
+### 14.6 Focus Management During Wizard Step Transitions
+
+**Forward navigation (Continue):**
+1. Validate current step fields.
+2. If validation passes: animate transition, update step indicator, move focus to the new step's first heading or first interactive element.
+3. If validation fails: move focus to the first invalid field, announce error.
+
+**Backward navigation (Back):**
+1. No validation — allow partial fill.
+2. Animate reverse transition, update step indicator, move focus to the previous step's heading.
+3. All previously entered values are preserved.
+
+**Edit-back from summary:**
+1. User clicks "Edit" on summary screen — focus jumps to the target step's heading.
+2. After editing, "Continue" from that step skips past completed steps back to summary.
+3. Focus returns to the summary section the user was editing.
+
+**Step announcement:**
+```typescript
+function onStepChange(stepNumber: number, totalSteps: number, stepName: string) {
+  // 1. Update the live region
+  const announcement = document.getElementById('wizard-step-announcement');
+  if (announcement) {
+    announcement.textContent = `Step ${stepNumber} of ${totalSteps}: ${stepName}`;
+  }
+
+  // 2. Move focus to the new step's heading
+  requestAnimationFrame(() => {
+    const heading = document.querySelector<HTMLElement>(
+      `[data-step="${stepNumber}"] h2, [data-step="${stepNumber}"] [data-step-heading]`
+    );
+    if (heading) {
+      heading.setAttribute('tabindex', '-1');
+      heading.focus();
+    }
+  });
+}
+```
