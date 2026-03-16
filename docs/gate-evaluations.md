@@ -529,3 +529,34 @@ Two **critical** security bugs MUST be fixed before production deployment:
 ### Decision
 
 **PASS** — All P8 artifacts produced and approved. Enhancement candidates fully resolved. Session telemetry finalized. Delivery summary generated. Feature branch ready for merge to `main`. UnplugHQ v0.1.0 Sprint 1 delivery complete.
+
+---
+
+# PI-2 Gate Evaluations
+
+## Gate 1 (PI-2) — P0 (Intake) → P1 (Discovery)
+
+**Evaluated:** 2026-03-16
+**Evaluator:** Product Manager
+**Result:** PASS
+
+### Checklist
+
+| # | Criterion | Status | Evidence |
+|---|-----------|--------|----------|
+| 1 | Work item type is Epic (PI continuation) | PASS | AB#180 reopened for PI-2, state Active |
+| 2 | Product vision updated for PI-2 | PASS | `docs/product-vision.md` v2.0.0 — PI-2 addendum with Sprint 2 scope |
+| 3 | Feature roadmap updated | PASS | `docs/feature-roadmap.md` — PI-1 marked delivered, PI-2 NOW section |
+| 4 | PI-1 summary archived | PASS | `docs/pi-1-summary.md` — complete with carry-forward items |
+| 5 | Feature branch created | PASS | `feat/pi-2-sprint-2` from `main` at `967b284` |
+| 6 | `docs/` directory exists | PASS | All PI-1 artifacts + PI-2 additions present |
+| 7 | RTE PI objectives updated | PASS | `docs/pi-objectives.md` v2.0.0 — 6 PI-2 objectives. AB#277 |
+| 8 | RTE risk register updated | PASS | `docs/risk-register.md` v2.0.0 — 13 new PI-2 risks. AB#277 |
+| 9 | No technology prescriptions in vision | PASS | PI-2 addendum describes outcomes only |
+| 10 | PI-1 work items closed in Azure Boards | PASS | Epic AB#180 was Closed, now reopened for PI-2 |
+| 11 | Enhancement candidates resolved | PASS | 0 in `proposed` state (2 rejected, 2 deferred) |
+| 12 | Dependency audit | PASS | 1 moderate (esbuild in drizzle-kit dev dep), no critical/high |
+
+### Decision
+
+**PASS** — PI-2 initialized correctly. PI-1 archived. Product vision updated with Sprint 2 scope. RTE produced PI-2 objectives and risk register. Feature branch created. Proceeding to Phase 1 (Discovery & Analysis).
