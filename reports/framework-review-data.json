@@ -1,0 +1,110 @@
+{
+  "project": "unplughq",
+  "timestamp": "2026-03-16T08:37:50.848Z",
+  "dimensions": {
+    "agentEffectiveness": {
+      "score": 1,
+      "findings": []
+    },
+    "phaseFlow": {
+      "score": 0.9,
+      "findings": []
+    },
+    "ruleEnforcement": {
+      "score": 0.6,
+      "findings": [
+        {
+          "level": "warning",
+          "message": "Technology prescription in ../unplughq/docs/product-vision.md: azure, Docker"
+        }
+      ]
+    },
+    "artifactConvention": {
+      "score": 0.967741935483871,
+      "findings": [
+        {
+          "level": "info",
+          "message": "Missing frontmatter field \"artifact\" in ../unplughq/docs/index.md"
+        },
+        {
+          "level": "info",
+          "message": "Missing frontmatter field \"produced-by\" in ../unplughq/docs/index.md"
+        },
+        {
+          "level": "info",
+          "message": "Missing frontmatter field \"status\" in ../unplughq/docs/index.md"
+        },
+        {
+          "level": "info",
+          "message": "Missing frontmatter field \"produced-by\" in ../unplughq/docs/test-report.md"
+        }
+      ]
+    },
+    "workflowFriction": {
+      "score": 0.9,
+      "findings": [
+        {
+          "level": "info",
+          "message": "2 deferred item(s) detected across artifacts"
+        }
+      ]
+    },
+    "inDeliveryObservations": {
+      "score": 0.7,
+      "findings": [
+        {
+          "level": "info",
+          "message": "[Release Train Engineer] skills: Azure Boards health check returned NOT_FOUND for project 'unplughq', which blocks the mandatory Task-First lifecycle for delegated specialist work even when artifact production is otherwise ready to proceed.",
+          "suggestion": "Add a documented contingency path for early-phase artifact work when Azure project registration lags repo initialization, or add a pre-delegation validation step that fails before specialist invocation begins."
+        },
+        {
+          "level": "info",
+          "message": "[Content Strategist] agents: Content Strategist agent cannot automatically verify completion of Work Item states without direct CI access or terminal permissions.",
+          "suggestion": "Allow agents a read-only terminal or direct Azure Boards API integration context to self-validate if terminal tools are withheld."
+        },
+        {
+          "level": "info",
+          "message": "[Release Train Engineer] docs: The invocation context places AB#207 in Sprint 1 and AB#201 in Sprint 2, but current draft P3 planning artifacts still show the reverse allocation.",
+          "suggestion": "Add an explicit reconciliation step in P3 before RTE program-board work so PO and SM artifacts reflect the latest committed sprint allocation."
+        }
+      ]
+    }
+  },
+  "enhancementCandidates": [
+    {
+      "id": "EC-001",
+      "severity": "high",
+      "targetLayer": "instructions",
+      "finding": "Technology prescription in ../unplughq/docs/product-vision.md: azure, Docker",
+      "recommendation": "Strengthen technology neutrality enforcement in Gate 1 evaluation criteria"
+    },
+    {
+      "id": "EC-002",
+      "severity": "medium",
+      "targetLayer": "docs",
+      "finding": "Azure Boards health check returned NOT_FOUND for project 'unplughq', which blocks the mandatory Task-First lifecycle for delegated specialist work even when artifact production is otherwise ready to proceed.",
+      "recommendation": "Add a documented contingency path for early-phase artifact work when Azure project registration lags repo initialization, or add a pre-delegation validation step that fails before specialist invocation begins."
+    },
+    {
+      "id": "EC-003",
+      "severity": "medium",
+      "targetLayer": "agents",
+      "finding": "Content Strategist agent cannot automatically verify completion of Work Item states without direct CI access or terminal permissions.",
+      "recommendation": "Allow agents a read-only terminal or direct Azure Boards API integration context to self-validate if terminal tools are withheld."
+    },
+    {
+      "id": "EC-004",
+      "severity": "medium",
+      "targetLayer": "docs",
+      "finding": "The invocation context places AB#207 in Sprint 1 and AB#201 in Sprint 2, but current draft P3 planning artifacts still show the reverse allocation.",
+      "recommendation": "Add an explicit reconciliation step in P3 before RTE program-board work so PO and SM artifacts reflect the latest committed sprint allocation."
+    }
+  ],
+  "summary": {
+    "overallScore": 0.84,
+    "candidateCount": 4,
+    "highSeverity": 1,
+    "mediumSeverity": 3,
+    "lowSeverity": 0
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "candidates": [
+    {
+      "id": "EC-001",
+      "severity": "high",
+      "targetLayer": "instructions",
+      "finding": "Technology prescription in ../unplughq/docs/product-vision.md: azure, Docker",
+      "recommendation": "Strengthen technology neutrality enforcement in Gate 1 evaluation criteria",
+      "state": "rejected",
+      "sourceDelivery": "unplughq",
+      "discoveredAt": "2026-03-16",
+      "stateHistory": [
+        {
+          "state": "proposed",
+          "date": "2026-03-16",
+          "by": "release-train-engineer"
+        },
+        {
+          "state": "rejected",
+          "date": "2026-03-16",
+          "by": "product-manager",
+          "reason": "False positive — product domain inherently involves Docker containers and cloud services. These are domain terms, not technology prescriptions."
+        }
+      ]
+    },
+    {
+      "id": "EC-002",
+      "severity": "medium",
+      "targetLayer": "docs",
+      "finding": "Azure Boards health check returned NOT_FOUND for project 'unplughq', which blocks the mandatory Task-First lifecycle for delegated specialist work even when artifact production is otherwise ready to proceed.",
+      "recommendation": "Add a documented contingency path for early-phase artifact work when Azure project registration lags repo initialization, or add a pre-delegation validation step that fails before specialist invocation begins.",
+      "state": "deferred",
+      "sourceDelivery": "unplughq",
+      "discoveredAt": "2026-03-16",
+      "stateHistory": [
+        {
+          "state": "proposed",
+          "date": "2026-03-16",
+          "by": "release-train-engineer"
+        },
+        {
+          "state": "deferred",
+          "date": "2026-03-16",
+          "by": "product-manager",
+          "reason": "Known issue — dedicated ADO project detection addressed during session.",
+          "targetPi": "PI-2"
+        }
+      ]
+    },
+    {
+      "id": "EC-003",
+      "severity": "medium",
+      "targetLayer": "agents",
+      "finding": "Content Strategist agent cannot automatically verify completion of Work Item states without direct CI access or terminal permissions.",
+      "recommendation": "Allow agents a read-only terminal or direct Azure Boards API integration context to self-validate if terminal tools are withheld.",
+      "state": "deferred",
+      "sourceDelivery": "unplughq",
+      "discoveredAt": "2026-03-16",
+      "stateHistory": [
+        {
+          "state": "proposed",
+          "date": "2026-03-16",
+          "by": "release-train-engineer"
+        },
+        {
+          "state": "deferred",
+          "date": "2026-03-16",
+          "by": "product-manager",
+          "reason": "CS tool access improvement recorded in retrospective.",
+          "targetPi": "PI-2"
+        }
+      ]
+    },
+    {
+      "id": "EC-004",
+      "severity": "medium",
+      "targetLayer": "docs",
+      "finding": "The invocation context places AB#207 in Sprint 1 and AB#201 in Sprint 2, but current draft P3 planning artifacts still show the reverse allocation.",
+      "recommendation": "Add an explicit reconciliation step in P3 before RTE program-board work so PO and SM artifacts reflect the latest committed sprint allocation.",
+      "state": "rejected",
+      "sourceDelivery": "unplughq",
+      "discoveredAt": "2026-03-16",
+      "stateHistory": [
+        {
+          "state": "proposed",
+          "date": "2026-03-16",
+          "by": "release-train-engineer"
+        },
+        {
+          "state": "rejected",
+          "date": "2026-03-16",
+          "by": "product-manager",
+          "reason": "Sprint assignment corrected during P3 execution. Not systemic."
+        }
+      ]
+    }
+  ]
+}
