@@ -111,6 +111,7 @@ nav:
     - Build Verification — P4 Step 2 End Merge Integration: build-verification-merge.md
     - Build Verification — P5 Remediation: build-verification-remediation.md
     - Build Verification Report — UnplugHQ: build-verification-report.md
+    - Build Verification Report — UnplugHQ PI-2 Sprint 2 P4 Step 2 Setup Completion: build-verification-sprint2.md
     - Database Deployment — Production PostgreSQL 17 Configuration: database-deployment.md
     - Database Schema — UnplugHQ: database-schema.md
     - Deployment Runbook — UnplugHQ Sprint 1: deployment-runbook.md
