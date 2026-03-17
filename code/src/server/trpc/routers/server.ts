@@ -6,7 +6,7 @@ import { db } from '@/server/db';
 import { servers } from '@/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { ErrorCode } from '@/server/lib/errors';
-import { provisionQueue } from '@/server/queue';
+import { getProvisionQueue } from '@/server/queue';
 import { logger } from '@/server/lib/logger';
 
 export const serverRouter = router({
@@ -65,7 +65,7 @@ export const serverRouter = router({
         .returning();
 
       // Enqueue test-connection job
-      const job = await provisionQueue.add('test-connection', {
+      const job = await getProvisionQueue().add('test-connection', {
         serverId: server.id,
         tenantId: ctx.tenantId,
         ip: input.ip,
@@ -107,7 +107,7 @@ export const serverRouter = router({
         .set({ status: 'provisioning', updatedAt: new Date() })
         .where(eq(servers.id, server.id));
 
-      const job = await provisionQueue.add('provision-server', {
+      const job = await getProvisionQueue().add('provision-server', {
         serverId: server.id,
         tenantId: ctx.tenantId,
       });
