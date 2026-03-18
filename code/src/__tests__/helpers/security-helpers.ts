@@ -1,37 +1,30 @@
 /**
- * Security Mock Helpers — CSRF, audit logging, and secrets rotation helpers for tests.
- * Based on threat-model.md S-04/S-06 (CSRF), R-01 (audit logging), B-260 (secrets rotation).
+ * Security Mock Helpers — combined CSRF, Audit Log, and Key Management for unit/integration tests.
+ * Imported by: csrf-middleware.test.ts, audit-logging.test.ts, secrets-rotation.test.ts
  */
-import { randomBytes } from 'crypto';
+import { randomBytes } from 'node:crypto';
 
-// --- CSRF Middleware Mock ---
-
-const sessionTokens = new Map<string, string>();
+// ─── CSRF Token Store ───────────────────────────────────────────────
+const csrfTokens = new Map<string, string>();
 
 export function generateCsrfToken(sessionId: string): string {
-  const token = randomBytes(32).toString('hex');
-  sessionTokens.set(sessionId, token);
+  const token = randomBytes(32).toString('hex'); // 64 hex chars = 256 bits
+  csrfTokens.set(sessionId, token);
   return token;
 }
 
 export function validateCsrfToken(sessionId: string, token: string): boolean {
-  const storedToken = sessionTokens.get(sessionId);
-  if (!storedToken) return false;
-  // Constant-time comparison
-  if (storedToken.length !== token.length) return false;
-  let result = 0;
-  for (let i = 0; i < storedToken.length; i++) {
-    result |= storedToken.charCodeAt(i) ^ token.charCodeAt(i);
-  }
-  return result === 0;
+  if (!token) return false;
+  const stored = csrfTokens.get(sessionId);
+  if (!stored) return false;
+  return stored === token;
 }
 
 export function resetCsrfTokens(): void {
-  sessionTokens.clear();
+  csrfTokens.clear();
 }
 
-// --- Audit Logging Mock ---
-
+// ─── Audit Log Store ────────────────────────────────────────────────
 interface AuditEntry {
   id: string;
   tenantId: string;
@@ -40,26 +33,26 @@ interface AuditEntry {
   targetType: string;
   targetId: string;
   outcome: 'success' | 'failure';
+  metadata?: Record<string, string>;
   timestamp: string;
-  metadata?: Record<string, unknown>;
 }
 
 const auditLog: AuditEntry[] = [];
 let auditCounter = 0;
 
-export function createAuditEntry(params: {
+export function createAuditEntry(input: {
   tenantId: string;
   userId: string;
   action: string;
   targetType: string;
   targetId: string;
   outcome: 'success' | 'failure';
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, string>;
 }): AuditEntry {
   const entry: AuditEntry = {
     id: `audit-${++auditCounter}`,
+    ...input,
     timestamp: new Date().toISOString(),
-    ...params,
   };
   auditLog.push(entry);
   return entry;
@@ -67,19 +60,24 @@ export function createAuditEntry(params: {
 
 export function queryAuditLog(
   tenantId: string,
-  options: { page?: number; pageSize?: number; retentionDays?: number } = {},
+  options: { retentionDays?: number; page?: number; pageSize?: number } = {},
 ): { entries: AuditEntry[]; total: number; page: number; pageSize: number } {
-  const { page = 1, pageSize = 20, retentionDays = 90 } = options;
-  const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
+  const { retentionDays = 90, page = 1, pageSize = 20 } = options;
 
-  const filtered = auditLog.filter(
-    (e) => e.tenantId === tenantId && new Date(e.timestamp) >= cutoff,
-  );
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - retentionDays);
 
+  const filtered = auditLog.filter((e) => {
+    if (e.tenantId !== tenantId) return false;
+    if (new Date(e.timestamp) <= cutoff) return false;
+    return true;
+  });
+
+  const total = filtered.length;
   const start = (page - 1) * pageSize;
   const entries = filtered.slice(start, start + pageSize);
 
-  return { entries, total: filtered.length, page, pageSize };
+  return { entries, total, page, pageSize };
 }
 
 export function getAuditLogEntries(tenantId: string): AuditEntry[] {
@@ -91,13 +89,15 @@ export function resetAuditLog(): void {
   auditCounter = 0;
 }
 
-// --- Secrets Rotation Mock ---
-
+// ─── Key Store (Secrets Rotation) ───────────────────────────────────
 interface KeyRecord {
   id: string;
+  tenantId: string;
   serverId: string;
-  keyType: 'ssh' | 'api-token';
-  active: boolean;
+  keyType: string;
+  keyValue: string;
+  isActive: boolean;
+  previousKeyId: string | null;
   createdAt: string;
   revokedAt: string | null;
 }
@@ -105,12 +105,20 @@ interface KeyRecord {
 const keyStore: KeyRecord[] = [];
 let keyCounter = 0;
 
-export function addKey(serverId: string, keyType: 'ssh' | 'api-token'): KeyRecord {
+export function addKey(input: {
+  tenantId: string;
+  serverId: string;
+  keyType: string;
+  keyValue: string;
+}): KeyRecord {
   const key: KeyRecord = {
     id: `key-${++keyCounter}`,
-    serverId,
-    keyType,
-    active: true,
+    tenantId: input.tenantId,
+    serverId: input.serverId,
+    keyType: input.keyType,
+    keyValue: input.keyValue,
+    isActive: true,
+    previousKeyId: null,
     createdAt: new Date().toISOString(),
     revokedAt: null,
   };
@@ -118,21 +126,54 @@ export function addKey(serverId: string, keyType: 'ssh' | 'api-token'): KeyRecor
   return key;
 }
 
-export function rotateKey(serverId: string, keyType: 'ssh' | 'api-token'): { oldKey: KeyRecord; newKey: KeyRecord } {
+export function rotateKey(input: {
+  tenantId: string;
+  serverId: string;
+  keyType: string;
+  newKeyValue: string;
+}): KeyRecord {
   const oldKey = keyStore.find(
-    (k) => k.serverId === serverId && k.keyType === keyType && k.active,
+    (k) =>
+      k.tenantId === input.tenantId &&
+      k.serverId === input.serverId &&
+      k.keyType === input.keyType &&
+      k.isActive,
   );
-  if (!oldKey) throw new Error(`No active ${keyType} key for server ${serverId}`);
-  oldKey.active = false;
-  oldKey.revokedAt = new Date().toISOString();
-  const newKey = addKey(serverId, keyType);
-  return { oldKey, newKey };
+
+  if (oldKey) {
+    oldKey.isActive = false;
+    oldKey.revokedAt = new Date().toISOString();
+  }
+
+  const newKey: KeyRecord = {
+    id: `key-${++keyCounter}`,
+    tenantId: input.tenantId,
+    serverId: input.serverId,
+    keyType: input.keyType,
+    keyValue: input.newKeyValue,
+    isActive: true,
+    previousKeyId: oldKey?.id ?? null,
+    createdAt: new Date().toISOString(),
+    revokedAt: null,
+  };
+  keyStore.push(newKey);
+  return newKey;
 }
 
-export function getActiveKey(serverId: string, keyType: 'ssh' | 'api-token'): KeyRecord | null {
-  return keyStore.find(
-    (k) => k.serverId === serverId && k.keyType === keyType && k.active,
-  ) ?? null;
+export function getActiveKey(
+  tenantId: string,
+  serverId: string,
+  keyType: string,
+): KeyRecord | null {
+  return (
+    keyStore.find(
+      (k) =>
+        k.tenantId === tenantId &&
+        k.serverId === serverId &&
+        k.keyType === keyType &&
+        k.isActive,
+    ) ?? null
+  );
 }
 
 export function resetKeyStore(): void {

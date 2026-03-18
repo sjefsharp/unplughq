@@ -6,6 +6,18 @@ import { useState } from "react";
 import superjson from "superjson";
 import { trpc } from "./client";
 
+function getCsrfTokenFromCookie(): string | undefined {
+  if (typeof document === 'undefined') {
+    return undefined;
+  }
+
+  const match = document.cookie
+    .split('; ')
+    .find((cookie) => cookie.startsWith('__Host-csrf='));
+
+  return match ? decodeURIComponent(match.split('=').slice(1).join('=')) : undefined;
+}
+
 function getBaseUrl() {
   if (typeof window !== "undefined") return "";
   return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -27,6 +39,10 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`,
           transformer: superjson,
+          headers() {
+            const csrfToken = getCsrfTokenFromCookie();
+            return csrfToken ? { 'x-csrf-token': csrfToken } : {};
+          },
         }),
       ],
     }),

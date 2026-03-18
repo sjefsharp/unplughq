@@ -1,4 +1,5 @@
-import { router, protectedProcedure } from '../index';
+import { randomBytes } from 'node:crypto';
+import { router, protectedMutationProcedure, protectedProcedure } from '../index';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { ServerConnectInput, TierLimits } from '@/lib/schemas';
@@ -6,8 +7,9 @@ import { db } from '@/server/db';
 import { servers } from '@/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { ErrorCode } from '@/server/lib/errors';
-import { provisionQueue } from '@/server/queue';
+import { monitorQueue, provisionQueue } from '@/server/queue';
 import { logger } from '@/server/lib/logger';
+import { encryptSSHKey } from '@/server/lib/encryption';
 
 export const serverRouter = router({
   /** List all servers for the authenticated tenant (I-07) */
@@ -35,7 +37,7 @@ export const serverRouter = router({
     }),
 
   /** Enqueue test-connection job; store server record (status: connecting) */
-  testConnection: protectedProcedure
+  testConnection: protectedMutationProcedure
     .input(ServerConnectInput)
     .mutation(async ({ input, ctx }) => {
       // E-03: Check tier limits
@@ -82,7 +84,7 @@ export const serverRouter = router({
     }),
 
   /** Enqueue provision-server job with compatibility gate (BR-F1-001) */
-  provision: protectedProcedure
+  provision: protectedMutationProcedure
     .input(z.object({ serverId: z.string().uuid() }))
     .mutation(async ({ input, ctx }) => {
       const server = await db.query.servers.findFirst({
@@ -121,7 +123,7 @@ export const serverRouter = router({
     }),
 
   /** Update human-readable server name (FR-F1-008) */
-  rename: protectedProcedure
+  rename: protectedMutationProcedure
     .input(z.object({ id: z.string().uuid(), name: z.string().min(1).max(100) }))
     .mutation(async ({ input, ctx }) => {
       const result = await db
@@ -138,7 +140,7 @@ export const serverRouter = router({
     }),
 
   /** Disconnect server (NFR-006: requires confirmation token) */
-  disconnect: protectedProcedure
+  disconnect: protectedMutationProcedure
     .input(z.object({ id: z.string().uuid(), confirmationToken: z.string() }))
     .mutation(async ({ input, ctx }) => {
       const server = await db.query.servers.findFirst({
@@ -158,5 +160,54 @@ export const serverRouter = router({
         .where(eq(servers.id, server.id));
 
       return { success: true };
+    }),
+
+  rotateSSHKey: protectedMutationProcedure
+    .input(z.object({ serverId: z.string().uuid() }))
+    .mutation(async ({ input, ctx }) => {
+      const server = await db.query.servers.findFirst({
+        where: and(eq(servers.id, input.serverId), eq(servers.tenantId, ctx.tenantId)),
+      });
+
+      if (!server) {
+        throw new TRPCError({ code: 'NOT_FOUND', cause: { code: ErrorCode.NOT_FOUND } });
+      }
+
+      const sshKey = `-----BEGIN OPENSSH PRIVATE KEY-----\n${randomBytes(48).toString('base64')}\n-----END OPENSSH PRIVATE KEY-----`;
+      const sshKeyEncrypted = await encryptSSHKey(sshKey, ctx.tenantId);
+
+      await db
+        .update(servers)
+        .set({ sshKeyEncrypted, updatedAt: new Date() })
+        .where(and(eq(servers.id, server.id), eq(servers.tenantId, ctx.tenantId)));
+
+      return { rotated: true };
+    }),
+
+  rotateAgentToken: protectedMutationProcedure
+    .input(z.object({ serverId: z.string().uuid() }))
+    .mutation(async ({ input, ctx }) => {
+      const server = await db.query.servers.findFirst({
+        where: and(eq(servers.id, input.serverId), eq(servers.tenantId, ctx.tenantId)),
+      });
+
+      if (!server) {
+        throw new TRPCError({ code: 'NOT_FOUND', cause: { code: ErrorCode.NOT_FOUND } });
+      }
+
+      const apiToken = randomBytes(32).toString('hex');
+
+      await db
+        .update(servers)
+        .set({ apiToken, updatedAt: new Date() })
+        .where(and(eq(servers.id, server.id), eq(servers.tenantId, ctx.tenantId)));
+
+      await monitorQueue.add('update-agent', {
+        tenantId: ctx.tenantId,
+        serverId: server.id,
+        apiToken,
+      });
+
+      return { rotated: true };
     }),
 });

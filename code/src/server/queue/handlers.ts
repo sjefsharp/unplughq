@@ -1,13 +1,30 @@
 import type { Job } from 'bullmq';
 import { db } from '@/server/db';
-import { servers } from '@/server/db/schema';
+import { metricsSnapshots, servers } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { sshService } from '@/server/services/ssh/ssh-service';
 import { decryptSSHKey } from '@/server/lib/encryption';
 import { sseEventBus } from '@/server/lib/sse-event-bus';
 import { logger } from '@/server/lib/logger';
-import { TestConnectionPayload, ProvisionServerPayload } from './schemas';
+import {
+  DeployAppPayload,
+  ProcessMetricsPayload,
+  ProvisionServerPayload,
+  SendAlertPayload,
+  TestConnectionPayload,
+  UpdateAgentPayload,
+} from './schemas';
 import { randomBytes } from 'node:crypto';
+import {
+  buildCaddyRouteId,
+  createEnvFileContent,
+  getCatalogAppById,
+  getTenantDeployment,
+  getTenantServer,
+  updateDeploymentStatus,
+  verifyDeploymentReachability,
+} from '@/server/services/deployment-service';
+import { evaluateMetricAlerts, sendAlertNotification } from '@/server/services/alert-service';
 
 /**
  * Test connection job handler.
@@ -218,4 +235,218 @@ export async function handleProvisionServer(job: Job): Promise<void> {
     log.error({ serverId, error: (error as Error).message }, 'Provisioning error');
     throw error; // Let BullMQ retry
   }
+}
+
+export async function handleDeployApp(job: Job): Promise<void> {
+  const log = logger.child({ jobId: job.id, jobName: 'deploy-app' });
+  const parseResult = DeployAppPayload.safeParse(job.data);
+
+  if (!parseResult.success) {
+    log.error({ issues: parseResult.error.issues }, 'Invalid deploy-app job payload');
+    throw new Error('Invalid deploy-app job payload');
+  }
+
+  const payload = parseResult.data;
+  const deployment = await getTenantDeployment(payload.deploymentId, payload.tenantId);
+  const [server] = await Promise.all([
+    getTenantServer(payload.serverId, payload.tenantId),
+    getCatalogAppById(payload.catalogAppId),
+  ]);
+
+  let privateKey = '';
+  if (server.sshKeyEncrypted) {
+    privateKey = await decryptSSHKey(server.sshKeyEncrypted, payload.tenantId);
+  }
+
+  const sshParams = {
+    host: server.ip,
+    port: server.sshPort,
+    username: server.sshUser,
+    privateKey,
+  };
+
+  const phases = [
+    {
+      status: 'pulling' as const,
+      execute: () =>
+        sshService.executeCommand({
+          ...sshParams,
+          command: { type: 'docker-pull', params: { imageRef: payload.imageRef } },
+        }),
+    },
+    {
+      status: 'configuring' as const,
+      execute: () =>
+        sshService.executeCommand({
+          ...sshParams,
+          command: {
+            type: 'write-env-file',
+            params: { path: payload.envFilePath, content: createEnvFileContent(deployment.config) },
+          },
+        }),
+    },
+    {
+      status: 'provisioning-ssl' as const,
+      execute: () =>
+        sshService.executeCommand({
+          ...sshParams,
+          command: {
+            type: 'caddy-add-route',
+            params: {
+              routeId: buildCaddyRouteId(deployment.id),
+              domain: deployment.domain,
+              upstream: `${deployment.containerName}:3000`,
+            },
+          },
+        }),
+    },
+    {
+      status: 'starting' as const,
+      execute: () =>
+        sshService.executeCommand({
+          ...sshParams,
+          command: {
+            type: 'docker-run',
+            params: {
+              containerName: deployment.containerName,
+              imageRef: payload.imageRef,
+              networkName: 'unplughq',
+              envFile: payload.envFilePath,
+            },
+          },
+        }),
+    },
+  ];
+
+  try {
+    for (const phase of phases) {
+      await updateDeploymentStatus({
+        deploymentId: deployment.id,
+        tenantId: payload.tenantId,
+        status: phase.status,
+        phase: phase.status,
+        accessUrl: deployment.accessUrl,
+      });
+      await job.updateProgress({ status: phase.status });
+
+      const result = await phase.execute();
+      if (result.exitCode !== 0) {
+        throw new Error(result.stderr || `Deployment phase ${phase.status} failed`);
+      }
+    }
+
+    const verification = await verifyDeploymentReachability({
+      deploymentId: deployment.id,
+      domain: payload.domain,
+    });
+
+    if (!verification.healthy) {
+      throw new Error(verification.failureReason ?? 'Health check failed');
+    }
+
+    await updateDeploymentStatus({
+      deploymentId: deployment.id,
+      tenantId: payload.tenantId,
+      status: 'running',
+      phase: 'running',
+      accessUrl: `https://${payload.domain}`,
+    });
+  } catch (error) {
+    await updateDeploymentStatus({
+      deploymentId: deployment.id,
+      tenantId: payload.tenantId,
+      status: 'failed',
+      phase: 'failed',
+      accessUrl: deployment.accessUrl,
+    });
+
+    await sshService
+      .executeCommand({
+        ...sshParams,
+        command: { type: 'docker-rm', params: { containerName: deployment.containerName } },
+      })
+      .catch(() => undefined);
+    await sshService
+      .executeCommand({
+        ...sshParams,
+        command: { type: 'caddy-remove-route', params: { routeId: buildCaddyRouteId(deployment.id) } },
+      })
+      .catch(() => undefined);
+
+    log.error(
+      { deploymentId: deployment.id, error: error instanceof Error ? error.message : 'Unknown deploy error' },
+      'Deploy-app job failed',
+    );
+    throw error;
+  }
+}
+
+export async function handleProcessMetrics(job: Job): Promise<void> {
+  const parseResult = ProcessMetricsPayload.safeParse(job.data);
+
+  if (!parseResult.success) {
+    throw new Error('Invalid process-metrics job payload');
+  }
+
+  const payload = parseResult.data;
+  await db.insert(metricsSnapshots).values({
+    tenantId: payload.tenantId,
+    serverId: payload.serverId,
+    timestamp: new Date(payload.snapshot.timestamp),
+    cpuPercent: payload.snapshot.cpuPercent,
+    ramUsedBytes: BigInt(Math.floor(payload.snapshot.ramUsedBytes)),
+    ramTotalBytes: BigInt(Math.floor(payload.snapshot.ramTotalBytes)),
+    diskUsedBytes: BigInt(Math.floor(payload.snapshot.diskUsedBytes)),
+    diskTotalBytes: BigInt(Math.floor(payload.snapshot.diskTotalBytes)),
+    networkRxBytesPerSec: BigInt(Math.floor(payload.snapshot.networkRxBytesPerSec)),
+    networkTxBytesPerSec: BigInt(Math.floor(payload.snapshot.networkTxBytesPerSec)),
+    containers: payload.snapshot.containers,
+  });
+
+  await evaluateMetricAlerts({
+    tenantId: payload.tenantId,
+    serverId: payload.serverId,
+    snapshot: payload.snapshot,
+  });
+}
+
+export async function handleSendAlert(job: Job): Promise<void> {
+  const parseResult = SendAlertPayload.safeParse(job.data);
+
+  if (!parseResult.success) {
+    throw new Error('Invalid send-alert job payload');
+  }
+
+  await sendAlertNotification(parseResult.data.alertId, parseResult.data.tenantId);
+}
+
+export async function handleUpdateAgent(job: Job): Promise<void> {
+  const parseResult = UpdateAgentPayload.safeParse(job.data);
+
+  if (!parseResult.success) {
+    throw new Error('Invalid update-agent job payload');
+  }
+
+  const payload = parseResult.data;
+  const server = await getTenantServer(payload.serverId, payload.tenantId);
+
+  if (!server.sshKeyEncrypted) {
+    return;
+  }
+
+  const privateKey = await decryptSSHKey(server.sshKeyEncrypted, payload.tenantId);
+  await sshService.executeCommand({
+    host: server.ip,
+    port: server.sshPort,
+    username: server.sshUser,
+    privateKey,
+    command: {
+      type: 'start-monitoring-agent',
+      params: {
+        apiToken: payload.apiToken,
+        controlPlaneUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
+        serverId: server.id,
+      },
+    },
+  });
 }
