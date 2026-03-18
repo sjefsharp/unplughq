@@ -111,7 +111,7 @@ nav:
     - Build Verification — P4 Step 2 End Merge Integration: build-verification-merge.md
     - Build Verification — P5 Remediation: build-verification-remediation.md
     - Build Verification Report — UnplugHQ: build-verification-report.md
-    - Build Verification Report — UnplugHQ PI-2 Sprint 2 P4 Step 2 Setup Completion: build-verification-sprint2.md
+    - Build Verification Report — UnplugHQ PI-2 Sprint 2 P4 Step 2 Close: build-verification-sprint2.md
     - Database Deployment — Production PostgreSQL 17 Configuration: database-deployment.md
     - Database Schema — UnplugHQ: database-schema.md
     - Database Schema Sprint 2: database-schema-sprint2.md
@@ -133,4 +133,5 @@ nav:
     - Threat Model — UnplugHQ Platform: threat-model.md
     - Vulnerability Report — UnplugHQ P5 Security Verification: vulnerability-report.md
 - Uncategorized:
+    - Backend Sprint 2 Implementation: backend-sprint2.md
     - Sprint 1 — P5 Test Execution Report: test-report.md
