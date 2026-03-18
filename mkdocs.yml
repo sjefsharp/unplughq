@@ -89,6 +89,7 @@ nav:
     - UnplugHQ Interaction Patterns Library: interaction-patterns.md
     - UnplugHQ Wireframes & Layout Specifications: wireframes.md
 - Accessibility:
+    - Accessibility Audit Report — Sprint 2 (P5 WCAG 2.2 AA): accessibility-report-sprint2.md
     - Accessibility Implementation Guidelines — UnplugHQ Platform: accessibility-guidelines.md
     - P5 WCAG 2.2 AA Compliance Audit — UnplugHQ Sprint 1: accessibility-report.md
     - WCAG 2.2 AA Compliance Audit — UnplugHQ Platform: wcag-audit.md
@@ -131,6 +132,7 @@ nav:
     - Test Strategy — P4 Step 1 (TDD Contracts): test-strategy-p4.md
     - Test Strategy — Sprint 2 P4 Step 1 (TDD Contracts): test-strategy-sprint2.md
 - Security:
+    - Security Review — UnplugHQ PI-2 Sprint 2: security-review-sprint2.md
     - Threat Model — UnplugHQ Platform: threat-model.md
     - Vulnerability Report — UnplugHQ P5 Security Verification: vulnerability-report.md
 - Uncategorized:
