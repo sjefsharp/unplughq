@@ -127,6 +127,7 @@ nav:
     - Sprint 2 Frontend Implementation: fe-sprint2-implementation.md
 - Testing:
     - Smoke Test Report — UnplugHQ Sprint 1: smoke-test-report.md
+    - Sprint 2 P5 Test Execution Report: test-report-sprint2.md
     - Test Strategy — P4 Step 1 (TDD Contracts): test-strategy-p4.md
     - Test Strategy — Sprint 2 P4 Step 1 (TDD Contracts): test-strategy-sprint2.md
 - Security:
