@@ -126,6 +126,7 @@ nav:
     - Frontend Deployment — Production Build & Bundle Analysis: frontend-deployment.md
     - P5 Build Verification Report — UnplugHQ Sprint 1: build-verification-p5.md
     - Sprint 2 Frontend Implementation: fe-sprint2-implementation.md
+    - Verification Summary — Sprint 2 (P5 End): verification-summary-sprint2.md
 - Testing:
     - Smoke Test Report — UnplugHQ Sprint 1: smoke-test-report.md
     - Sprint 2 P5 Test Execution Report: test-report-sprint2.md
