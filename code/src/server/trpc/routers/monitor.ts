@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { router, protectedMutationProcedure, protectedProcedure } from '../index';
 import { z } from 'zod';
 import { db } from '@/server/db';

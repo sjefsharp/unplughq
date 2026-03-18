@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { TRPCError } from '@trpc/server';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { router, publicProcedure, protectedMutationProcedure, protectedProcedure } from '../index';
 import { z } from 'zod';
 import { CatalogApp, DeployAppInput } from '@/lib/schemas';
 import { db } from '@/server/db';
 import { catalogApps, deployments } from '@/server/db/schema';
-import { deployQueue } from '@/server/queue';
+import { getDeployQueue } from '@/server/queue';
 import { ErrorCode } from '@/server/lib/errors';
 import {
   createContainerName,
@@ -22,6 +22,24 @@ import {
   validateConfigAgainstSchema,
   verifyDeploymentReachability,
 } from '@/server/services/deployment-service';
+
+const catalogGetInput = z
+  .object({
+    id: z.string().optional(),
+    catalogAppId: z.string().optional(),
+  })
+  .refine((value) => Boolean(value.id ?? value.catalogAppId), {
+    message: 'App identifier is required',
+  });
+
+const deploymentGetInput = z
+  .object({
+    id: z.string().uuid().optional(),
+    deploymentId: z.string().uuid().optional(),
+  })
+  .refine((value) => Boolean(value.id ?? value.deploymentId), {
+    message: 'Deployment identifier is required',
+  });
 
 const catalogRouter = router({
   list: publicProcedure
@@ -42,10 +60,11 @@ const catalogRouter = router({
     }),
 
   get: publicProcedure
-    .input(z.object({ catalogAppId: z.string() }))
+    .input(catalogGetInput)
     .query(async ({ input }) => {
+      const catalogAppId = input.catalogAppId ?? input.id;
       const app = await db.query.catalogApps.findFirst({
-        where: eq(catalogApps.id, input.catalogAppId),
+        where: eq(catalogApps.id, catalogAppId!),
       });
 
       if (!app) {
@@ -92,9 +111,9 @@ const deploymentRouter = router({
     }),
 
   get: protectedProcedure
-    .input(z.object({ deploymentId: z.string().uuid() }))
+    .input(deploymentGetInput)
     .query(async ({ input, ctx }) => {
-      const deployment = await getTenantDeployment(input.deploymentId, ctx.tenantId);
+      const deployment = await getTenantDeployment(input.deploymentId ?? input.id!, ctx.tenantId);
       return { ...deployment, logs: getSyntheticDeploymentLogs(deployment) };
     }),
 
@@ -145,7 +164,7 @@ const deploymentRouter = router({
         })
         .returning();
 
-      const job = await deployQueue.add('deploy-app', {
+      const job = await getDeployQueue().add('deploy-app', {
         deploymentId,
         tenantId: ctx.tenantId,
         serverId: server.id,

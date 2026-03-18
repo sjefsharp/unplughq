@@ -3,7 +3,7 @@ import { db } from '@/server/db';
 import { alerts, deployments, metricsSnapshots, users } from '@/server/db/schema';
 import { sseEventBus } from '@/server/lib/sse-event-bus';
 import { logger } from '@/server/lib/logger';
-import { monitorQueue } from '@/server/queue';
+import { getMonitorQueue } from '@/server/queue';
 import type { AlertType, MetricsSnapshot } from '@/lib/schemas';
 import { buildResourceAllocation, getAlertSeverityFromMetrics, getTenantServer } from './deployment-service';
 
@@ -85,7 +85,7 @@ async function createAlert(params: {
   });
 
   try {
-    await monitorQueue.add('send-alert', { alertId: alert.id, tenantId: params.tenantId });
+    await getMonitorQueue().add('send-alert', { alertId: alert.id, tenantId: params.tenantId });
   } catch (error) {
     logger.warn(
       { alertId: alert.id, error: error instanceof Error ? error.message : 'Unknown queue error' },
