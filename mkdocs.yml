@@ -114,6 +114,7 @@ nav:
     - Build Verification Report — UnplugHQ PI-2 Sprint 2 P4 Step 2 Setup Completion: build-verification-sprint2.md
     - Database Deployment — Production PostgreSQL 17 Configuration: database-deployment.md
     - Database Schema — UnplugHQ: database-schema.md
+    - Database Schema Sprint 2: database-schema-sprint2.md
     - Deployment Runbook — UnplugHQ Sprint 1: deployment-runbook.md
     - DevOps Infrastructure — CI/CD, Docker, Monitoring Agent, Provisioning: devops-infrastructure.md
     - FE Auth Pages: fe-auth-pages.md

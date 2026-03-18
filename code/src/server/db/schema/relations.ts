@@ -4,6 +4,7 @@ import {
   accounts,
   sessions,
   servers,
+  catalogApps,
   deployments,
   alerts,
   auditLog,
@@ -17,6 +18,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   deployments: many(deployments),
   alerts: many(alerts),
   auditLogs: many(auditLog),
+  metricsSnapshots: many(metricsSnapshots),
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -34,9 +36,14 @@ export const serversRelations = relations(servers, ({ one, many }) => ({
   metricsSnapshots: many(metricsSnapshots),
 }));
 
+export const catalogAppsRelations = relations(catalogApps, ({ many }) => ({
+  deployments: many(deployments),
+}));
+
 export const deploymentsRelations = relations(deployments, ({ one }) => ({
   tenant: one(users, { fields: [deployments.tenantId], references: [users.id] }),
   server: one(servers, { fields: [deployments.serverId], references: [servers.id] }),
+  catalogApp: one(catalogApps, { fields: [deployments.catalogAppId], references: [catalogApps.id] }),
 }));
 
 export const alertsRelations = relations(alerts, ({ one }) => ({
@@ -50,5 +57,6 @@ export const auditLogRelations = relations(auditLog, ({ one }) => ({
 }));
 
 export const metricsSnapshotsRelations = relations(metricsSnapshots, ({ one }) => ({
+  tenant: one(users, { fields: [metricsSnapshots.tenantId], references: [users.id] }),
   server: one(servers, { fields: [metricsSnapshots.serverId], references: [servers.id] }),
 }));
