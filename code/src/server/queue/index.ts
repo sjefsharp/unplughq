@@ -1,5 +1,6 @@
 import { Queue, Worker, type Job, type ConnectionOptions } from 'bullmq';
 import { createRedisConnection } from './redis';
+import { alertEmailQueueOptions, alertEmailDlqQueueOptions } from '@/server/services/notifications/alert-email';
 
 function getConnection(): ConnectionOptions {
   return createRedisConnection();
@@ -54,6 +55,16 @@ export function getMonitorQueue(): Queue {
   }
   return _monitorQueue;
 }
+
+export const alertEmailQueue = new Queue('alert-email', {
+  connection,
+  defaultJobOptions: alertEmailQueueOptions,
+});
+
+export const alertEmailDlqQueue = new Queue('alert-email-dlq', {
+  connection,
+  defaultJobOptions: alertEmailDlqQueueOptions,
+});
 
 // --- Worker factories ---
 

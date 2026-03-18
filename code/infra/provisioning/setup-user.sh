@@ -77,21 +77,36 @@ chown "${USERNAME}:${USERNAME}" "$AUTHORIZED_KEYS"
 
 # ─── Restricted sudoers (E-04) ───────────────────────────
 SUDOERS_FILE="/etc/sudoers.d/unplughq"
+TMP_SUDOERS_FILE="$(mktemp)"
 
-cat > "$SUDOERS_FILE" <<'SUDOERS'
+cat > "$TMP_SUDOERS_FILE" <<'SUDOERS'
 # UnplugHQ — limited sudo for the unplughq service user (E-04)
-# Only Docker CLI, specific package management, and service control.
-unplughq ALL=(root) NOPASSWD: /usr/bin/docker, /usr/bin/docker-compose
+# Only Docker CLI and the specific APT install/update operations needed by provisioning.
+unplughq ALL=(root) NOPASSWD: /usr/bin/docker
 unplughq ALL=(root) NOPASSWD: /usr/bin/apt-get update
-unplughq ALL=(root) NOPASSWD: /usr/bin/apt-get install -y ca-certificates curl gnupg lsb-release debian-keyring debian-archive-keyring apt-transport-https
-unplughq ALL=(root) NOPASSWD: /usr/bin/apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-unplughq ALL=(root) NOPASSWD: /usr/bin/apt-get install -y caddy
-unplughq ALL=(root) NOPASSWD: /usr/bin/systemctl start caddy, /usr/bin/systemctl stop caddy, /usr/bin/systemctl restart caddy, /usr/bin/systemctl reload caddy
-unplughq ALL=(root) NOPASSWD: /usr/bin/systemctl start docker, /usr/bin/systemctl stop docker, /usr/bin/systemctl restart docker
+unplughq ALL=(root) NOPASSWD: /usr/bin/apt-get install -y -qq ca-certificates curl gnupg lsb-release debian-keyring debian-archive-keyring apt-transport-https
+unplughq ALL=(root) NOPASSWD: /usr/bin/apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+unplughq ALL=(root) NOPASSWD: /usr/bin/apt-get install -y -qq caddy
 SUDOERS
 
-chmod 440 "$SUDOERS_FILE"
-log "Sudoers configured: limited permissions for '$USERNAME' (E-04)"
+chown root:root "$TMP_SUDOERS_FILE"
+chmod 0440 "$TMP_SUDOERS_FILE"
+
+if ! visudo -c -f "$TMP_SUDOERS_FILE" >/dev/null; then
+  rm -f "$TMP_SUDOERS_FILE"
+  log "ERROR: Generated sudoers file failed visudo validation"
+  exit 1
+fi
+
+install -o root -g root -m 0440 "$TMP_SUDOERS_FILE" "$SUDOERS_FILE"
+rm -f "$TMP_SUDOERS_FILE"
+
+if ! visudo -c -f "$SUDOERS_FILE" >/dev/null; then
+  log "ERROR: Installed sudoers file failed visudo validation"
+  exit 1
+fi
+
+log "Sudoers configured: limited permissions for '$USERNAME' (root:root, 0440, visudo validated)"
 
 # ─── Disable password authentication for this user ───────
 if ! grep -q "^Match User ${USERNAME}" /etc/ssh/sshd_config; then

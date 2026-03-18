@@ -1,0 +1,77 @@
+{
+  "tools": [
+    {
+      "name": "node",
+      "minVersion": "22.0.0",
+      "check": "node --version"
+    },
+    {
+      "name": "pnpm",
+      "minVersion": "10.0.0",
+      "check": "pnpm --version",
+      "addedBy": "devops-engineer"
+    },
+    {
+      "name": "docker",
+      "minVersion": "24.0.0",
+      "check": "docker --version",
+      "addedBy": "devops-engineer"
+    }
+  ],
+  "envVars": [
+    {
+      "name": "SMTP_HOST",
+      "required": false,
+      "setup": "Set the SMTP host for alert email delivery.",
+      "docs": "https://nodemailer.com/smtp/",
+      "addedBy": "devops-engineer"
+    },
+    {
+      "name": "SMTP_PORT",
+      "required": false,
+      "setup": "Set the SMTP port for alert email delivery.",
+      "docs": "https://nodemailer.com/smtp/",
+      "addedBy": "devops-engineer"
+    },
+    {
+      "name": "SMTP_USER",
+      "required": false,
+      "setup": "Set the SMTP username for alert email delivery.",
+      "docs": "https://nodemailer.com/smtp/",
+      "addedBy": "devops-engineer"
+    },
+    {
+      "name": "SMTP_PASSWORD",
+      "required": false,
+      "setup": "Set the SMTP password or token for alert email delivery.",
+      "docs": "https://nodemailer.com/smtp/",
+      "addedBy": "devops-engineer"
+    },
+    {
+      "name": "ALERT_EMAIL_FROM",
+      "required": false,
+      "setup": "Set the From address used for alert email notifications.",
+      "docs": "https://nodemailer.com/message/addresses/",
+      "addedBy": "devops-engineer"
+    }
+  ],
+  "browsers": [
+    {
+      "name": "chromium",
+      "check": "pnpm --dir code exec playwright install --dry-run",
+      "install": "pnpm --dir code exec playwright install chromium",
+      "addedBy": "devops-engineer"
+    }
+  ],
+  "runtime": {
+    "infrastructure": "pnpm --dir code exec docker compose up -d --wait",
+    "migrations": "pnpm --dir code db:migrate",
+    "startup": "pnpm --dir code dev",
+    "healthcheck": "curl -sf http://localhost:3000/api/health",
+    "teardown": "pnpm --dir code exec docker compose down -v",
+    "verticalSlice": {
+      "description": "Start the stack, authenticate, and verify health monitoring and deployment surfaces are reachable.",
+      "script": "pnpm --dir code test"
+    }
+  }
+}

@@ -55,10 +55,45 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
 
+  test-sprint2-deployment:
+    name: Sprint 2 Deployment Unit Suites
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: code/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: >-
+          pnpm exec vitest run
+          src/__tests__/unit/deployment/deployment-state-machine.test.ts
+          src/__tests__/unit/deployment/caddy-route-management.test.ts
+          src/__tests__/unit/deployment/health-check-service.test.ts
+
+  test-sprint2-monitoring:
+    name: Sprint 2 Monitoring Unit Suites
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: code/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: >-
+          pnpm exec vitest run
+          src/__tests__/unit/monitoring/alert-evaluation.test.ts
+          src/__tests__/unit/monitoring/email-notification.test.ts
+
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [lint, typecheck, test]
+    needs: [lint, typecheck, test, test-sprint2-deployment, test-sprint2-monitoring]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

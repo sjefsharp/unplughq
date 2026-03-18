@@ -17,6 +17,8 @@ AGENT_TOKEN=""
 SERVER_ID=""
 CONTROL_PLANE_URL=""
 AGENT_IMAGE="ghcr.io/sjefsharp/unplughq-agent:latest"
+AGENT_INTERVAL_MS="30000"
+AGENT_NETWORK="unplughq"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -24,6 +26,8 @@ while [[ $# -gt 0 ]]; do
     --server-id)      SERVER_ID="$2";            shift 2 ;;
     --control-plane-url) CONTROL_PLANE_URL="$2"; shift 2 ;;
     --image)          AGENT_IMAGE="$2";          shift 2 ;;
+    --interval-ms)    AGENT_INTERVAL_MS="$2";    shift 2 ;;
+    --network)        AGENT_NETWORK="$2";        shift 2 ;;
     *) log "Unknown argument: $1"; exit 1 ;;
   esac
 done
@@ -46,6 +50,11 @@ fi
 
 CONTAINER_NAME="unplughq-agent"
 
+if ! docker network inspect "$AGENT_NETWORK" &>/dev/null; then
+  log "Creating Docker network: ${AGENT_NETWORK}"
+  docker network create "$AGENT_NETWORK" >/dev/null
+fi
+
 # ─── Idempotency: remove existing container if present ───
 if docker inspect "$CONTAINER_NAME" &>/dev/null; then
   log "Removing existing agent container..."
@@ -56,24 +65,27 @@ fi
 # ─── Pull the latest agent image ─────────────────────────
 log "Pulling agent image: ${AGENT_IMAGE}"
 docker pull "$AGENT_IMAGE"
+IMAGE_DIGEST="$(docker image inspect "$AGENT_IMAGE" --format '{{index .RepoDigests 0}}' 2>/dev/null || echo "$AGENT_IMAGE")"
 
 # ─── Run the agent container ─────────────────────────────
 log "Starting monitoring agent container..."
 docker run -d \
   --name "$CONTAINER_NAME" \
-  --network unplughq \
+  --network "$AGENT_NETWORK" \
   --restart unless-stopped \
   --read-only \
   --security-opt=no-new-privileges \
   --cap-drop=ALL \
   --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+  --label org.unplughq.component=monitoring-agent \
+  --label org.unplughq.image="${IMAGE_DIGEST}" \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
   -v /proc:/host/proc:ro \
   -e AGENT_API_TOKEN="$AGENT_TOKEN" \
   -e AGENT_SERVER_ID="$SERVER_ID" \
   -e AGENT_CONTROL_PLANE_URL="$CONTROL_PLANE_URL" \
-  -e AGENT_INTERVAL_MS=30000 \
+  -e AGENT_INTERVAL_MS="$AGENT_INTERVAL_MS" \
   "$AGENT_IMAGE"
 
-log "Monitoring agent deployed: container=$CONTAINER_NAME, server=$SERVER_ID"
+log "Monitoring agent deployed: container=$CONTAINER_NAME, server=$SERVER_ID, image=$IMAGE_DIGEST"
 log "Agent will report to: ${CONTROL_PLANE_URL}/api/agent/metrics"
