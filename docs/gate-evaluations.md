@@ -652,3 +652,47 @@ Two **critical** security bugs MUST be fixed before production deployment:
 ### Decision
 
 **PASS** — Sprint 2 planning complete. 71 SP across 13 work items with bug-first sequencing. Delegation briefs ready. Proceeding to Phase 4 (Build).
+
+---
+
+## Gate 5 (PI-2) — P4 (Build) → P5 (Verification)
+
+**Evaluated:** 2026-03-18
+**Evaluator:** Product Manager
+**Result:** PASS
+
+### Checklist
+
+| # | Criterion | Status | Evidence |
+|---|-----------|--------|----------|
+| 1 | Test contracts written (P4 Step 1) | PASS | Testing AB#288 — 38 test files, ~265 tests, 100% Gherkin coverage |
+| 2 | TL worktree setup (P4 Step 2 start) | PASS | TL AB#290 — 4 worktrees created, Redis lazy init fix applied |
+| 3 | DBA schema implementation | PASS | DBA AB#292 — 3 new tables (app_catalog, deployments, alerts), 18 seed apps |
+| 4 | BE implementation | PASS | BE AB#294 — app, deploy, monitor, domain routers; 493 tests pass |
+| 5 | FE implementation | PASS | FE AB#296 — marketplace, deploy, alerts, dashboard pages; typecheck/lint pass |
+| 6 | DevOps infrastructure | PASS | DevOps AB#297 — sudoers fix, deploy pipeline, Caddy automation, monitoring, alerts |
+| 7 | All sub-branches merged | PASS | TL AB#298 — DBA→BE→DevOps→FE merge order, 3 conflicts resolved |
+| 8 | All worktrees removed | PASS | Single worktree at `/home/sjefsharp/git/unplughq` |
+| 9 | No `.worktrees/` on disk | PASS | Directory removed after worktree cleanup |
+| 10 | Typecheck exit 0 | PASS | `pnpm typecheck` exit 0 |
+| 11 | Lint exit 0 | PASS | `pnpm lint` exit 0 |
+| 12 | Build exit 0 | PASS | `pnpm build` exit 0 |
+| 13 | Test exit 0 | PASS | `pnpm test` exit 0 |
+| 14 | All P4 agents have Tasks | PASS | TST AB#288, TL AB#290, DBA AB#292, BE AB#294, FE AB#296, DevOps AB#297, TL AB#298 |
+| 15 | Feature branch clean | PASS | `git status` clean at `65cad74` |
+
+### P4 Artifacts Produced
+
+| Agent | Artifact | Task |
+|-------|----------|------|
+| Testing | `test-strategy-sprint2.md` | AB#288 |
+| Tech Lead | `build-verification-report.md` (updated) | AB#290 |
+| DBA | `database-schema-sprint2.md` | AB#292 |
+| BE | `be-sprint2-implementation.md` | AB#294 |
+| FE | `fe-sprint2-implementation.md` | AB#296 |
+| DevOps | `devops-sprint2-infrastructure.md` | AB#297 |
+| Tech Lead | `build-verification-sprint2.md` | AB#298 |
+
+### Decision
+
+**PASS** — All 4 code agents + Testing + 2x Tech Lead delivered. All sub-branches merged cleanly. Typecheck, lint, build, and test all exit 0. Proceeding to Phase 5 (Verification).
