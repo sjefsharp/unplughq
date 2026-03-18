@@ -118,6 +118,7 @@ nav:
     - Database Deployment — Production PostgreSQL 17 Configuration: database-deployment.md
     - Database Schema — UnplugHQ: database-schema.md
     - Database Schema Sprint 2: database-schema-sprint2.md
+    - Deployment Report — DBA Sprint 2: deployment-report-dba-sprint2.md
     - Deployment Report — DevOps Sprint 2: deployment-report-devops-sprint2.md
     - Deployment Runbook — UnplugHQ Sprint 1: deployment-runbook.md
     - DevOps Infrastructure — CI/CD, Docker, Monitoring Agent, Provisioning: devops-infrastructure.md
