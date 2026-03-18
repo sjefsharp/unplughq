@@ -10,6 +10,17 @@ import { performHealthCheckWithRetry } from './health-check-service';
 
 const UNSAFE_CONFIG_PATTERN = /[;&|`$(){}<>\\\n]/;
 const CONTAINER_SEGMENT_PATTERN = /^[a-z0-9-]+$/;
+const ENV_VAR_PATTERN = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+const BLOCKED_ENV_VARS = new Set([
+  'NODE_OPTIONS',
+  'LD_PRELOAD',
+  'LD_LIBRARY_PATH',
+  'PATH',
+  'HOME',
+  'SHELL',
+  'USER',
+  'PYTHONPATH',
+]);
 
 type CatalogAppRecord = typeof catalogApps.$inferSelect;
 type ServerRecord = typeof servers.$inferSelect;
@@ -37,7 +48,17 @@ export function createContainerName(catalogAppId: string, deploymentId: string):
 
 export function createEnvFileContent(config: Record<string, string>): string {
   return Object.entries(config)
-    .map(([key, value]) => `${key}=${value}`)
+    .map(([key, value]) => {
+      // Defense-in-depth: reject keys that don't match env var pattern
+      if (!ENV_VAR_PATTERN.test(key)) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Invalid env var key format: ${key}`,
+          cause: { code: ErrorCode.VALIDATION_ERROR },
+        });
+      }
+      return `${key}=${value}`;
+    })
     .join('\n');
 }
 
@@ -52,7 +73,50 @@ export function getImageRef(catalogAppId: string, imageDigest: string): string {
 export function validateConfigAgainstSchema(
   template: CatalogAppRecord,
   config: Record<string, string>,
-): void {
+): Record<string, string> {
+  const allowedKeys = new Set(template.configSchema.map((f) => f.key));
+
+  // Reject extra keys not defined in the schema
+  for (const key of Object.keys(config)) {
+    if (!allowedKeys.has(key)) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Unknown config key: ${key}`,
+        cause: { code: ErrorCode.VALIDATION_ERROR },
+      });
+    }
+  }
+
+  // Validate all keys against env var format and blocklist
+  for (const key of Object.keys(config)) {
+    if (!ENV_VAR_PATTERN.test(key)) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Invalid config key format: ${key}`,
+        cause: { code: ErrorCode.VALIDATION_ERROR },
+      });
+    }
+    if (BLOCKED_ENV_VARS.has(key)) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Blocked config key: ${key}`,
+        cause: { code: ErrorCode.VALIDATION_ERROR },
+      });
+    }
+  }
+
+  // Validate all values against unsafe pattern
+  for (const [key, value] of Object.entries(config)) {
+    if (typeof value === 'string' && UNSAFE_CONFIG_PATTERN.test(value)) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Unsafe deployment config value for ${key}`,
+        cause: { code: ErrorCode.VALIDATION_ERROR },
+      });
+    }
+  }
+
+  // Validate required fields
   for (const field of template.configSchema) {
     const rawValue = config[field.key];
 
@@ -63,15 +127,9 @@ export function validateConfigAgainstSchema(
         cause: { code: ErrorCode.VALIDATION_ERROR },
       });
     }
-
-    if (typeof rawValue === 'string' && UNSAFE_CONFIG_PATTERN.test(rawValue)) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: `Unsafe deployment config value for ${field.key}`,
-        cause: { code: ErrorCode.VALIDATION_ERROR },
-      });
-    }
   }
+
+  return config;
 }
 
 export async function getCatalogAppById(catalogAppId: string): Promise<CatalogAppRecord> {

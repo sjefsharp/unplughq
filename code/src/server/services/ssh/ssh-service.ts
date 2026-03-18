@@ -61,7 +61,8 @@ function buildCaddyRoutePayload(routeId: string, domain: string, upstream: strin
   });
 }
 
-function resolveCommand(template: SSHCommandTemplate): string {
+/** @internal exported for unit testing only */
+export function resolveCommand(template: SSHCommandTemplate): string {
   switch (template.type) {
     case 'detect-os':
       return 'cat /etc/os-release 2>/dev/null || lsb_release -a 2>/dev/null || uname -a';
@@ -101,6 +102,8 @@ function resolveCommand(template: SSHCommandTemplate): string {
       return [
         'sudo docker pull ghcr.io/unplughq/agent:latest',
         `sudo docker run -d --name unplughq-agent --network unplughq --restart unless-stopped`,
+        `--read-only --security-opt=no-new-privileges --cap-drop=ALL`,
+        `--tmpfs /tmp:rw,noexec,nosuid,size=16m`,
         `-e AGENT_API_TOKEN=${shellEscape(apiToken)}`,
         `-e CONTROL_PLANE_URL=${shellEscape(controlPlaneUrl)}`,
         `-e SERVER_ID=${shellEscape(serverId)}`,
@@ -131,6 +134,7 @@ function resolveCommand(template: SSHCommandTemplate): string {
         `--name ${shellEscape(containerName)}`,
         `--network ${shellEscape(networkName)}`,
         `--restart unless-stopped`,
+        `--security-opt=no-new-privileges`,
         `--env-file ${shellEscape(envFile)}`,
         ...volumeFlags,
         ...labelFlags,
@@ -181,6 +185,18 @@ function resolveCommand(template: SSHCommandTemplate): string {
     case 'caddy-remove-route': {
       validateRouteId(template.params.routeId);
       return `curl -fsS -X DELETE http://localhost:2019/id/${shellEscape(template.params.routeId)}`;
+    }
+    case 'deploy-ssh-public-key': {
+      const { newPublicKey, oldPublicKey } = template.params;
+      // Append new key, then remove old key from authorized_keys
+      return [
+        `mkdir -p ~/.ssh && chmod 700 ~/.ssh`,
+        `echo ${shellEscape(newPublicKey)} >> ~/.ssh/authorized_keys`,
+        `chmod 600 ~/.ssh/authorized_keys`,
+        oldPublicKey
+          ? `sed -i ${shellEscape(`/${oldPublicKey.replace(/[/\\.*[\]^$]/g, '\\$&')}/d`)} ~/.ssh/authorized_keys`
+          : 'true',
+      ].join(' && ');
     }
   }
 }

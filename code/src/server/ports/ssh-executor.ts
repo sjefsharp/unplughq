@@ -100,4 +100,5 @@ export type SSHCommandTemplate =
   | { type: 'caddy-get-config' }
   | { type: 'caddy-validate-config' }
   | { type: 'caddy-add-route'; params: { routeId: string; domain: string; upstream: string } }
-  | { type: 'caddy-remove-route'; params: { routeId: string } };
+  | { type: 'caddy-remove-route'; params: { routeId: string } }
+  | { type: 'deploy-ssh-public-key'; params: { newPublicKey: string; oldPublicKey?: string } };

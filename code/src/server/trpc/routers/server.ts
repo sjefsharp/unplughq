@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { generateKeyPairSync, randomBytes, createPublicKey } from 'node:crypto';
 import { router, protectedMutationProcedure, protectedProcedure } from '../index';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
@@ -9,7 +9,8 @@ import { eq, and } from 'drizzle-orm';
 import { ErrorCode } from '@/server/lib/errors';
 import { getMonitorQueue, getProvisionQueue } from '@/server/queue';
 import { logger } from '@/server/lib/logger';
-import { encryptSSHKey } from '@/server/lib/encryption';
+import { encryptSSHKey, decryptSSHKey } from '@/server/lib/encryption';
+import { SSHService } from '@/server/services/ssh/ssh-service';
 
 export const serverRouter = router({
   /** List all servers for the authenticated tenant (I-07) */
@@ -173,8 +174,44 @@ export const serverRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', cause: { code: ErrorCode.NOT_FOUND } });
       }
 
-      const sshKey = `-----BEGIN OPENSSH PRIVATE KEY-----\n${randomBytes(48).toString('base64')}\n-----END OPENSSH PRIVATE KEY-----`;
-      const sshKeyEncrypted = await encryptSSHKey(sshKey, ctx.tenantId);
+      // Generate a real Ed25519 keypair
+      const { privateKey, publicKey } = generateKeyPairSync('ed25519', {
+        publicKeyEncoding: { type: 'spki', format: 'pem' },
+        privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+      });
+
+      // Export public key in SSH format for authorized_keys
+      const pubKeyObj = createPublicKey(publicKey);
+      const sshPublicKey = pubKeyObj.export({ type: 'spki', format: 'der' });
+      const sshPubKeyBase64 = sshPublicKey.toString('base64');
+      const authorizedKeysEntry = `ssh-ed25519 ${sshPubKeyBase64}`;
+
+      const sshKeyEncrypted = await encryptSSHKey(privateKey, ctx.tenantId);
+
+      // Deploy new public key to VPS using the old key before updating DB
+      if (server.sshKeyEncrypted) {
+        try {
+          const oldPrivateKey = await decryptSSHKey(server.sshKeyEncrypted, ctx.tenantId);
+          const sshService = new SSHService();
+          await sshService.executeCommand({
+            host: server.ip,
+            port: server.sshPort,
+            username: server.sshUser,
+            privateKey: oldPrivateKey,
+            command: {
+              type: 'deploy-ssh-public-key',
+              params: { newPublicKey: authorizedKeysEntry },
+            },
+          });
+        } catch (err) {
+          logger.error({ serverId: server.id, error: err }, 'SSH key deployment failed — rotation rolled back');
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to deploy new SSH key to server — rotation rolled back',
+            cause: { code: ErrorCode.SSH_KEY_DEPLOYMENT_FAILED },
+          });
+        }
+      }
 
       await db
         .update(servers)
