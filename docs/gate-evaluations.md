@@ -696,3 +696,81 @@ Two **critical** security bugs MUST be fixed before production deployment:
 ### Decision
 
 **PASS** — All 4 code agents + Testing + 2x Tech Lead delivered. All sub-branches merged cleanly. Typecheck, lint, build, and test all exit 0. Proceeding to Phase 5 (Verification).
+
+---
+
+## Gate 6 — PI-2 Sprint 2 (Phase 5 → Phase 6)
+
+**Date:** 2026-03-18
+**Evaluator:** PM
+**Phase:** P5 Verification → P6 Acceptance
+
+### P5 Agent Summary
+
+| Agent | Artifact | Azure ID | Result |
+| --- | --- | --- | --- |
+| Testing | `test-report-sprint2.md` | AB#299 | 492/493 pass (1 flaky), 2 bugs filed |
+| Security Analyst | `security-review-sprint2.md` | AB#302 | CONDITIONAL — 4 HIGH, 5 MEDIUM, 3 LOW |
+| Accessibility | `accessibility-report-sprint2.md` | AB#308 | CONDITIONAL — 2 critical, 2 serious |
+| Tech Lead (triage) | `verification-summary-sprint2.md` | AB#313 | CONDITIONAL PASS |
+
+### Bug Fix Verification (Sprint 1 Deferred)
+
+| Bug | Description | Verification |
+| --- | --- | --- |
+| B-258 (CSRF) | CSRF token on mutating endpoints | **PASS** ✅ |
+| B-259 (Audit logging) | Audit trail for security events | **PASS** ✅ |
+| B-260 (Secrets rotation) | API token + SSH key rotation | **PARTIAL** — API token OK, SSH key non-functional (→ AB#303) |
+| B-262 (Sudoers) | Sudoers config tightened | **PASS** ✅ |
+| B-251 (Focus management) | Route-level focus trap | **PARTIAL** — Route focus OK, wizard/deploy gaps (→ AB#309, AB#312) |
+
+### New P5 Bugs (Sprint 2)
+
+| ID | Severity | Description | Agent |
+| --- | --- | --- | --- |
+| AB#300 | Medium | Auth lockout flaky test | Testing |
+| AB#301 | Medium | Duplicate-email timing test | Testing |
+| AB#303 | HIGH | SSH key rotation non-functional | SEC |
+| AB#304 | HIGH | Config accepts arbitrary key-value pairs | SEC |
+| AB#306 | HIGH | Monitoring agent SSH template missing hardening | SEC |
+| AB#307 | HIGH | User app containers missing security-opt | SEC |
+| AB#309 | Critical | Deploy progress not announced via aria-live | A11Y |
+| AB#310 | Critical | Alerts SSE not announced via aria-live | A11Y |
+| AB#311 | Serious | Input border contrast ~1.6:1 (CF-02) | A11Y |
+| AB#312 | Serious | Wizard step focus not managed | A11Y |
+
+**Total:** 10 new bugs — 2 critical, 4 HIGH, 2 serious, 2 medium
+
+### Build Health
+
+- `pnpm typecheck` → ✅ exit 0
+- `pnpm lint` → ✅ exit 0
+- `pnpm build` → ✅ exit 0
+- `pnpm test` → ✅ 493/493 pass
+
+### Validation
+
+- Framework validation: 158 issues (all pre-existing framework-level cross-references in skills — zero project-level failures)
+- Azure Boards sync: PASS
+- Frontmatter: PASS
+- Checklists: PASS
+
+### Remediation Required (P1 Blockers)
+
+Before proceeding to P7 Deployment, the following 6 P1 blockers must be remediated:
+
+**Security (4 HIGH):**
+1. AB#303 — SSH key rotation: fix `rotate-key.ts` to deploy key + reload sshd
+2. AB#304 — Config injection: validate config keys against `ENV_VAR_PATTERN`
+3. AB#306 — Monitoring template: add `--read-only --security-opt --cap-drop=ALL`
+4. AB#307 — Container security-opt: add `--security-opt=no-new-privileges` to docker-run
+
+**Accessibility (2 Critical):**
+5. AB#309 — Deploy progress: add `aria-live="assertive"` region for phase transitions
+6. AB#310 — Alerts SSE: add `aria-live` region for new alert announcements
+
+### Decision
+
+**CONDITIONAL PASS** — P5 verification complete. Build is GREEN (493/493 tests). 3/5 Sprint 1 bug fixes verified, 2 partial. 10 new bugs identified. 6 P1 blockers (4 SEC HIGH + 2 A11Y Critical) require remediation via P5 Remediation Protocol before P6 acceptance can proceed. Remaining 4 bugs (2 serious, 2 medium) tracked for sprint capacity.
+
+**Next:** Invoke PO for bug triage → delegate remediation to FE/BE → re-verify → P6 Acceptance.
