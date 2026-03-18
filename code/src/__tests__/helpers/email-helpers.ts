@@ -1,76 +1,116 @@
 /**
- * Email Notification Mock Helpers — in-memory email dispatch for alert tests.
- * Based on architecture-overview.md alert pipeline: metrics → threshold → alert → email.
+ * Email Mock Helpers — in-memory alert email queueing and delivery.
+ * Used by: email-notification.test.ts (unit), alert-pipeline.test.ts (integration)
+ *
+ * Unit test calls: enqueueAlertEmail({ to, alertId, alertType, serverName, message })
+ *   → expects { subject, body, status: 'pending', sentAt, attempts }
+ * Integration test calls: enqueueAlertEmail({ alertId, tenantId, alertType, severity, message, recipientEmail })
+ *   → expects { id }
+ * Unit processEmailQueue() returns array with [0].status, [0].sentAt, .length
+ * Integration processEmailQueue() returns { delivered: number }
+ * Unified: return augmented array with .delivered property.
  */
 
 interface EmailRecord {
   id: string;
+  alertId: string;
+  tenantId?: string;
   to: string;
+  alertType: string;
+  severity?: string;
+  serverName?: string;
+  message: string;
   subject: string;
   body: string;
-  alertId: string;
+  status: 'pending' | 'sent' | 'failed' | 'dlq';
   sentAt: string | null;
   attempts: number;
-  status: 'pending' | 'sent' | 'failed' | 'dlq';
 }
 
 const emailQueue: EmailRecord[] = [];
 let emailCounter = 0;
 
-export function enqueueAlertEmail(params: {
-  to: string;
+const MAX_ATTEMPTS = 3;
+
+export function enqueueAlertEmail(input: {
+  to?: string;
+  recipientEmail?: string;
   alertId: string;
+  tenantId?: string;
   alertType: string;
-  serverName: string;
+  severity?: string;
+  serverName?: string;
   message: string;
 }): EmailRecord {
-  const email: EmailRecord = {
+  const to = input.to ?? input.recipientEmail ?? '';
+  const serverName = input.serverName ?? 'Server';
+  const subject = `[UnplugHQ] Alert: ${input.alertType} on ${serverName}`;
+  const body = `Alert on ${serverName}: ${input.message}`;
+
+  const record: EmailRecord = {
     id: `email-${++emailCounter}`,
-    to: params.to,
-    subject: `[UnplugHQ] Alert: ${params.alertType} on ${params.serverName}`,
-    body: `Alert detected on server "${params.serverName}": ${params.message}`,
-    alertId: params.alertId,
+    alertId: input.alertId,
+    tenantId: input.tenantId,
+    to,
+    alertType: input.alertType,
+    severity: input.severity,
+    serverName: input.serverName,
+    message: input.message,
+    subject,
+    body,
+    status: 'pending',
     sentAt: null,
     attempts: 0,
-    status: 'pending',
   };
-  emailQueue.push(email);
-  return email;
+  emailQueue.push(record);
+  return record;
+}
+
+interface ProcessResult extends Array<EmailRecord> {
+  delivered: number;
 }
 
 export function processEmailQueue(
-  options: { simulateFailure?: boolean } = {},
-): EmailRecord[] {
+  options?: { simulateFailure?: boolean },
+): ProcessResult {
+  const { simulateFailure = false } = options ?? {};
   const processed: EmailRecord[] = [];
-  for (const email of emailQueue.filter((e) => e.status === 'pending')) {
+  let delivered = 0;
+
+  for (const email of emailQueue) {
+    if (email.status !== 'pending') continue;
+
     email.attempts++;
-    if (options.simulateFailure) {
-      if (email.attempts >= 3) {
+
+    if (simulateFailure) {
+      if (email.attempts >= MAX_ATTEMPTS) {
         email.status = 'dlq';
-      } else {
-        email.status = 'pending';
       }
+      // still pending if under MAX_ATTEMPTS (will be retried)
+      processed.push(email);
     } else {
       email.status = 'sent';
       email.sentAt = new Date().toISOString();
+      delivered++;
+      processed.push(email);
     }
-    processed.push(email);
   }
-  return processed;
+
+  const result = processed as ProcessResult;
+  result.delivered = delivered;
+  return result;
 }
 
 export function getEmailQueue(): EmailRecord[] {
-  return [...emailQueue];
+  return emailQueue.filter((e) => e.status !== 'dlq');
 }
 
 export function getDlqEmails(): EmailRecord[] {
   return emailQueue.filter((e) => e.status === 'dlq');
 }
 
-export function isNotificationSuppressed(
-  notificationPrefs: { emailAlerts: boolean },
-): boolean {
-  return !notificationPrefs.emailAlerts;
+export function isNotificationSuppressed(prefs: { emailAlerts: boolean }): boolean {
+  return !prefs.emailAlerts;
 }
 
 export function resetEmailQueue(): void {

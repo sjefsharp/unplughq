@@ -57,7 +57,14 @@ export function getMonitorQueue(): Queue {
 
 // --- Worker factories ---
 
-import { handleTestConnection, handleProvisionServer } from './handlers';
+import {
+  handleDeployApp,
+  handleProcessMetrics,
+  handleProvisionServer,
+  handleSendAlert,
+  handleTestConnection,
+  handleUpdateAgent,
+} from './handlers';
 
 export function createProvisionWorker() {
   return new Worker(
@@ -77,21 +84,47 @@ export function createProvisionWorker() {
 }
 
 export function createDeployWorker() {
-  return new Worker(
+  const worker = new Worker(
     'deploy',
-    async (_job: Job) => {
-      // Deploy worker — implemented in Sprint 2
+    async (job: Job) => {
+      switch (job.name) {
+        case 'deploy-app':
+          return handleDeployApp(job);
+        default:
+          throw new Error(`Unknown deploy job: ${job.name}`);
+      }
     },
     { connection: getConnection() },
   );
+
+  worker.on('error', (error) => {
+    console.error(error);
+  });
+
+  return worker;
 }
 
 export function createMonitorWorker() {
-  return new Worker(
+  const worker = new Worker(
     'monitor',
-    async (_job: Job) => {
-      // Monitor worker — implemented in Sprint 2
+    async (job: Job) => {
+      switch (job.name) {
+        case 'process-metrics':
+          return handleProcessMetrics(job);
+        case 'send-alert':
+          return handleSendAlert(job);
+        case 'update-agent':
+          return handleUpdateAgent(job);
+        default:
+          throw new Error(`Unknown monitor job: ${job.name}`);
+      }
     },
     { connection: getConnection() },
   );
+
+  worker.on('error', (error) => {
+    console.error(error);
+  });
+
+  return worker;
 }
