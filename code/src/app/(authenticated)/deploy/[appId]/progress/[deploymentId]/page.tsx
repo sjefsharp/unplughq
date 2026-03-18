@@ -162,6 +162,17 @@ export default function ProgressPage({
         </div>
       )}
 
+      {/* Visually-hidden aria-live region for screen reader phase announcements (AB#309) */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {!failed && !isComplete && DEPLOYMENT_PHASES[currentPhaseIdx]
+          ? `${DEPLOYMENT_PHASES[currentPhaseIdx].label}: ${DEPLOYMENT_PHASES[currentPhaseIdx].description} Step ${currentPhaseIdx + 1} of ${DEPLOYMENT_PHASES.length}.`
+          : isComplete
+            ? `Deployment complete. ${appName} is running.`
+            : failed
+              ? "Deployment failed."
+              : ""}
+      </div>
+
       <Card>
         <CardContent className="p-[var(--space-6)]">
           {/* Overall progress bar */}
@@ -178,6 +189,7 @@ export default function ProgressPage({
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-label="Deployment progress"
+                aria-valuetext={`${DEPLOYMENT_PHASES[currentPhaseIdx]?.label ?? "Preparing"} — step ${currentPhaseIdx + 1} of ${DEPLOYMENT_PHASES.length}`}
               />
             </div>
           </div>

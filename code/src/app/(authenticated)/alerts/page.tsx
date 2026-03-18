@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronRight, Clock, Server, AppWindow } from "lucide-react";
 import { trpc } from "@/server/trpc/client";
@@ -19,6 +19,18 @@ export default function AlertsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [acknowledgedIds, setAcknowledgedIds] = useState<string[]>([]);
   const [dismissedIds, setDismissedIds] = useState<string[]>([]);
+  const [newAlertAnnouncement, setNewAlertAnnouncement] = useState("");
+  const [actionAnnouncement, setActionAnnouncement] = useState("");
+  const alertTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const actionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => {
+      if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
+      if (actionTimerRef.current) clearTimeout(actionTimerRef.current);
+    };
+  }, []);
 
   const handleSSEMessage = useCallback(
     (msg: { event: string; data: string }) => {
@@ -26,6 +38,9 @@ export default function AlertsPage() {
         const parsed = JSON.parse(msg.data);
         if (msg.event === "alert.created" && parsed.severity && parsed.type && parsed.id) {
           setSSEAlerts((prev) => [parsed, ...prev]);
+          setNewAlertAnnouncement(`New ${parsed.severity} alert: ${parsed.message || parsed.type}`);
+          if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
+          alertTimerRef.current = setTimeout(() => setNewAlertAnnouncement(""), 5000);
         } else if (msg.event === "alert.dismissed" && parsed.alertId) {
           setSSEAlerts((prev) => prev.filter((a) => a.id !== parsed.alertId));
         }
@@ -58,11 +73,17 @@ export default function AlertsPage() {
 
   const acknowledgeAlert = (alertId: string) => {
     setAcknowledgedIds((previous) => (previous.includes(alertId) ? previous : [...previous, alertId]));
+    setActionAnnouncement("Alert acknowledged. Repeat notifications silenced.");
+    if (actionTimerRef.current) clearTimeout(actionTimerRef.current);
+    actionTimerRef.current = setTimeout(() => setActionAnnouncement(""), 5000);
   };
 
   const dismissAlert = (alertId: string) => {
     setDismissedIds((previous) => (previous.includes(alertId) ? previous : [...previous, alertId]));
     dismissMutation.mutate({ alertId });
+    setActionAnnouncement("Alert dismissed. It will return if the condition reoccurs.");
+    if (actionTimerRef.current) clearTimeout(actionTimerRef.current);
+    actionTimerRef.current = setTimeout(() => setActionAnnouncement(""), 5000);
   };
 
   if (isLoading) {
@@ -82,6 +103,14 @@ export default function AlertsPage() {
 
   return (
     <div className="space-y-[var(--space-6)]">
+      {/* Visually-hidden aria-live regions for screen reader announcements (AB#310) */}
+      <div aria-live="assertive" aria-atomic="true" className="sr-only">
+        {newAlertAnnouncement}
+      </div>
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {actionAnnouncement}
+      </div>
+
       <h1 className="text-[length:var(--text-2xl-fs)] leading-[var(--text-2xl-lh)] font-semibold text-[var(--color-text-base)]">
         Alerts
       </h1>
