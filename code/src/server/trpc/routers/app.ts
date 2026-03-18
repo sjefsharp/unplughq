@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { TRPCError } from '@trpc/server';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { router, publicProcedure, protectedMutationProcedure, protectedProcedure } from '../index';
 import { z } from 'zod';
 import { CatalogApp, DeployAppInput } from '@/lib/schemas';
@@ -40,6 +40,24 @@ const deploymentGetInput = z
   .refine((value) => Boolean(value.id ?? value.deploymentId), {
     message: 'Deployment identifier is required',
   });
+
+const deploymentConfirmationInput = z
+  .object({
+    id: z.string().uuid().optional(),
+    deploymentId: z.string().uuid().optional(),
+    confirmationToken: z.string().min(1),
+  })
+  .refine((value) => Boolean(value.id ?? value.deploymentId), {
+    message: 'Deployment identifier is required',
+  });
+
+function serializeDeployment<T extends { createdAt: Date; updatedAt: Date }>(deployment: T) {
+  return {
+    ...deployment,
+    createdAt: deployment.createdAt.toISOString(),
+    updatedAt: deployment.updatedAt.toISOString(),
+  };
+}
 
 const catalogRouter = router({
   list: publicProcedure
@@ -101,20 +119,22 @@ const deploymentRouter = router({
   list: protectedProcedure
     .input(z.object({ serverId: z.string().uuid().optional() }).optional())
     .query(async ({ input, ctx }) => {
-      return db.query.deployments.findMany({
+      const deploymentsForTenant = await db.query.deployments.findMany({
         where: and(
           eq(deployments.tenantId, ctx.tenantId),
           input?.serverId ? eq(deployments.serverId, input.serverId) : undefined,
         ),
         orderBy: (table, { desc }) => [desc(table.createdAt)],
       });
+
+      return deploymentsForTenant.map(serializeDeployment);
     }),
 
   get: protectedProcedure
     .input(deploymentGetInput)
     .query(async ({ input, ctx }) => {
       const deployment = await getTenantDeployment(input.deploymentId ?? input.id!, ctx.tenantId);
-      return { ...deployment, logs: getSyntheticDeploymentLogs(deployment) };
+      return { ...serializeDeployment(deployment), logs: getSyntheticDeploymentLogs(deployment) };
     }),
 
   create: protectedMutationProcedure
@@ -178,9 +198,9 @@ const deploymentRouter = router({
     }),
 
   stop: protectedMutationProcedure
-    .input(z.object({ deploymentId: z.string().uuid(), confirmationToken: z.string().min(1) }))
+    .input(deploymentConfirmationInput)
     .mutation(async ({ input, ctx }) => {
-      const deployment = await getTenantDeployment(input.deploymentId, ctx.tenantId);
+      const deployment = await getTenantDeployment(input.deploymentId ?? input.id!, ctx.tenantId);
 
       if (!['running', 'unhealthy'].includes(deployment.status)) {
         throw new TRPCError({ code: 'FORBIDDEN', cause: { code: ErrorCode.FORBIDDEN } });
@@ -198,9 +218,9 @@ const deploymentRouter = router({
     }),
 
   start: protectedMutationProcedure
-    .input(z.object({ deploymentId: z.string().uuid() }))
+    .input(deploymentGetInput)
     .mutation(async ({ input, ctx }) => {
-      const deployment = await getTenantDeployment(input.deploymentId, ctx.tenantId);
+      const deployment = await getTenantDeployment(input.deploymentId ?? input.id!, ctx.tenantId);
 
       if (!['stopped', 'failed', 'unhealthy'].includes(deployment.status)) {
         throw new TRPCError({ code: 'FORBIDDEN', cause: { code: ErrorCode.FORBIDDEN } });

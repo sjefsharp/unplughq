@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { router, protectedMutationProcedure, protectedProcedure } from '../index';
 import { z } from 'zod';
 import { db } from '@/server/db';
@@ -13,6 +13,63 @@ import {
   listTenantAlerts,
 } from '@/server/services/alert-service';
 import { buildResourceAllocation, getTenantDeployment, getTenantServer } from '@/server/services/deployment-service';
+
+function serializeServer<T extends { createdAt: Date; updatedAt: Date }>(server: T) {
+  return {
+    ...server,
+    createdAt: server.createdAt.toISOString(),
+    updatedAt: server.updatedAt.toISOString(),
+  };
+}
+
+function serializeDeployment<T extends { createdAt: Date; updatedAt: Date }>(deployment: T) {
+  return {
+    ...deployment,
+    createdAt: deployment.createdAt.toISOString(),
+    updatedAt: deployment.updatedAt.toISOString(),
+  };
+}
+
+function serializeAlert<T extends { acknowledgedAt: Date | null; createdAt: Date }>(alert: T) {
+  return {
+    ...alert,
+    acknowledgedAt: alert.acknowledgedAt?.toISOString() ?? null,
+    createdAt: alert.createdAt.toISOString(),
+  };
+}
+
+function serializeMetrics<T extends {
+  timestamp: Date;
+  ramUsedBytes: number | bigint;
+  ramTotalBytes: number | bigint;
+  diskUsedBytes: number | bigint;
+  diskTotalBytes: number | bigint;
+  networkRxBytesPerSec: number | bigint;
+  networkTxBytesPerSec: number | bigint;
+  containers: Array<{ diskUsageBytes?: number | bigint | null }>;
+} | null | undefined>(snapshot: T) {
+  if (!snapshot) {
+    return null;
+  }
+
+  return {
+    ...snapshot,
+    timestamp: snapshot.timestamp.toISOString(),
+    ramUsedBytes: Number(snapshot.ramUsedBytes),
+    ramTotalBytes: Number(snapshot.ramTotalBytes),
+    diskUsedBytes: Number(snapshot.diskUsedBytes),
+    diskTotalBytes: Number(snapshot.diskTotalBytes),
+    networkRxBytesPerSec: Number(snapshot.networkRxBytesPerSec),
+    networkTxBytesPerSec: Number(snapshot.networkTxBytesPerSec),
+    containers: snapshot.containers.map((container) => ({
+      ...container,
+      diskUsageBytes:
+        container.diskUsageBytes === undefined || container.diskUsageBytes === null
+          ? undefined
+          : Number(container.diskUsageBytes),
+    })),
+  };
+}
 
 export const monitorRouter = router({
   dashboard: protectedProcedure.query(async ({ ctx }) => {
@@ -35,10 +92,10 @@ export const monitorRouter = router({
         ]);
 
         return {
-          server,
-          latestMetrics,
-          apps,
-          activeAlerts,
+          server: serializeServer(server),
+          latestMetrics: serializeMetrics(latestMetrics),
+          apps: apps.map(serializeDeployment),
+          activeAlerts: activeAlerts.map(serializeAlert),
         };
       }),
     );
@@ -55,7 +112,9 @@ export const monitorRouter = router({
         orderBy: (table, { desc }) => [desc(table.timestamp)],
       });
 
-      return snapshots.filter((snapshot) => (Date.now() - snapshot.timestamp.getTime()) / 60_000 <= input.minutes);
+      return snapshots
+        .filter((snapshot) => (Date.now() - snapshot.timestamp.getTime()) / 60_000 <= input.minutes)
+        .map((snapshot) => serializeMetrics(snapshot));
     }),
 
   appStatus: protectedProcedure
@@ -100,12 +159,14 @@ export const monitorRouter = router({
     list: protectedProcedure
       .input(z.object({ serverId: z.string().uuid().optional(), page: z.number().int().min(1).default(1), limit: z.number().int().min(1).max(100).default(25) }).optional())
       .query(async ({ input, ctx }) => {
-        return listTenantAlerts({
+        const tenantAlerts = await listTenantAlerts({
           tenantId: ctx.tenantId,
           serverId: input?.serverId,
           limit: input?.limit,
           offset: ((input?.page ?? 1) - 1) * (input?.limit ?? 25),
         });
+
+        return tenantAlerts.map(serializeAlert);
       }),
 
     get: protectedProcedure
@@ -119,7 +180,7 @@ export const monitorRouter = router({
           throw new TRPCError({ code: 'NOT_FOUND', cause: { code: ErrorCode.NOT_FOUND } });
         }
 
-        return alert;
+        return serializeAlert(alert);
       }),
 
     acknowledge: protectedMutationProcedure
@@ -163,13 +224,15 @@ export const monitorRouter = router({
     history: protectedProcedure
       .input(z.object({ serverId: z.string().uuid().optional(), page: z.number().int().min(1).default(1), limit: z.number().int().min(1).max(100).default(25) }).optional())
       .query(async ({ input, ctx }) => {
-        return listTenantAlerts({
+        const tenantAlerts = await listTenantAlerts({
           tenantId: ctx.tenantId,
           serverId: input?.serverId,
           includeDismissed: true,
           limit: input?.limit,
           offset: ((input?.page ?? 1) - 1) * (input?.limit ?? 25),
         });
+
+        return tenantAlerts.map(serializeAlert);
       }),
   }),
 });

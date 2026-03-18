@@ -11,6 +11,8 @@ function getConnection(): ConnectionOptions {
 let _provisionQueue: Queue | null = null;
 let _deployQueue: Queue | null = null;
 let _monitorQueue: Queue | null = null;
+let _alertEmailQueue: Queue | null = null;
+let _alertEmailDlqQueue: Queue | null = null;
 
 export function getProvisionQueue(): Queue {
   if (!_provisionQueue) {
@@ -56,15 +58,27 @@ export function getMonitorQueue(): Queue {
   return _monitorQueue;
 }
 
-export const alertEmailQueue = new Queue('alert-email', {
-  connection,
-  defaultJobOptions: alertEmailQueueOptions,
-});
+export function getAlertEmailQueue(): Queue {
+  if (!_alertEmailQueue) {
+    _alertEmailQueue = new Queue('alert-email', {
+      connection: getConnection(),
+      defaultJobOptions: alertEmailQueueOptions,
+    });
+  }
 
-export const alertEmailDlqQueue = new Queue('alert-email-dlq', {
-  connection,
-  defaultJobOptions: alertEmailDlqQueueOptions,
-});
+  return _alertEmailQueue;
+}
+
+export function getAlertEmailDlqQueue(): Queue {
+  if (!_alertEmailDlqQueue) {
+    _alertEmailDlqQueue = new Queue('alert-email-dlq', {
+      connection: getConnection(),
+      defaultJobOptions: alertEmailDlqQueueOptions,
+    });
+  }
+
+  return _alertEmailDlqQueue;
+}
 
 // --- Worker factories ---
 
