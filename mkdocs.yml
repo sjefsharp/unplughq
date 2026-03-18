@@ -115,6 +115,7 @@ nav:
     - Database Schema — UnplugHQ: database-schema.md
     - Deployment Runbook — UnplugHQ Sprint 1: deployment-runbook.md
     - DevOps Infrastructure — CI/CD, Docker, Monitoring Agent, Provisioning: devops-infrastructure.md
+    - DevOps Sprint 2 Infrastructure: devops-sprint2-infrastructure.md
     - FE Auth Pages: fe-auth-pages.md
     - FE Dashboard Shell & Server Tile: fe-dashboard.md
     - FE Layout Shell & Shared UI Components: fe-layout-shell.md
