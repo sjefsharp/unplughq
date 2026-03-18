@@ -1,9 +1,11 @@
 import { router, protectedProcedure } from '../index';
 import { z } from 'zod';
+import type { Alert, DashboardOutput } from '@/lib/schemas';
+import { mockAlerts, mockDashboardOutput } from '@/lib/mock-data';
 
 export const monitorRouter = router({
-  dashboard: protectedProcedure.query(async ({ ctx: _ctx }) => {
-    return { servers: [] };
+  dashboard: protectedProcedure.query(async (): Promise<DashboardOutput> => {
+    return mockDashboardOutput;
   }),
 
   serverMetrics: protectedProcedure
@@ -19,8 +21,8 @@ export const monitorRouter = router({
     }),
 
   alerts: router({
-    list: protectedProcedure.query(async ({ ctx: _ctx }) => {
-      return [];
+    list: protectedProcedure.query(async (): Promise<Alert[]> => {
+      return mockAlerts;
     }),
     dismiss: protectedProcedure
       .input(z.object({ alertId: z.string().uuid() }))
