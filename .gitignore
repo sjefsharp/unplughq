@@ -34,6 +34,8 @@ playwright-report/
 
 # Drizzle
 drizzle/
+!code/drizzle/
+!code/drizzle/**
 
 # Worktrees
 .worktrees/

@@ -6,8 +6,8 @@ work-item: epic-001-unplughq-platform
 work-item-type: epic
 workflow-tier: full
 phase: P0
-version: 1.0.0
-status: approved
+version: 2.0.0
+status: draft
 azure-devops-id: 180
 review:
   reviewed-by: product-manager
@@ -201,3 +201,45 @@ UnplugHQ should feel like a competent friend who happens to be a sysadmin — so
 - **Not a backup storage provider.** Backup *orchestration* is in scope; backup *storage* is on the user's server or their configured external storage.
 - **Not a CDN or edge network.** Apps run on the user's single server.
 - **Not a team collaboration platform.** Team features are limited to shared server management, not general collaboration.
+
+---
+
+## PI-2 Addendum — Sprint 2 Scope
+
+### PI-2 Focus
+
+PI-2 delivers the remaining MVP capabilities: **Application Catalog & Deployment** (Feature 2) and **Dashboard & Health Monitoring** (Feature 3). These map to outcomes O1 (Zero-Terminal Self-Hosting), O4 (Application Marketplace), and O5 (Health Visibility).
+
+### PI-2 Delivery Goals
+
+1. **Application catalog browsing** — Users browse curated self-hostable apps with categories, descriptions, and resource requirements
+2. **Guided app configuration** — Per-app contextual configuration with sensible defaults (only relevant questions asked)
+3. **One-action deployment with progress** — Users deploy apps with real-time progress visibility (building → deploying → health check → ready)
+4. **Post-deployment verification** — System verifies deployed app is accessible and healthy before marking complete
+5. **Multi-app coexistence** — Multiple apps running on same server without conflicts (port management, resource allocation, shared reverse proxy)
+6. **Dashboard overview** — At-a-glance view of server health (CPU, RAM, disk) and all deployed app statuses
+7. **Health alert notifications** — Proactive alerts when apps go unhealthy or server resources are critical
+8. **Alert management and guided remediation** — Users can acknowledge, investigate, and resolve alerts with system guidance
+
+### PI-2 Deferred Bug Fixes
+
+These PI-1 security and accessibility findings must be addressed in PI-2:
+- CSRF token validation (HIGH)
+- Input sanitization for server connection strings (HIGH)
+- Secrets rotation mechanism (HIGH)
+- Audit logging for privileged operations (HIGH)
+- Focus management on route transitions (MEDIUM)
+
+### PI-2 Architecture Continuation
+
+PI-2 extends the architecture established in PI-1. The SA should evaluate "Extend" disposition (not "New Build"). Key architectural decisions carrying forward: tRPC for API layer, BullMQ for async job processing, Docker container orchestration on user's VPS, real-time health monitoring via server agent.
+
+### PI-2 Success Criteria
+
+| ID | Criterion | Target |
+|----|-----------|--------|
+| SC-PI2-1 | App deployment from catalog to running | < 5 minutes per app |
+| SC-PI2-2 | Dashboard load time | < 2 seconds for overview with 5+ apps |
+| SC-PI2-3 | Alert delivery latency | < 60 seconds from event to notification |
+| SC-PI2-4 | Multi-app stability | 5+ apps coexisting without resource conflicts |
+| SC-PI2-5 | Deferred bugs resolved | All 5 PI-1 deferred bugs fixed and verified |

@@ -14,6 +14,8 @@ export function AppShell({ children, breadcrumbs }: AppShellProps) {
         <TopBar breadcrumbs={breadcrumbs} />
         <main
           id="main-content"
+          tabIndex={-1}
+          role="main"
           className="mx-auto max-w-[1200px] px-[var(--space-4)] py-[var(--space-6)] lg:px-[var(--space-8)]"
         >
           {children}

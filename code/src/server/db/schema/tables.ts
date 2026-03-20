@@ -13,6 +13,24 @@ import {
   bigint,
 } from 'drizzle-orm/pg-core';
 
+type CatalogAppConfigField = {
+  key: string;
+  label: string;
+  type: 'text' | 'email' | 'password' | 'select' | 'boolean';
+  required: boolean;
+  default?: string;
+  options?: string[];
+};
+
+type DeploymentConfig = Record<string, string>;
+
+type MetricsSnapshotContainer = {
+  id: string;
+  name: string;
+  status: string;
+  diskUsageBytes?: number;
+};
+
 // --- Enums ---
 
 export const serverStatusEnum = pgEnum('server_status', [
@@ -130,6 +148,26 @@ export const servers = pgTable('servers', {
   index('servers_status_idx').on(table.status),
 ]);
 
+// --- Catalog Apps ---
+
+export const catalogApps = pgTable('catalog_apps', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  description: text('description').notNull(),
+  category: text('category').notNull(),
+  version: text('version').notNull(),
+  minCpuCores: integer('min_cpu_cores').notNull(),
+  minRamGb: real('min_ram_gb').notNull(),
+  minDiskGb: real('min_disk_gb').notNull(),
+  upstreamUrl: text('upstream_url').notNull(),
+  imageDigest: text('image_digest').notNull(),
+  configSchema: jsonb('config_schema').$type<CatalogAppConfigField[]>().default([]).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => [
+  index('catalog_apps_category_idx').on(table.category),
+]);
+
 // --- Deployments ---
 
 export const deployments = pgTable('deployments', {
@@ -140,19 +178,24 @@ export const deployments = pgTable('deployments', {
   serverId: uuid('server_id')
     .notNull()
     .references(() => servers.id, { onDelete: 'cascade' }),
-  catalogAppId: text('catalog_app_id').notNull(),
+  catalogAppId: text('catalog_app_id')
+    .notNull()
+    .references(() => catalogApps.id, { onDelete: 'restrict' }),
   name: text('name').notNull(),
   domain: text('domain').notNull(),
   accessUrl: text('access_url'),
   status: deploymentStatusEnum('status').default('pending').notNull(),
   containerName: text('container_name').notNull(),
-  config: text('config'),
+  config: jsonb('config').$type<DeploymentConfig>().default({}).notNull(),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => [
   index('deployments_tenant_id_idx').on(table.tenantId),
   index('deployments_server_id_idx').on(table.serverId),
   index('deployments_status_idx').on(table.status),
+  index('deployments_tenant_server_idx').on(table.tenantId, table.serverId),
+  index('deployments_tenant_status_idx').on(table.tenantId, table.status),
+  uniqueIndex('deployments_server_container_name_idx').on(table.serverId, table.containerName),
 ]);
 
 // --- Alerts ---
@@ -171,10 +214,12 @@ export const alerts = pgTable('alerts', {
   message: text('message').notNull(),
   notificationSent: boolean('notification_sent').default(false).notNull(),
   acknowledgedAt: timestamp('acknowledged_at', { mode: 'date' }),
+  dismissedAt: timestamp('dismissed_at', { mode: 'date' }),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => [
   index('alerts_tenant_id_created_at_idx').on(table.tenantId, table.createdAt),
   index('alerts_server_id_idx').on(table.serverId),
+  index('alerts_tenant_server_type_dismissed_idx').on(table.tenantId, table.serverId, table.type, table.dismissedAt),
 ]);
 
 // --- Audit Log (append-only — R-01 mitigation, NFR-013) ---
@@ -199,6 +244,9 @@ export const auditLog = pgTable('audit_log', {
 
 export const metricsSnapshots = pgTable('metrics_snapshots', {
   id: uuid('id').defaultRandom().primaryKey(),
+  tenantId: uuid('tenant_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   serverId: uuid('server_id')
     .notNull()
     .references(() => servers.id, { onDelete: 'cascade' }),
@@ -210,12 +258,8 @@ export const metricsSnapshots = pgTable('metrics_snapshots', {
   diskTotalBytes: bigint('disk_total_bytes', { mode: 'bigint' }).notNull(),
   networkRxBytesPerSec: bigint('network_rx_bytes_per_sec', { mode: 'bigint' }).notNull(),
   networkTxBytesPerSec: bigint('network_tx_bytes_per_sec', { mode: 'bigint' }).notNull(),
-  containers: jsonb('containers').$type<Array<{
-    id: string;
-    name: string;
-    status: string;
-    diskUsageBytes?: number;
-  }>>().default([]).notNull(),
+  containers: jsonb('containers').$type<MetricsSnapshotContainer[]>().default([]).notNull(),
 }, (table) => [
+  index('metrics_tenant_server_timestamp_idx').on(table.tenantId, table.serverId, table.timestamp),
   index('metrics_server_id_timestamp_idx').on(table.serverId, table.timestamp),
 ]);

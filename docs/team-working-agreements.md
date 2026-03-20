@@ -6,13 +6,9 @@ work-item: epic-001-unplughq-platform
 work-item-type: epic
 workflow-tier: full
 phase: P3
-version: 1.0.0
-status: approved
-review:
-  evaluator: product-manager
-  gate: 4
-  date: 2026-03-15
-azure-devops-id: 210
+version: 2.0.0
+status: draft
+azure-devops-id: 286
 consumed-by:
   - tech-lead
   - frontend-developer
@@ -23,10 +19,10 @@ consumed-by:
   - product-owner
   - security-analyst
   - accessibility
-date: 2026-03-15
+date: 2026-03-16
 ---
 
-# Team Working Agreements — UnplugHQ PI-1
+# Team Working Agreements — UnplugHQ PI-2 Sprint 2
 
 ## 1. Communication Norms
 
@@ -114,9 +110,10 @@ A code change is merge-eligible when:
 
 ### 3.3 Branch Hygiene
 
-- Feature branch: `feat/epic-001-unplughq-platform` is the active branch for PI-1
+- Feature branch: `feat/pi-2-sprint-2` is the active branch for PI-2 Sprint 2
 - Code agents work in their assigned worktrees — never push directly to the feature branch
-- Sub-branches follow pattern: `feat/epic-001-unplughq-platform/{track}` (e.g., `/fe`, `/be`, `/dba`, `/devops`)
+- Sub-branches follow pattern: `feat/pi-2-sprint-2/{track}` (e.g., `/fe`, `/be`, `/dba`, `/devops`)
+- Bug fixes (Track E) commit directly to `feat/pi-2-sprint-2` per sprint backlog assignment
 - Delete sub-branches after successful merge to feature branch
 
 ## 4. Commit Message Standards
@@ -146,7 +143,7 @@ A code change is merge-eligible when:
 
 ### 4.3 Scope
 
-Use the feature area or component: `auth`, `server`, `dashboard`, `catalog`, `db`, `devops`, `a11y`, `api`
+Use the feature area or component: `auth`, `server`, `dashboard`, `catalog`, `deploy`, `monitor`, `alert`, `db`, `devops`, `a11y`, `api`, `security`
 
 ### 4.4 Rules
 
@@ -192,9 +189,12 @@ AB#200
 
 | Event | Frequency | Participants | Purpose |
 |-------|-----------|--------------|---------|
-| Track Sync | Daily (Week 1) | TL + track agents | Coordinate Track A / Track B dependencies |
-| Schema Review | Day 2 | DBA + BE + TL | Verify schema supports both tracks before code starts |
-| Integration Checkpoint | End of Week 1 | TL + all code agents | Verify sub-branches are mergeable, resolve conflicts |
+| Track Sync | Daily (Week 1) | TL + track agents | Coordinate Track C / Track D / Track E dependencies |
+| Schema Review | Day 2 | DBA + BE + TL | Verify Sprint 2 schema supports catalog, deployment, alert, and metrics features |
+| Bug Review Checkpoint | Day 3 | TL + BE + FE + DevOps | Verify all 5 deferred PI-1 bugs are resolved or on track |
+| Integration Checkpoint | End of Week 1 | TL + all code agents | Verify sub-branches are mergeable, bug fixes integrated, resolve conflicts |
+| SSE Integration Review | Day 7 | BE + FE + TL | Verify SSE event pipeline works end-to-end (BullMQ → SSE → client) |
+| Deployment Pipeline Review | Day 8 | BE + DevOps + TL | Verify deploy state machine, rollback cleanup, and health check endpoints |
 
 ## 6. Tool Usage Agreements
 
@@ -223,29 +223,99 @@ AB#200
 
 All stories are subject to the authoritative Definition of Done at `docs/definition-of-done.md`. No story is considered complete until every applicable DoD item is satisfied.
 
-## 8. Sprint 1 Specific Agreements
+## 8. Sprint 2 Specific Agreements
 
-### 8.1 Parallel Track Coordination
+### 8.1 PI-1 Retrospective Action Items (Incorporated)
 
-Sprint 1 runs two parallel tracks that must be coordinated:
+The following agreements are derived from PI-1 Sprint 1 retrospective findings (`docs/retrospective-report.md`):
+
+| Action Item | Retro Ref | Agreement | Owner |
+|-------------|-----------|-----------|-------|
+| Bug-first sequencing | A1 | All 5 deferred PI-1 bugs (AB#258, AB#259, AB#260, AB#262, AB#251) are resolved in Week 1 before any new F2/F3 code that exercises affected paths (mutation endpoints, SSH operations, route transitions) | PO / BE / FE / DevOps |
+| E2E test infrastructure | A2 | Playwright E2E tests are mandatory for Sprint 2; every user-facing story must have at least one E2E test in the test contract | TST / TL |
+| P4 self-review checkpoint | A3 | Before submitting code for TL merge, every code agent must complete the P4 Self-Review Checklist (§8.4) — this is not optional | All code agents |
+| CI dependency audit | A8 | `pnpm audit` is added to the CI pipeline; any critical/high vulnerability fails the build | DevOps |
+
+### 8.2 Bug-First Sequencing Protocol (BR-BF-001)
+
+Sprint 2 carries 5 deferred PI-1 bugs (4 high, 1 medium) totaling 17 SP. These are not backlog items competing with features — they are Week 1 mandatory prerequisites.
+
+| Rule | Detail |
+|------|--------|
+| Week 1 priority | BE starts with CSRF fix (AB#258), audit logging (AB#259), secrets rotation (AB#260). DevOps starts with sudoers fix (AB#262). FE starts with focus management (AB#251). |
+| Blocking criterion | No code agent may commit new F2/F3 feature code to story branches until all bug fixes on their track are merged to `feat/pi-2-sprint-2` |
+| Verification | Each bug fix must pass its specific acceptance criteria from the SEC/A11Y audit before merge. Testing agent writes regression tests at P4 Step 1. |
+| Escalation | If any bug fix reveals scope creep beyond its original AC, halt and report to PO — do not absorb silently |
+
+### 8.3 SSE Testing Protocol
+
+Sprint 2 introduces Server-Sent Events (SSE) for real-time deployment progress (S-204) and metrics updates (S-207/208). SSE requires specific testing discipline:
+
+| Rule | Detail |
+|------|--------|
+| Unit test SSE emission | Every SSE event type (`deployment.progress`, `metrics.update`, `alert.created`, `alert.dismissed`) must have a unit test verifying event shape and emission timing |
+| Integration test SSE delivery | tRPC SSE subscriptions must have integration tests verifying event delivery through the full stack (BullMQ job → SSE emitter → client handler) |
+| E2E test SSE reliability | Playwright E2E tests must verify SSE-driven UI updates render correctly, including the fallback-to-polling path (NFR-017) |
+| Connection lifecycle | Tests must cover SSE reconnection after network interruption and cleanup on component unmount |
+| Browser verification | FE agent must verify SSE-driven real-time updates in the browser (deployment progress bar, dashboard live metrics) before merge — terminal-only verification is insufficient for SSE |
+
+### 8.4 P4 Self-Review Checklist (Code Agent Exit Gate)
+
+Derived from retrospective finding §3.1: 14 of 16 P5 bugs were security or accessibility issues catchable at implementation time. Every code agent must verify the following before requesting TL merge:
+
+**Security Self-Review:**
+
+- [ ] All mutation endpoints validate CSRF token (double-submit cookie pattern per BF-001)
+- [ ] All state-changing operations create an audit log entry (action, timestamp, user_id, target, outcome, IP, user agent)
+- [ ] Session lifecycle is complete: invalidation on password change, logout clears all sessions, token rotation on privilege escalation
+- [ ] Rate limiting applied to auth endpoints and expensive operations
+- [ ] SSH commands use parameterized templates — no string concatenation
+- [ ] No secrets in log output — verify Pino serializer configuration strips sensitive fields
+
+**Accessibility Self-Review:**
+
+- [ ] All form groups wrapped in `<fieldset>` with `<legend>`
+- [ ] All pages have unique, descriptive `<title>` elements
+- [ ] All interactive elements reachable via keyboard with visible focus indicators
+- [ ] Dynamic content updates announced via ARIA live regions
+- [ ] Color-coded statuses pair color with text label — no information by color alone
+- [ ] Animations respect `prefers-reduced-motion`
+- [ ] All images/icons have meaningful alt text or are marked decorative
+
+### 8.5 Deployment Pipeline Review Gates
+
+Sprint 2 introduces deployment features (S-204, S-205) that require additional review scrutiny:
+
+| Gate | Checkpoint | Reviewer |
+|------|-----------|----------|
+| Deployment state machine | Every state transition in `DeploymentStatus` (pending→pulling→configuring→provisioning-ssl→starting→running/failed) must be tested with both success and failure paths | Testing + TL |
+| Rollback verification | Deployment failure cleanup (container removal, route cleanup, env file cleanup) must be verified before merge | BE + DevOps + TL |
+| Health check endpoint | Post-deployment health check (S-205) must verify the app HTTP endpoint responds with 200 before marking deployment as "running" | BE + Testing |
+| Resource isolation | Multi-app coexistence (S-206) must prove that deploying a second app does not disrupt the first app's container, routes, or data | BE + Testing + TL |
+
+### 8.6 Parallel Track Coordination (Sprint 2)
+
+Sprint 2 runs three parallel tracks that must be coordinated:
 
 | Agreement | Detail |
 |-----------|--------|
-| Schema-first delivery | DBA delivers complete schema (users, servers, sessions, audit_log) in Week 1 Days 1-2 before both tracks consume it |
-| Track independence | Track A (Auth/F4) and Track B (Server/F1) have no cross-track code dependencies in Week 1 |
-| Cross-track dependency point | Track B stories S-198 through S-201 depend on S-195 (authenticated user) — auth middleware must be available before server wizard work begins |
+| Schema-first delivery | DBA delivers full Sprint 2 schema (catalog, deployment, alert, metrics extensions) in Week 1 before BE/FE consume it |
+| Bug-first, then features | Week 1 prioritizes bug fixes (Track E) alongside DBA schema work. Feature tracks (C, D) begin BE/FE work after bug merges |
+| Cross-track dependencies | Track D (Dashboard) depends on Track C (Catalog) deployment data for app tiles and health metrics — S-207 requires at minimum S-204 schema |
 | Integration window | End of Week 1: Tech Lead merges and verifies sub-branches are compatible |
-| P2 priority protection | P2 stories (S-196, S-197, S-201) are committed but may be descoped if P1 stories consume more capacity than estimated |
+| P2 safety valve | P2 stories (S-205, S-206, S-209 = 15 SP) are committed but pre-authorized for descope if P1 stories consume more capacity than estimated |
 
-### 8.2 First Sprint Baseline
+### 8.7 Velocity Calibration
 
-This is the team's first sprint. The following agreements reflect a conservative approach:
+Sprint 1 delivered 47 SP. Sprint 2 commits 71 SP (29% over Sprint 1 velocity). The overcommitment is deliberately managed:
 
-- Estimated velocity: 50 SP (buffer: 3 SP below the 47 SP commitment)
-- Velocity will be calibrated after Sprint 1 actual performance
-- Story point estimates are relative — anchored to S-194 (User Registration, 5 SP) as the reference story
-- If a story is at risk of overflowing, signal in standup immediately — do not absorb silently
+| Agreement | Detail |
+|-----------|--------|
+| Calibrated velocity | 55 SP (adjusted up from 47 SP: Sprint 1 scaffold overhead is removed) |
+| Safety valve | 15 SP in P2 stories serves as descope buffer, bringing effective P1 commitment to 56 SP |
+| Bug effort bounded | 17 SP of bugs have specific AC from SEC/A11Y audit — scope creep trigger applies (§8.2) |
+| Daily WIP tracking | SM tracks active work items per track daily to detect overload early |
 
 ## Workflow Observations
 
-No framework friction observed during P3 sprint planning facilitation.
+No framework friction observed during PI-2 Sprint 2 planning facilitation.

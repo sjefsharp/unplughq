@@ -58,6 +58,7 @@ nav:
     - Feature Roadmap: feature-roadmap.md
     - Go/No-Go Brief — UnplugHQ Sprint 1: go-no-go-brief.md
     - Management Report — UnplugHQ Sprint 1: management-report.md
+    - PI-1 Summary — UnplugHQ Platform: pi-1-summary.md
     - Product Vision: product-vision.md
     - UnplugHQ v0.1.0 — Sprint 1 Release Notes: release-notes.md
 - Business Analysis:
@@ -66,15 +67,15 @@ nav:
     - Requirements: requirements.md
     - Stakeholder Analysis: stakeholder-analysis.md
 - Program Management:
-    - Dependency Map: dependency-map.md
-    - Initial Risk Register: risk-register.md
+    - Dependency Map — PI-2 Sprint 2: dependency-map.md
     - P6 Flow Metrics Report — UnplugHQ Sprint 1: flow-metrics-report.md
     - P8 Framework Review — UnplugHQ Sprint 1: framework-review.md
     - PI Objectives: pi-objectives.md
-    - Program Board: program-board.md
+    - Program Board — PI-2 Sprint 2: program-board.md
+    - Risk Register: risk-register.md
 - System Architecture:
     - Architecture Overview: architecture-overview.md
-    - Solution Assessment: solution-assessment.md
+    - Solution Assessment — PI-2: solution-assessment.md
 - Solution Design:
     - API Contracts — UnplugHQ: api-contracts.md
 - Content Strategy:
@@ -88,43 +89,60 @@ nav:
     - UnplugHQ Interaction Patterns Library: interaction-patterns.md
     - UnplugHQ Wireframes & Layout Specifications: wireframes.md
 - Accessibility:
+    - Accessibility Audit Report — Sprint 2 (P5 WCAG 2.2 AA): accessibility-report-sprint2.md
     - Accessibility Implementation Guidelines — UnplugHQ Platform: accessibility-guidelines.md
     - P5 WCAG 2.2 AA Compliance Audit — UnplugHQ Sprint 1: accessibility-report.md
     - WCAG 2.2 AA Compliance Audit — UnplugHQ Platform: wcag-audit.md
 - Product Ownership:
-    - Delegation Briefs — Phase 4 (Implementation): delegation-briefs-p4.md
-    - Delegation Briefs — Phase 5 (Verification): delegation-briefs-p5.md
-    - Delegation Briefs — Phase 7 (Deployment): delegation-briefs-p7.md
+    - Delegation Briefs — Phase 4 (Implementation) — PI-2 Sprint 2: delegation-briefs-p4.md
+    - Delegation Briefs — Phase 5 (Verification) — PI-2 Sprint 2: delegation-briefs-p5.md
+    - Delegation Briefs — Phase 7 (Deployment) — PI-2 Sprint 2: delegation-briefs-p7.md
+    - Delegation Briefs — Sprint 2 Bug Remediation: delegation-briefs-remediation-sprint2.md
     - P5 Bug Remediation — Triage & Delegation Briefs: delegation-briefs-remediation.md
-    - Product Backlog — UnplugHQ PI-1: product-backlog.md
+    - Product Backlog — UnplugHQ PI-2 Sprint 2: product-backlog.md
     - Sprint 1 Acceptance Report — UnplugHQ: acceptance-report.md
-    - Sprint Backlog — UnplugHQ Sprint 1: sprint-backlog.md
-    - Story Map — UnplugHQ PI-1: story-map.md
+    - Sprint 2 Acceptance Report — UnplugHQ PI-2: acceptance-report-sprint2.md
+    - Sprint Backlog — UnplugHQ PI-2 Sprint 2: sprint-backlog.md
+    - Story Map — UnplugHQ PI-2: story-map.md
 - Scrum:
-    - Definition of Done — UnplugHQ PI-1: definition-of-done.md
+    - Definition of Done — UnplugHQ PI-2 Sprint 2: definition-of-done.md
     - Sprint 1 Retrospective Report — UnplugHQ: retrospective-report.md
-    - Sprint Health Report — UnplugHQ Sprint 1: sprint-health-report.md
-    - Team Working Agreements — UnplugHQ PI-1: team-working-agreements.md
+    - Sprint Health Report — UnplugHQ PI-2 Sprint 2: sprint-health-report.md
+    - Team Working Agreements — UnplugHQ PI-2 Sprint 2: team-working-agreements.md
 - Engineering:
     - Backend Deployment — Production Configuration Guide: backend-deployment.md
     - Build Verification — P4 Step 2 End Merge Integration: build-verification-merge.md
     - Build Verification — P5 Remediation: build-verification-remediation.md
     - Build Verification Report — UnplugHQ: build-verification-report.md
+    - Build Verification Report — UnplugHQ PI-2 Sprint 2 P4 Step 2 Close: build-verification-sprint2.md
     - Database Deployment — Production PostgreSQL 17 Configuration: database-deployment.md
     - Database Schema — UnplugHQ: database-schema.md
+    - Database Schema Sprint 2: database-schema-sprint2.md
+    - Deployment Report — Backend Developer Sprint 2: deployment-report-be-sprint2.md
+    - Deployment Report — DBA Sprint 2: deployment-report-dba-sprint2.md
+    - Deployment Report — DevOps Sprint 2: deployment-report-devops-sprint2.md
+    - Deployment Report — Frontend (Sprint 2): deployment-report-fe-sprint2.md
     - Deployment Runbook — UnplugHQ Sprint 1: deployment-runbook.md
     - DevOps Infrastructure — CI/CD, Docker, Monitoring Agent, Provisioning: devops-infrastructure.md
+    - DevOps Sprint 2 Infrastructure: devops-sprint2-infrastructure.md
     - FE Auth Pages: fe-auth-pages.md
     - FE Dashboard Shell & Server Tile: fe-dashboard.md
     - FE Layout Shell & Shared UI Components: fe-layout-shell.md
     - FE Server Connection Wizard: fe-server-wizard.md
     - Frontend Deployment — Production Build & Bundle Analysis: frontend-deployment.md
     - P5 Build Verification Report — UnplugHQ Sprint 1: build-verification-p5.md
+    - Sprint 2 Frontend Implementation: fe-sprint2-implementation.md
+    - Verification Summary — Sprint 2 (P5 End): verification-summary-sprint2.md
 - Testing:
+    - Smoke Test Report — UnplugHQ PI-2 Sprint 2: smoke-test-report-sprint2.md
     - Smoke Test Report — UnplugHQ Sprint 1: smoke-test-report.md
+    - Sprint 2 P5 Test Execution Report: test-report-sprint2.md
     - Test Strategy — P4 Step 1 (TDD Contracts): test-strategy-p4.md
+    - Test Strategy — Sprint 2 P4 Step 1 (TDD Contracts): test-strategy-sprint2.md
 - Security:
+    - Security Review — UnplugHQ PI-2 Sprint 2: security-review-sprint2.md
     - Threat Model — UnplugHQ Platform: threat-model.md
     - Vulnerability Report — UnplugHQ P5 Security Verification: vulnerability-report.md
 - Uncategorized:
+    - Backend Sprint 2 Implementation: backend-sprint2.md
     - Sprint 1 — P5 Test Execution Report: test-report.md

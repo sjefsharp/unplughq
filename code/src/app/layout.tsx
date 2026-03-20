@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { TRPCProvider } from "@/lib/trpc/provider";
 import { Toaster } from "@/components/ui/toaster";
 import { SkipToContent } from "@/components/skip-to-content";
+import { RouteAnnouncer } from "@/components/route-announcer";
 
 export const metadata: Metadata = {
   title: "UnplugHQ — Self-Hosting Management Platform",
@@ -28,7 +29,9 @@ export default function RootLayout({
         <SkipToContent />
         <ThemeProvider>
           <TRPCProvider>
-            {children}
+            <RouteAnnouncer>
+              {children}
+            </RouteAnnouncer>
             <Toaster />
           </TRPCProvider>
         </ThemeProvider>

@@ -1,4 +1,5 @@
-import { router, protectedProcedure } from '../index';
+import { generateKeyPairSync, randomBytes, createPublicKey } from 'node:crypto';
+import { router, protectedMutationProcedure, protectedProcedure } from '../index';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { ServerConnectInput, TierLimits } from '@/lib/schemas';
@@ -6,8 +7,10 @@ import { db } from '@/server/db';
 import { servers } from '@/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { ErrorCode } from '@/server/lib/errors';
-import { provisionQueue } from '@/server/queue';
+import { getMonitorQueue, getProvisionQueue } from '@/server/queue';
 import { logger } from '@/server/lib/logger';
+import { encryptSSHKey, decryptSSHKey } from '@/server/lib/encryption';
+import { SSHService } from '@/server/services/ssh/ssh-service';
 
 export const serverRouter = router({
   /** List all servers for the authenticated tenant (I-07) */
@@ -35,7 +38,7 @@ export const serverRouter = router({
     }),
 
   /** Enqueue test-connection job; store server record (status: connecting) */
-  testConnection: protectedProcedure
+  testConnection: protectedMutationProcedure
     .input(ServerConnectInput)
     .mutation(async ({ input, ctx }) => {
       // E-03: Check tier limits
@@ -65,7 +68,7 @@ export const serverRouter = router({
         .returning();
 
       // Enqueue test-connection job
-      const job = await provisionQueue.add('test-connection', {
+      const job = await getProvisionQueue().add('test-connection', {
         serverId: server.id,
         tenantId: ctx.tenantId,
         ip: input.ip,
@@ -82,7 +85,7 @@ export const serverRouter = router({
     }),
 
   /** Enqueue provision-server job with compatibility gate (BR-F1-001) */
-  provision: protectedProcedure
+  provision: protectedMutationProcedure
     .input(z.object({ serverId: z.string().uuid() }))
     .mutation(async ({ input, ctx }) => {
       const server = await db.query.servers.findFirst({
@@ -107,7 +110,7 @@ export const serverRouter = router({
         .set({ status: 'provisioning', updatedAt: new Date() })
         .where(eq(servers.id, server.id));
 
-      const job = await provisionQueue.add('provision-server', {
+      const job = await getProvisionQueue().add('provision-server', {
         serverId: server.id,
         tenantId: ctx.tenantId,
       });
@@ -121,7 +124,7 @@ export const serverRouter = router({
     }),
 
   /** Update human-readable server name (FR-F1-008) */
-  rename: protectedProcedure
+  rename: protectedMutationProcedure
     .input(z.object({ id: z.string().uuid(), name: z.string().min(1).max(100) }))
     .mutation(async ({ input, ctx }) => {
       const result = await db
@@ -138,7 +141,7 @@ export const serverRouter = router({
     }),
 
   /** Disconnect server (NFR-006: requires confirmation token) */
-  disconnect: protectedProcedure
+  disconnect: protectedMutationProcedure
     .input(z.object({ id: z.string().uuid(), confirmationToken: z.string() }))
     .mutation(async ({ input, ctx }) => {
       const server = await db.query.servers.findFirst({
@@ -158,5 +161,90 @@ export const serverRouter = router({
         .where(eq(servers.id, server.id));
 
       return { success: true };
+    }),
+
+  rotateSSHKey: protectedMutationProcedure
+    .input(z.object({ serverId: z.string().uuid() }))
+    .mutation(async ({ input, ctx }) => {
+      const server = await db.query.servers.findFirst({
+        where: and(eq(servers.id, input.serverId), eq(servers.tenantId, ctx.tenantId)),
+      });
+
+      if (!server) {
+        throw new TRPCError({ code: 'NOT_FOUND', cause: { code: ErrorCode.NOT_FOUND } });
+      }
+
+      // Generate a real Ed25519 keypair
+      const { privateKey, publicKey } = generateKeyPairSync('ed25519', {
+        publicKeyEncoding: { type: 'spki', format: 'pem' },
+        privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+      });
+
+      // Export public key in SSH format for authorized_keys
+      const pubKeyObj = createPublicKey(publicKey);
+      const sshPublicKey = pubKeyObj.export({ type: 'spki', format: 'der' });
+      const sshPubKeyBase64 = sshPublicKey.toString('base64');
+      const authorizedKeysEntry = `ssh-ed25519 ${sshPubKeyBase64}`;
+
+      const sshKeyEncrypted = await encryptSSHKey(privateKey, ctx.tenantId);
+
+      // Deploy new public key to VPS using the old key before updating DB
+      if (server.sshKeyEncrypted) {
+        try {
+          const oldPrivateKey = await decryptSSHKey(server.sshKeyEncrypted, ctx.tenantId);
+          const sshService = new SSHService();
+          await sshService.executeCommand({
+            host: server.ip,
+            port: server.sshPort,
+            username: server.sshUser,
+            privateKey: oldPrivateKey,
+            command: {
+              type: 'deploy-ssh-public-key',
+              params: { newPublicKey: authorizedKeysEntry },
+            },
+          });
+        } catch (err) {
+          logger.error({ serverId: server.id, error: err }, 'SSH key deployment failed — rotation rolled back');
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to deploy new SSH key to server — rotation rolled back',
+            cause: { code: ErrorCode.SSH_KEY_DEPLOYMENT_FAILED },
+          });
+        }
+      }
+
+      await db
+        .update(servers)
+        .set({ sshKeyEncrypted, updatedAt: new Date() })
+        .where(and(eq(servers.id, server.id), eq(servers.tenantId, ctx.tenantId)));
+
+      return { rotated: true };
+    }),
+
+  rotateAgentToken: protectedMutationProcedure
+    .input(z.object({ serverId: z.string().uuid() }))
+    .mutation(async ({ input, ctx }) => {
+      const server = await db.query.servers.findFirst({
+        where: and(eq(servers.id, input.serverId), eq(servers.tenantId, ctx.tenantId)),
+      });
+
+      if (!server) {
+        throw new TRPCError({ code: 'NOT_FOUND', cause: { code: ErrorCode.NOT_FOUND } });
+      }
+
+      const apiToken = randomBytes(32).toString('hex');
+
+      await db
+        .update(servers)
+        .set({ apiToken, updatedAt: new Date() })
+        .where(and(eq(servers.id, server.id), eq(servers.tenantId, ctx.tenantId)));
+
+      await getMonitorQueue().add('update-agent', {
+        tenantId: ctx.tenantId,
+        serverId: server.id,
+        apiToken,
+      });
+
+      return { rotated: true };
     }),
 });

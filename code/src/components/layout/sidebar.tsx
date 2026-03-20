@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Store, Settings, Menu, X, Server } from "lucide-react";
+import { LayoutDashboard, Store, Settings, Menu, X, Server, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PulseRing } from "@/components/pulse-ring";
@@ -15,6 +15,7 @@ interface SidebarProps {
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/marketplace", label: "Marketplace", icon: Store },
+  { href: "/alerts", label: "Alerts", icon: Bell },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

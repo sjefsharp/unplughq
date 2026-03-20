@@ -1,42 +1,95 @@
 import { Queue, Worker, type Job, type ConnectionOptions } from 'bullmq';
 import { createRedisConnection } from './redis';
+import { alertEmailQueueOptions, alertEmailDlqQueueOptions } from '@/server/services/notifications/alert-email';
 
-const connection: ConnectionOptions = createRedisConnection();
+function getConnection(): ConnectionOptions {
+  return createRedisConnection();
+}
 
-// --- Queue Definitions ---
+// --- Queue Definitions (lazy-initialized to avoid Redis connections at build time) ---
 
-export const provisionQueue = new Queue('provision', {
-  connection,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: { type: 'exponential', delay: 5000 },
-    removeOnComplete: { count: 100 },
-    removeOnFail: { count: 500 },
-  },
-});
+let _provisionQueue: Queue | null = null;
+let _deployQueue: Queue | null = null;
+let _monitorQueue: Queue | null = null;
+let _alertEmailQueue: Queue | null = null;
+let _alertEmailDlqQueue: Queue | null = null;
 
-export const deployQueue = new Queue('deploy', {
-  connection,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: { type: 'exponential', delay: 5000 },
-    removeOnComplete: { count: 100 },
-    removeOnFail: { count: 500 },
-  },
-});
+export function getProvisionQueue(): Queue {
+  if (!_provisionQueue) {
+    _provisionQueue = new Queue('provision', {
+      connection: getConnection(),
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 5000 },
+        removeOnComplete: { count: 100 },
+        removeOnFail: { count: 500 },
+      },
+    });
+  }
+  return _provisionQueue;
+}
 
-export const monitorQueue = new Queue('monitor', {
-  connection,
-  defaultJobOptions: {
-    attempts: 1,
-    removeOnComplete: { count: 50 },
-    removeOnFail: { count: 100 },
-  },
-});
+export function getDeployQueue(): Queue {
+  if (!_deployQueue) {
+    _deployQueue = new Queue('deploy', {
+      connection: getConnection(),
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 5000 },
+        removeOnComplete: { count: 100 },
+        removeOnFail: { count: 500 },
+      },
+    });
+  }
+  return _deployQueue;
+}
+
+export function getMonitorQueue(): Queue {
+  if (!_monitorQueue) {
+    _monitorQueue = new Queue('monitor', {
+      connection: getConnection(),
+      defaultJobOptions: {
+        attempts: 1,
+        removeOnComplete: { count: 50 },
+        removeOnFail: { count: 100 },
+      },
+    });
+  }
+  return _monitorQueue;
+}
+
+export function getAlertEmailQueue(): Queue {
+  if (!_alertEmailQueue) {
+    _alertEmailQueue = new Queue('alert-email', {
+      connection: getConnection(),
+      defaultJobOptions: alertEmailQueueOptions,
+    });
+  }
+
+  return _alertEmailQueue;
+}
+
+export function getAlertEmailDlqQueue(): Queue {
+  if (!_alertEmailDlqQueue) {
+    _alertEmailDlqQueue = new Queue('alert-email-dlq', {
+      connection: getConnection(),
+      defaultJobOptions: alertEmailDlqQueueOptions,
+    });
+  }
+
+  return _alertEmailDlqQueue;
+}
 
 // --- Worker factories ---
 
-import { handleTestConnection, handleProvisionServer } from './handlers';
+import {
+  handleDeployApp,
+  handleProcessMetrics,
+  handleProvisionServer,
+  handleSendAlert,
+  handleTestConnection,
+  handleUpdateAgent,
+} from './handlers';
 
 export function createProvisionWorker() {
   return new Worker(
@@ -51,26 +104,52 @@ export function createProvisionWorker() {
           throw new Error(`Unknown provision job: ${job.name}`);
       }
     },
-    { connection, concurrency: 3 },
+    { connection: getConnection(), concurrency: 3 },
   );
 }
 
 export function createDeployWorker() {
-  return new Worker(
+  const worker = new Worker(
     'deploy',
-    async (_job: Job) => {
-      // Deploy worker — implemented in Sprint 2
+    async (job: Job) => {
+      switch (job.name) {
+        case 'deploy-app':
+          return handleDeployApp(job);
+        default:
+          throw new Error(`Unknown deploy job: ${job.name}`);
+      }
     },
-    { connection },
+    { connection: getConnection() },
   );
+
+  worker.on('error', (error) => {
+    console.error(error);
+  });
+
+  return worker;
 }
 
 export function createMonitorWorker() {
-  return new Worker(
+  const worker = new Worker(
     'monitor',
-    async (_job: Job) => {
-      // Monitor worker — implemented in Sprint 2
+    async (job: Job) => {
+      switch (job.name) {
+        case 'process-metrics':
+          return handleProcessMetrics(job);
+        case 'send-alert':
+          return handleSendAlert(job);
+        case 'update-agent':
+          return handleUpdateAgent(job);
+        default:
+          throw new Error(`Unknown monitor job: ${job.name}`);
+      }
     },
-    { connection },
+    { connection: getConnection() },
   );
+
+  worker.on('error', (error) => {
+    console.error(error);
+  });
+
+  return worker;
 }

@@ -23,6 +23,7 @@ const API_TOKEN = requiredEnv("AGENT_API_TOKEN");
 const SERVER_ID = requiredEnv("AGENT_SERVER_ID");
 const CONTROL_PLANE_URL = requiredEnv("AGENT_CONTROL_PLANE_URL");
 const INTERVAL_MS = parseInt(process.env.AGENT_INTERVAL_MS || "30000", 10);
+const AGENT_VERSION = process.env.UNPLUGHQ_AGENT_VERSION || "2.0.0";
 const METRICS_ENDPOINT = `${CONTROL_PLANE_URL.replace(/\/+$/, "")}/api/agent/metrics`;
 
 function requiredEnv(name) {
@@ -149,26 +150,41 @@ async function getNetworkRate() {
 
 async function getContainers() {
   try {
-    const { stdout } = await exec("docker", [
-      "ps",
-      "-a",
-      "--format",
-      "{{.ID}}\t{{.Names}}\t{{.Status}}",
-    ]);
-    const containers = [];
-    for (const line of stdout.trim().split("\n")) {
-      if (!line.trim()) continue;
-      const [id, name, ...statusParts] = line.split("\t");
-      const statusStr = statusParts.join("\t").toLowerCase();
-      let status = "stopped";
-      if (statusStr.includes("up")) status = "running";
-      else if (statusStr.includes("restarting")) status = "restarting";
-      else if (statusStr.includes("paused")) status = "paused";
-      else if (statusStr.includes("dead")) status = "dead";
-      else if (statusStr.includes("created")) status = "created";
-      containers.push({ id, name, status });
+    const { stdout: idList } = await exec("docker", ["ps", "-aq", "--no-trunc"]);
+    const ids = idList
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .slice(0, 100);
+
+    if (ids.length === 0) {
+      return [];
     }
-    return containers.slice(0, 100);
+
+    const { stdout } = await exec("docker", ["inspect", "--size", ...ids]);
+    const inspected = JSON.parse(stdout);
+
+    const containers = inspected.map((container) => {
+      const state = container.State || {};
+      let status = "exited";
+
+      if (state.Dead) status = "dead";
+      else if (state.Paused) status = "paused";
+      else if (state.Restarting) status = "restarting";
+      else if (state.Running) status = "running";
+
+      const writableSize = Number(container.SizeRw || 0);
+      const rootFsSize = Number(container.SizeRootFs || 0);
+
+      return {
+        id: container.Id,
+        name: String(container.Name || "").replace(/^\//, ""),
+        status,
+        diskUsageBytes: Math.max(writableSize, rootFsSize),
+      };
+    });
+
+    return containers;
   } catch {
     return [];
   }
@@ -206,7 +222,7 @@ async function collectAndReport() {
     });
 
     if (response.ok) {
-      console.log(`[agent] Metrics reported — CPU: ${cpuPercent}%, containers: ${containers.length}`);
+      console.log(`[agent] Metrics reported — CPU: ${cpuPercent}%, containers: ${containers.length}, version: ${AGENT_VERSION}`);
     } else if (response.status === 429) {
       console.warn("[agent] Rate limited — skipping this cycle");
     } else {
@@ -224,6 +240,7 @@ console.log(`[agent] UnplugHQ Monitoring Agent starting`);
 console.log(`[agent] Server: ${SERVER_ID}`);
 console.log(`[agent] Endpoint: ${METRICS_ENDPOINT}`);
 console.log(`[agent] Interval: ${INTERVAL_MS}ms`);
+console.log(`[agent] Version: ${AGENT_VERSION}`);
 
 // Initial collection
 await collectAndReport();

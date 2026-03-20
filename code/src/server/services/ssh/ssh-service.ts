@@ -14,6 +14,9 @@ import type {
  */
 
 const CONTAINER_NAME_REGEX = /^[a-z0-9][a-z0-9-]*$/;
+const NETWORK_NAME_REGEX = /^[a-z0-9][a-z0-9_.-]*$/;
+const ROUTE_ID_REGEX = /^[a-z0-9][a-z0-9-]*$/;
+const DOMAIN_REGEX = /^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
 const IMAGE_REF_REGEX = /^[a-z0-9._/-]+(@sha256:[a-f0-9]{64})?$/;
 
 function validateContainerName(name: string): void {
@@ -28,7 +31,38 @@ function validateImageRef(ref: string): void {
   }
 }
 
-function resolveCommand(template: SSHCommandTemplate): string {
+function validateNetworkName(name: string): void {
+  if (!NETWORK_NAME_REGEX.test(name)) {
+    throw new Error('Invalid network name format');
+  }
+}
+
+function validateRouteId(routeId: string): void {
+  if (!ROUTE_ID_REGEX.test(routeId)) {
+    throw new Error('Invalid route id format');
+  }
+}
+
+function validateDomain(domain: string): void {
+  if (!DOMAIN_REGEX.test(domain)) {
+    throw new Error('Invalid domain format');
+  }
+}
+
+function buildCaddyRoutePayload(routeId: string, domain: string, upstream: string): string {
+  validateRouteId(routeId);
+  validateDomain(domain);
+
+  return JSON.stringify({
+    '@id': routeId,
+    match: [{ host: [domain] }],
+    handle: [{ handler: 'reverse_proxy', upstreams: [{ dial: upstream }] }],
+    terminal: true,
+  });
+}
+
+/** @internal exported for unit testing only */
+export function resolveCommand(template: SSHCommandTemplate): string {
   switch (template.type) {
     case 'detect-os':
       return 'cat /etc/os-release 2>/dev/null || lsb_release -a 2>/dev/null || uname -a';
@@ -68,6 +102,8 @@ function resolveCommand(template: SSHCommandTemplate): string {
       return [
         'sudo docker pull ghcr.io/unplughq/agent:latest',
         `sudo docker run -d --name unplughq-agent --network unplughq --restart unless-stopped`,
+        `--read-only --security-opt=no-new-privileges --cap-drop=ALL`,
+        `--tmpfs /tmp:rw,noexec,nosuid,size=16m`,
         `-e AGENT_API_TOKEN=${shellEscape(apiToken)}`,
         `-e CONTROL_PLANE_URL=${shellEscape(controlPlaneUrl)}`,
         `-e SERVER_ID=${shellEscape(serverId)}`,
@@ -80,15 +116,28 @@ function resolveCommand(template: SSHCommandTemplate): string {
       return `docker pull ${shellEscape(template.params.imageRef)}`;
     }
     case 'docker-run': {
-      const { containerName, imageRef, networkName, envFile } = template.params;
+      const { containerName, imageRef, networkName, envFile, volumeMounts = [], labels = {} } = template.params;
       validateContainerName(containerName);
       validateImageRef(imageRef);
+      validateNetworkName(networkName);
+
+      const volumeFlags = volumeMounts.map((mount) => {
+        const suffix = mount.readOnly ? ':ro' : '';
+        return `-v ${shellEscape(`${mount.hostPath}:${mount.containerPath}${suffix}`)}`;
+      });
+      const labelFlags = Object.entries(labels).map(
+        ([key, value]) => `--label ${shellEscape(`${key}=${value}`)}`,
+      );
+
       return [
         `docker run -d`,
         `--name ${shellEscape(containerName)}`,
         `--network ${shellEscape(networkName)}`,
         `--restart unless-stopped`,
+        `--security-opt=no-new-privileges`,
         `--env-file ${shellEscape(envFile)}`,
+        ...volumeFlags,
+        ...labelFlags,
         shellEscape(imageRef),
       ].join(' ');
     }
@@ -110,23 +159,44 @@ function resolveCommand(template: SSHCommandTemplate): string {
     }
     case 'docker-ps':
       return 'docker ps --format json';
+    case 'docker-network-create': {
+      validateNetworkName(template.params.networkName);
+      return `docker network inspect ${shellEscape(template.params.networkName)} >/dev/null 2>&1 || docker network create ${shellEscape(template.params.networkName)}`;
+    }
+    case 'ensure-directory': {
+      const mode = template.params.mode ?? '0750';
+      const owner = template.params.owner ? ` && chown ${shellEscape(template.params.owner)} ${shellEscape(template.params.path)}` : '';
+      return `install -d -m ${shellEscape(mode)} ${shellEscape(template.params.path)}${owner}`;
+    }
     case 'write-env-file': {
       // AB#255: Base64 encode to prevent heredoc injection
       const encoded = Buffer.from(template.params.content).toString('base64');
       return `echo ${shellEscape(encoded)} | base64 -d > ${shellEscape(template.params.path)}`;
     }
+    case 'caddy-get-config':
+      return 'curl -fsS http://localhost:2019/config/';
+    case 'caddy-validate-config':
+      return 'curl -fsS http://localhost:2019/config/ >/dev/null';
     case 'caddy-add-route': {
       const { routeId, domain, upstream } = template.params;
-      const payload = JSON.stringify({
-        '@id': routeId,
-        match: [{ host: [domain] }],
-        handle: [{ handler: 'reverse_proxy', upstreams: [{ dial: upstream }] }],
-        terminal: true,
-      });
+      const payload = buildCaddyRoutePayload(routeId, domain, upstream);
       return `curl -s -X POST http://localhost:2019/config/apps/http/servers/srv0/routes -H 'Content-Type: application/json' -d ${shellEscape(payload)}`;
     }
     case 'caddy-remove-route': {
-      return `curl -s -X DELETE http://localhost:2019/id/${shellEscape(template.params.routeId)}`;
+      validateRouteId(template.params.routeId);
+      return `curl -fsS -X DELETE http://localhost:2019/id/${shellEscape(template.params.routeId)}`;
+    }
+    case 'deploy-ssh-public-key': {
+      const { newPublicKey, oldPublicKey } = template.params;
+      // Append new key, then remove old key from authorized_keys
+      return [
+        `mkdir -p ~/.ssh && chmod 700 ~/.ssh`,
+        `echo ${shellEscape(newPublicKey)} >> ~/.ssh/authorized_keys`,
+        `chmod 600 ~/.ssh/authorized_keys`,
+        oldPublicKey
+          ? `sed -i ${shellEscape(`/${oldPublicKey.replace(/[/\\.*[\]^$]/g, '\\$&')}/d`)} ~/.ssh/authorized_keys`
+          : 'true',
+      ].join(' && ');
     }
   }
 }
@@ -283,6 +353,37 @@ function executeOnClient(
   });
 }
 
+function uploadViaSftp(
+  client: Client,
+  remotePath: string,
+  content: string,
+  mode: number,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    client.sftp((sftpErr, sftp) => {
+      if (sftpErr || !sftp) {
+        reject(sftpErr ?? new Error('SFTP unavailable'));
+        return;
+      }
+
+      const stream = sftp.createWriteStream(remotePath, { mode, encoding: 'utf8' });
+
+      stream.on('error', reject);
+      stream.on('close', () => {
+        sftp.chmod(remotePath, mode, (chmodErr) => {
+          if (chmodErr) {
+            reject(chmodErr);
+            return;
+          }
+          resolve();
+        });
+      });
+
+      stream.end(content);
+    });
+  });
+}
+
 export class SSHService implements ISSHExecutor {
   async testConnection(params: {
     host: string;
@@ -329,6 +430,25 @@ export class SSHService implements ISSHExecutor {
         'SSH command executed',
       );
       return result;
+    } finally {
+      release();
+    }
+  }
+
+  async uploadFile(params: {
+    host: string;
+    port: number;
+    username: string;
+    privateKey: string;
+    remotePath: string;
+    content: string;
+    mode?: number;
+  }): Promise<void> {
+    const { client, release } = await getConnection(params);
+
+    try {
+      await uploadViaSftp(client, params.remotePath, params.content, params.mode ?? 0o600);
+      logger.info({ host: params.host, remotePath: params.remotePath }, 'SFTP file uploaded');
     } finally {
       release();
     }

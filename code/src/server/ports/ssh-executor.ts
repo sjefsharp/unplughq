@@ -41,6 +41,19 @@ export interface ISSHExecutor {
   }): Promise<SSHCommandResult>;
 
   /**
+   * Upload a file over SFTP and apply restrictive permissions.
+   */
+  uploadFile(params: {
+    host: string;
+    port: number;
+    username: string;
+    privateKey: string;
+    remotePath: string;
+    content: string;
+    mode?: number;
+  }): Promise<void>;
+
+  /**
    * Detect OS and hardware specs from the remote server.
    */
   detectServerSpecs(params: {
@@ -65,12 +78,27 @@ export type SSHCommandTemplate =
   | { type: 'install-caddy' }
   | { type: 'start-monitoring-agent'; params: { apiToken: string; controlPlaneUrl: string; serverId: string } }
   | { type: 'docker-pull'; params: { imageRef: string } }
-  | { type: 'docker-run'; params: { containerName: string; imageRef: string; networkName: string; envFile: string } }
+  | {
+      type: 'docker-run';
+      params: {
+        containerName: string;
+        imageRef: string;
+        networkName: string;
+        envFile: string;
+        volumeMounts?: Array<{ hostPath: string; containerPath: string; readOnly?: boolean }>;
+        labels?: Record<string, string>;
+      };
+    }
   | { type: 'docker-start'; params: { containerName: string } }
   | { type: 'docker-stop'; params: { containerName: string } }
   | { type: 'docker-rm'; params: { containerName: string } }
   | { type: 'docker-inspect'; params: { containerName: string } }
   | { type: 'docker-ps' }
+  | { type: 'docker-network-create'; params: { networkName: string } }
+  | { type: 'ensure-directory'; params: { path: string; mode?: string; owner?: string } }
   | { type: 'write-env-file'; params: { path: string; content: string } }
+  | { type: 'caddy-get-config' }
+  | { type: 'caddy-validate-config' }
   | { type: 'caddy-add-route'; params: { routeId: string; domain: string; upstream: string } }
-  | { type: 'caddy-remove-route'; params: { routeId: string } };
+  | { type: 'caddy-remove-route'; params: { routeId: string } }
+  | { type: 'deploy-ssh-public-key'; params: { newPublicKey: string; oldPublicKey?: string } };

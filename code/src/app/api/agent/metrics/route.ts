@@ -93,6 +93,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   // Insert metrics snapshot
   await db.insert(metricsSnapshots).values({
+    tenantId: server.tenantId,
     serverId: server.id,
     timestamp: new Date(),
     cpuPercent: data.cpuPercent,

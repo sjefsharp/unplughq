@@ -1,8 +1,11 @@
 "use client";
 
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { Bell, Moon, Sun, ChevronRight } from "lucide-react";
+import { Moon, Sun, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/components/notification-bell";
 
 interface TopBarProps {
   breadcrumbs?: Array<{ label: string; href?: string }>;
@@ -10,6 +13,13 @@ interface TopBarProps {
 
 export function TopBar({ breadcrumbs = [] }: TopBarProps) {
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted && theme === "dark";
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-base)] px-[var(--space-4)] lg:px-[var(--space-8)]">
@@ -22,12 +32,12 @@ export function TopBar({ breadcrumbs = [] }: TopBarProps) {
                 <ChevronRight className="h-4 w-4 text-[var(--color-text-muted)]" aria-hidden="true" />
               )}
               {crumb.href ? (
-                <a
+                <Link
                   href={crumb.href}
                   className="text-[length:var(--text-sm-fs)] text-[var(--color-text-muted)] hover:text-[var(--color-text-base)]"
                 >
                   {crumb.label}
-                </a>
+                </Link>
               ) : (
                 <span className="text-[length:var(--text-sm-fs)] font-medium text-[var(--color-text-base)]">
                   {crumb.label}
@@ -44,17 +54,15 @@ export function TopBar({ breadcrumbs = [] }: TopBarProps) {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          onClick={() => setTheme(isDark ? "light" : "dark")}
+          aria-label={mounted ? (isDark ? "Switch to light mode" : "Switch to dark mode") : "Toggle color theme"}
         >
           <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:hidden" aria-hidden="true" />
           <Moon className="hidden h-5 w-5 transition-all dark:block" aria-hidden="true" />
         </Button>
 
         {/* Notifications */}
-        <Button variant="ghost" size="icon" aria-label="Notifications">
-          <Bell className="h-5 w-5" aria-hidden="true" />
-        </Button>
+        <NotificationBell />
 
         {/* User avatar */}
         <Button variant="ghost" size="icon" aria-label="User profile" className="rounded-full">

@@ -6,13 +6,9 @@ work-item: epic-001-unplughq-platform
 work-item-type: epic
 workflow-tier: full
 phase: P3
-version: 1.0.0
-status: approved
-azure-devops-id: 193
-review:
-  evaluator: product-manager
-  gate: 4
-  date: 2026-03-15
+version: 2.0.0
+status: draft
+azure-devops-id: 285
 consumed-by:
   - scrum-master
   - tech-lead
@@ -23,14 +19,14 @@ consumed-by:
   - testing
   - security-analyst
   - accessibility
-date: 2026-03-15
+date: 2026-03-16
 ---
 
-# Product Backlog — UnplugHQ PI-1
+# Product Backlog — UnplugHQ PI-2 Sprint 2
 
 ## Overview
 
-This backlog decomposes the four PI-1 features (F1–F4) into 16 INVEST-compliant user stories with Gherkin acceptance criteria. Stories are prioritized by MoSCoW within each feature, then sequenced by cross-feature dependency order.
+This backlog covers PI-1 Sprint 1 (completed, 8 stories, 47 SP) and PI-2 Sprint 2 (active, 8 stories + 5 deferred bugs, 59 SP + 17 SP bugs). Stories are decomposed from Features F1–F4 with Gherkin acceptance criteria.
 
 **Traceability:** Every story maps to BA requirements (FR-/NFR-/BR- identifiers in `docs/requirements.md`), PM desired outcomes (O1–O6), user journeys (UJ1–UJ5), and success criteria (SC1–SC8) from `docs/product-vision.md`.
 
@@ -48,9 +44,9 @@ This backlog decomposes the four PI-1 features (F1–F4) into 16 INVEST-complian
 
 ---
 
-## Feature F4 — User Identity & Access (AB#184)
+## Feature F4 — User Identity & Access (AB#184) — ✅ Delivered Sprint 1
 
-> Foundation for all authenticated flows. Parallel delivery with F1.
+> Foundation for all authenticated flows. Delivered PI-1 Sprint 1. 4 stories, 16 SP, all tests passing.
 
 ### Story S-194: User Registration (AB#194) — P1
 
@@ -249,9 +245,9 @@ Feature: Account Settings
 
 ---
 
-## Feature F1 — Server Connection & Provisioning (AB#181)
+## Feature F1 — Server Connection & Provisioning (AB#181) — ✅ Delivered Sprint 1
 
-> Foundational capability for all deployment features. Depends on F4 for authentication.
+> Foundational capability for all deployment features. Delivered PI-1 Sprint 1. 4 stories, 31 SP, all tests passing.
 
 ### Story S-198: Guided Server Connection Wizard (AB#198) — P1
 
@@ -820,32 +816,202 @@ Feature: Alert Management
 
 ## Backlog Summary
 
-| Feature | Stories | Total SP | P1 Stories | P2 Stories |
-|---------|---------|----------|------------|------------|
-| F4 — User Identity & Access | 4 | 16 | S-194, S-195 | S-196, S-197 |
-| F1 — Server Connection & Provisioning | 4 | 31 | S-198, S-199, S-200 | S-201 |
-| F2 — App Catalog & Deployment | 5 | 33 | S-202, S-203, S-204 | S-205, S-206 |
-| F3 — Dashboard & Health Monitoring | 3 | 21 | S-207, S-208 | S-209 |
-| **Total** | **16** | **101** | **9** | **7** |
+| Feature | Stories | Total SP | Status |
+|---------|---------|----------|--------|
+| F4 — User Identity & Access | 4 | 16 | ✅ Delivered Sprint 1 |
+| F1 — Server Connection & Provisioning | 4 | 31 | ✅ Delivered Sprint 1 |
+| F2 — App Catalog & Deployment | 5 | 33 | 🔵 Sprint 2 Active |
+| F3 — Dashboard & Health Monitoring | 3 | 21 | 🔵 Sprint 2 Active |
+| Deferred PI-1 Bugs | 5 | 17 | 🔵 Sprint 2 Active |
+| **Total** | **21** | **118** | |
+
+### Sprint 2 Story Points
+
+| Category | Stories | SP |
+|----------|---------|-----|
+| F2 stories (AB#202–206) | 5 | 33 |
+| F3 stories (AB#207–209) | 3 | 21 |
+| Deferred bugs (AB#251, 258–260, 262) | 5 | 17 |
+| **Sprint 2 Total** | **13** | **71** |
+
+---
+
+## Deferred PI-1 Bugs (Sprint 2)
+
+> These bugs were identified during PI-1 P5 verification and deferred to PI-2. Per PI-2 objectives (PI2-O6) and risk register (R19, score 25), security bugs are **Week 1 priority** — resolved before any new F2/F3 code that exercises affected paths (BR-BF-001).
+
+### Bug B-258: Missing CSRF Double-Submit Cookie (AB#258) — HIGH
+
+**Filed by:** Security Analyst (PI-1 P5)
+**Severity:** High | **Priority:** P1
+**Story Points:** 5
+**Feature:** Cross-cutting (F1, F4)
+**Requirements:** BF-001, S-04, S-06
+
+#### Acceptance Criteria
+
+```gherkin
+Feature: CSRF Protection
+
+  Scenario: CSRF token on mutations
+    Given a state-changing tRPC mutation is invoked
+    Then the request includes a CSRF token
+    And the server validates the token against the session
+    And a token mismatch returns 403 FORBIDDEN
+
+  Scenario: CSRF token not in URL
+    Given any CSRF-protected request
+    Then the CSRF token is never present in URL parameters
+
+  Scenario: Full regression
+    Given CSRF protection is enabled
+    Then all existing F1 and F4 flows pass regression testing
+```
+
+---
+
+### Bug B-259: Insufficient Audit Logging (AB#259) — HIGH
+
+**Filed by:** Security Analyst (PI-1 P5)
+**Severity:** High | **Priority:** P1
+**Story Points:** 3
+**Feature:** Cross-cutting
+**Requirements:** BF-004, NFR-013, BR-Global-006
+
+#### Acceptance Criteria
+
+```gherkin
+Feature: Audit Logging
+
+  Scenario: Privileged operations logged
+    Given a privileged operation occurs (server connect, disconnect, provisioning, app deploy, app remove, config change, credential rotation)
+    Then an audit log entry is created with: action type, timestamp, user ID, target server/app, outcome
+
+  Scenario: Audit log accessible
+    Given I am on the account settings page
+    Then I can view my audit log via the user.auditLog tRPC query
+    And entries are retained for a minimum of 90 days
+
+  Scenario: New F2/F3 operations include audit
+    Given any new F2/F3 operation with side effects is implemented
+    Then the operation includes an audit log write at implementation time
+```
+
+---
+
+### Bug B-260: Missing Content Security Policy (AB#260) — HIGH
+
+**Filed by:** Security Analyst (PI-1 P5)
+**Severity:** High | **Priority:** P1
+**Story Points:** 3
+**Feature:** Cross-cutting
+**Requirements:** BF-003
+
+#### Acceptance Criteria
+
+```gherkin
+Feature: Secrets Rotation
+
+  Scenario: SSH key rotation
+    Given I am on server settings
+    When I trigger SSH key rotation
+    Then a new key is generated and deployed to the VPS
+    And the old key is invalidated immediately
+    And running apps are not interrupted
+
+  Scenario: API token rotation
+    Given I am on server settings
+    When I trigger monitoring API token rotation
+    Then a new token is issued
+    And the old token is invalidated
+    And the monitoring agent receives the new token
+
+  Scenario: Rotation logged
+    Given a credential rotation occurs
+    Then the event is recorded in the audit log
+```
+
+---
+
+### Bug B-262: Broken Sudoers Ownership (AB#262) — HIGH
+
+**Filed by:** Security Analyst (PI-1 P5)
+**Severity:** High | **Priority:** P1
+**Story Points:** 3
+**Feature:** Cross-cutting (DevOps)
+**Requirements:** E-04
+
+#### Acceptance Criteria
+
+```gherkin
+Feature: Sudoers Configuration
+
+  Scenario: Correct sudoers file ownership
+    Given the provisioning script creates a sudoers file for the unplughq user
+    Then the file is owned by root:root
+    And permissions are 0440
+    And the file passes visudo -c validation
+
+  Scenario: Limited sudo scope
+    Given the unplughq user sudoers file
+    Then only Docker CLI and specific APT commands are allowed
+    And no wildcard or ALL permissions are granted
+```
+
+---
+
+### Bug B-251: Focus Management on Dynamic Content (AB#251) — MEDIUM
+
+**Filed by:** Accessibility Agent (PI-1 P5)
+**Severity:** Medium | **Priority:** P2
+**Story Points:** 3
+**Feature:** Cross-cutting (F4, F1 — all routes)
+**Requirements:** BF-005, WCAG 2.4.3
+
+#### Acceptance Criteria
+
+```gherkin
+Feature: Focus Management
+
+  Scenario: Route transition focus
+    Given I navigate to a new route within the SPA
+    Then focus moves to the main content region or page heading
+    And screen readers announce the new page context
+
+  Scenario: Modal focus trap cleanup
+    Given a modal dialog is open
+    When I close the modal
+    Then focus returns to the triggering element
+    And the focus trap is fully released
+
+  Scenario: Dynamic content focus
+    Given new content is loaded dynamically (e.g., provisioning progress)
+    Then focus is managed appropriately for the content type
+    And aria-live regions announce status updates
+```
+
+---
 
 ## Cross-Feature Dependencies
 
 ```
 F4 (Auth) ──────► F1 (Server) ──────► F2 (Catalog/Deploy) ──────► F3 (Dashboard/Monitoring)
-  │                    │                     │                          │
-  │ S-194 (register)   │ S-198 (wizard)      │ S-202 (catalog)         │ S-207 (dashboard)
-  │ S-195 (login)      │ S-199 (validate)    │ S-203 (config)          │ S-208 (alerts)
-  │ S-196 (reset)      │ S-200 (provision)   │ S-204 (deploy)          │ S-209 (remediation)
-  │ S-197 (settings)   │ S-201 (tile)        │ S-205 (verify)          │
-  │                    │                     │ S-206 (multi-app)        │
-  ▼                    ▼                     ▼                          ▼
-  Parallel track       Blocks F2, F3         Blocks F3                  End of chain
+  │  ✅ Done        │  ✅ Done          │  🔵 Sprint 2              │  🔵 Sprint 2
+  │ S-194 (register)│ S-198 (wizard)    │ S-202 (catalog)           │ S-207 (dashboard)
+  │ S-195 (login)   │ S-199 (validate)  │ S-203 (config)            │ S-208 (alerts)
+  │ S-196 (reset)   │ S-200 (provision) │ S-204 (deploy)            │ S-209 (remediation)
+  │ S-197 (settings)│ S-201 (tile)      │ S-205 (verify)            │
+  │                 │                   │ S-206 (multi-app)          │
+  ▼                 ▼                   ▼                            ▼
+  Delivered S1      Delivered S1        Blocks F3                    End of chain
+
+Cross-cutting bugs (B-258, B-259, B-260, B-262, B-251) — affect F1+F4 code paths, resolved Week 1
 ```
 
-**F4 and F1 have no mutual dependency** — they can proceed in parallel during Sprint 1.
-**F2 depends on F1** — app deployment requires a provisioned server.
-**F3 depends on F1** — dashboard metrics require a connected server with a monitoring agent.
-**F3 soft-depends on F2** — app status indicators require deployed apps (but dashboard shell can exist without).
+**F2 depends on F1** — app deployment requires a provisioned server (delivered).
+**F3 depends on F1** — dashboard metrics require a connected server with monitoring agent (delivered).
+**F3 soft-depends on F2** — app status indicators require deployed apps (dashboard shell can exist without).
+**Bugs depend on F1+F4** — security bugs affect existing Sprint 1 code paths.
 
 ## Non-Functional Requirements Coverage
 
@@ -858,8 +1024,14 @@ All stories inherit these cross-cutting NFRs verified at P5:
 | NFR-003 WCAG 2.2 AA | All UI stories | A11Y audit per `docs/wcag-audit.md` |
 | NFR-004 No user data on control plane | S-200, S-204, S-207, S-208 | Architecture verification |
 | NFR-005 Vendor independence | S-204 (standard Docker), S-206 | Export test |
-| NFR-006 Destructive operation confirmation | S-198 (disconnect), S-204 (remove app) | UI test |
+| NFR-006 Destructive operation confirmation | S-204 (remove app), S-206 (stop app) | UI test |
 | NFR-008 Mobile-first responsive | All UI stories | 375px viewport testing |
-| NFR-010 SSH key encryption | S-198, S-200 | Security review |
+| NFR-010 SSH key encryption | S-198, S-200 (delivered), B-260 (rotation) | Security review |
 | NFR-011 Page load < 3s, API p95 < 2s | S-207 | Performance test |
-| NFR-013 Audit logging | S-198, S-200, S-204 | Audit log verification |
+| NFR-013 Audit logging | B-259, S-204, S-207, all new F2/F3 ops | Audit log verification |
+| NFR-015 Idempotent deployment | S-204 | Retry test |
+| NFR-016 Agent metrics auth | S-207, S-208 | Security review |
+| NFR-017 SSE keepalive + fallback | S-207 | Resilience test |
+| NFR-018 Pinned image digests | S-202 (catalog), S-204 (deploy) | Catalog validation |
+| NFR-019 Docker network isolation | S-204, S-206 | Security review |
+| NFR-020 Alert email retry (DLQ) | S-208 | Integration test |

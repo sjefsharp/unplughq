@@ -7,13 +7,13 @@ parent-work-item: epic-001-unplughq-platform
 work-item-type: epic
 workflow-tier: full
 phase: P2
-version: 1.0.0
-status: approved
+version: 2.0.0
+status: draft
 consumed-by:
   - frontend-developer
   - accessibility
-date: 2026-03-14
-azure-devops-id: 191
+date: 2026-03-16
+azure-devops-id: 283
 ---
 
 # UnplugHQ Interaction Patterns Library
@@ -132,16 +132,174 @@ This document defines the micro-interactions, feedback loops, and state changes 
 - **Trigger:** Dragging down from the top edge when at scroll position 0.
 - **Feedback:** A circular spinner (the "Pulse Ring") drops down from the ceiling natively tracking the touch distance. Once past threshold (60px), it locks and spins until the API resolves, then snaps back up.
 
-## 6. Accessiblity Reference
+## 7. PI-2 Sprint 2 Interaction Patterns
+
+### 7.1 SSE Real-Time Deployment Progress (AB#204)
+
+Deployment progress is streamed via Server-Sent Events from the BullMQ deployment worker to the browser.
+
+- **Connection:** Client opens SSE stream on navigation to `/deployments/[id]`. Event source: `deployment.progress` SSE endpoint.
+- **Event Schema:** Each SSE event carries `{ phase: DeploymentStatus, description: string, timestamp: string }`.
+- **Phase Transition Animation:**
+  1. Active phase icon pulses (`--color-primary-base` pulse ring, 1.5s cycle).
+  2. On phase completion: icon transitions to `--color-success-base` checkmark with `--ease-spring` scale-in (`0.8 → 1.0`, `--dur-base`).
+  3. Next phase icon simultaneously transitions from `--color-border-base` to active pulse.
+  4. Connector line between phases fills from gray to `--color-success-base` over `--dur-slow`.
+  5. Progress bar segment fills with `--ease-standard`.
+- **Failure Transition:**
+  1. Active phase icon transitions to `--color-critical-base` X with shake animation (±4px, 3 cycles, 300ms).
+  2. Remaining phases dim to 30% opacity.
+  3. Failure detail panel slides open below: `--color-critical-subtle` background, error message, cleanup confirmation.
+- **Reconnection:** If SSE disconnects, client retries with exponential backoff (1s, 2s, 4s, 8s max). During reconnection, display "Reconnecting..." badge above progress. On reconnect, refetch current state via `deployment.status` tRPC query and reconcile.
+- **Page Revisit:** Navigating away and back re-opens SSE stream. Current state is fetched immediately, then live events resume. Already-completed phases render instantly (no re-animation).
+- **Background Navigation:** When user navigates away during deployment, dashboard app tile shows a deployment-in-progress indicator (primary-colored pulse ring + "Deploying..." label). Clicking the tile returns to the progress screen.
+- **A11y:** `aria-live="polite"` region announces: "Preparing", "Downloading your app", "Configuring", "Securing your domain", "Starting your app", "Your app is running" (or "Deployment failed").
+
+### 7.2 Deployment State Machine Transitions (AB#204)
+
+The deployment follows a strict state machine. The UI reflects each transition with visual feedback.
+
+```
+[pending] → [pulling] → [configuring] → [provisioning-ssl] → [starting] → [running]
+                 ↓              ↓                  ↓                ↓
+              [failed]       [failed]           [failed]         [failed]
+```
+
+- **Forward-Only:** Phases never regress. Once a phase completes, it stays checked.
+- **Atomic Failure:** A failure at any phase immediately halts progression. The failed phase is marked red; all subsequent phases remain dimmed with empty circles.
+- **Retry from Failed Phase:** On "Try again", the state machine resets to the failed phase's predecessor and re-enters the failed phase (not full restart from pending). The UI animates the failed phase icon back to active pulse state.
+- **Timeout Handling:** If no SSE event is received for 60 seconds during an active deployment, the UI shows an informational banner: "This is taking longer than expected. Your deployment is still running." No automatic failure — timeouts are not terminal.
+- **Idempotency Visual Cue:** If retrying, a subtle "Attempt 2" badge appears next to the progress header to indicate this is a retry.
+
+### 7.3 Dashboard SSE Refresh & Polling Fallback (AB#207)
+
+The dashboard receives live metric and alert updates via SSE, with graceful degradation.
+
+- **Primary: SSE Stream:**
+  - Client opens SSE connection on dashboard mount. Events: `metrics.update` (server metrics), `alert.new` (new alert), `alert.resolved` (alert cleared), `app.status` (app status change).
+  - **Heartbeat:** Server sends heartbeat every 30 seconds. Client uses heartbeat to detect connection health.
+  - **Metric Update Animation:** Resource gauge values tween smoothly over `150ms` using `--ease-standard`. No instant jumps. Color transitions occur over `--dur-base` when crossing thresholds (e.g., Memory goes from 68% green to 71% amber).
+  - **App Status Change:** Status badge transitions with a subtle scale pulse (`1.0 → 1.1 → 1.0`, `--dur-base`, `--ease-spring`) to draw attention. Badge color transitions over `--dur-fast`.
+- **Fallback: Polling:**
+  - If SSE connection fails and 3 reconnection attempts (1s, 2s, 4s backoff) fail, client switches to polling mode.
+  - Polling interval: 60 seconds via `monitor.dashboard` tRPC query.
+  - A subtle indicator replaces the "Last updated" timestamp: "Live updates unavailable. Refreshing every 60 seconds."
+  - On successful SSE reconnection, polling stops and indicator disappears.
+- **Stale Data Detection:** If no SSE event or poll response is received for 120 seconds, all gauges dim to 50% opacity and a "Data may be outdated. Last update: [timestamp]." banner appears.
+- **A11y:** New alerts inject into `aria-live="assertive"` region. Metric changes are not announced (too frequent — would overwhelm screen readers).
+
+### 7.4 Alert Notification Flow (AB#208)
+
+The complete lifecycle from threshold breach to user acknowledgment.
+
+```
+[Threshold Breached] → [Alert Created] → [Dashboard Banner + Bell Badge]
+                                      → [Email Sent (if enabled)]
+                                      ↓
+                           [User Views Alert] → [User Acknowledges]
+                                              → [User Dismisses]
+                                              → [User Opens Remediation]
+                                              ↓
+                                       [Condition Clears] → [Alert Auto-Resolved]
+```
+
+- **Alert Arrival (Dashboard):**
+  1. Alert banner slides down from below the header (`translateY(-100%)` → `0`, `--dur-base`, `--ease-spring`).
+  2. Notification bell badge count increments with a scale pulse (`1.0 → 1.3 → 1.0`, `--dur-fast`).
+  3. If dashboard is open, the alert also appears in the alert list with a highlight flash (`--color-warning-subtle` background fades to transparent over 2s).
+- **Alert Arrival (Background — Bell Dropdown):**
+  1. Bell badge updates. User clicks bell to see dropdown.
+  2. New alerts appear at top of dropdown with `--color-primary-subtle` left border highlight for 5 seconds, then fades to normal.
+- **Acknowledge Action:**
+  1. User clicks "Acknowledge" on alert row.
+  2. Button transitions to "Acknowledged" with checkmark icon, disabled state.
+  3. Alert row visually subdued: opacity transitions to 80%. Badge color dims.
+  4. Toast: "Acknowledged. This alert won't send repeat notifications."
+  5. Server: suppresses future email notifications for this alert instance.
+- **Dismiss Action:**
+  1. User clicks "Dismiss".
+  2. Alert row collapses (`max-height` → 0, `--dur-base`, `--ease-in`) and reappears in "Recent" section.
+  3. Toast: "Dismissed. Returns if the condition reoccurs."
+  4. If this was the last active alert, the "Everything is running smoothly." empty state fades in.
+- **Auto-Resolution:**
+  1. When the condition clears (e.g., disk drops below threshold), alert transitions to resolved.
+  2. Alert row gets a green checkmark overlay. After 5 seconds, slides out of active list.
+  3. Toast: "Resolved. Storage is back to normal levels."
+  4. Bell badge count decrements.
+- **Email Notification:** Sent within 5 minutes of alert creation (per FR-F3-006). Contains: subject (severity + summary), body (cause → severity → action → dashboard link), footer (manage preferences link). No repeat emails for acknowledged alerts.
+
+### 7.5 Multi-App Port Conflict Resolution Flow (AB#206)
+
+Since all apps use reverse proxy routing (no host port binding), port conflicts are structurally prevented. The UX focuses on domain conflict detection and resource contention visibility.
+
+- **Domain Conflict Detection:**
+  1. During configuration wizard (Step 2), when user enters a domain, client-side check queries existing deployments.
+  2. If the domain is already in use by another app: input border transitions to `--color-critical-base`, inline error: "This domain is already in use by [App Name]. Choose a different domain."
+  3. Validation blocks the "Continue" button on conflict. User must change the domain.
+- **Resource Contention Visibility:**
+  1. When deploying a new app, the configuration summary shows a resource impact preview: "After deployment: CPU ~X%, Memory ~Y%, Storage ~Z%".
+  2. If projected aggregate exceeds 80%: warning banner with amber styling. "Your server will be using approximately X% of its resources."
+  3. If projected aggregate exceeds 90%: critical warning. "Your server may not have enough resources. Performance of all apps could be affected." Still non-blocking (per FR-F2-104 soft limit).
+- **During Deployment:** Existing app tiles on the dashboard retain their current status badges. No flickering or status changes during a sibling deployment. If the reverse proxy briefly reloads (Caddy route addition), the existing app status may show a momentary "Updating" badge for <5 seconds, then returns to "Running".
+- **Post-Deployment Verification:** After a new app deploy, the system verifies all existing apps are still responding (background health check). If any existing app is disrupted, a warning alert is generated: "[Existing App] became unreachable after deploying [New App]."
+
+### 7.6 Configuration Wizard Step Navigation (AB#203)
+
+Multi-step form navigation preserving state and supporting non-linear editing.
+
+- **Forward Navigation:**
+  1. "Continue" button validates the current step. On error: field-level errors appear per Form Validation pattern (Section 3).
+  2. On success: current step indicator transitions to completed (checkmark, `--color-success-base`). Next step activates. Form slides left (`translateX(-100%)`), next step slides in from right (`translateX(100%)` → `0`), `--dur-base`, `--ease-spring`.
+- **Backward Navigation:**
+  1. "Back" button navigates to previous step without validation (allowing partial fill).
+  2. Reverse slide animation (current slides right, previous slides in from left).
+  3. All previously entered values are preserved in component state.
+- **Edit-Back from Summary:**
+  1. Clicking "Edit" next to a section on the summary screen jumps directly to that step.
+  2. Step indicator updates: target step becomes active, subsequent steps dim but remain marked as "visited" (outlined checkmark, `--color-border-base`).
+  3. After editing, "Continue" from the edited step skips past already-completed steps back to summary.
+- **A11y:** Step indicator has `aria-label`: "Step X of Y: [Step Name], [completed/current/upcoming]". Focus moves to the first interactive element of each new step.
+
+### 7.7 Catalog Search & Filter Interaction (AB#202)
+
+Real-time search and instant category filtering for the app catalog.
+
+- **Search Input:**
+  - Debounce: 300ms after last keystroke before filtering results.
+  - While typing: subtle skeleton flash on card grid signals incoming results.
+  - Match: case-insensitive substring against app name and description.
+  - Clear: X icon inside input appears when text is entered. Click clears and resets to full catalog.
+- **Category Filter Chips:**
+  - Toggle behavior: clicking a chip activates it (only one active at a time + "All" resets).
+  - Active chip: scale pulse `1.0 → 1.05 → 1.0`, background transitions to `--color-primary-subtle` over `--dur-fast`.
+  - Deactivated chip: background transitions back to `--color-bg-surface` over `--dur-fast`.
+  - Combined with search: both filters apply simultaneously. Category narrows first, search filters within category.
+- **Results Update:**
+  - Grid items crossfade: departing items fade out (`--dur-fast`), incoming items fade in (`--dur-base`). Layout shifts smoothly via CSS grid animation (items don't jump).
+  - Result count displayed above grid: "[N] apps" in `--text-sm-fs`, `--color-text-muted`.
+- **Empty State:** Centered message "No apps match your search." with suggestion "Try a different term or browse by category." Fade-in over `--dur-base`.
+
+## 8. Accessibility Reference (Updated for PI-2)
 
 - `prefers-reduced-motion: reduce`:
   - Disables the "Pulse Ring" animation (it becomes a static dot).
-  - Skips scaling and translating on enter/exit animations. Uses direct opacity fades over 0ms-150ms max.
+  - SSE progress bar fills instantly instead of animating.
+  - Alert banner enters with opacity fade only (no slide).
+  - Configuration wizard steps transition with crossfade instead of slide.
+  - Deployment phase transitions use opacity-only, no scale.
 - **Focus Management:**
   - Focus outlines are globally defined as `0 0 0 4px var(--color-primary-base)`. No `outline: none` without structural fallback.
+  - Alert expand/collapse: focus moves to the expanded detail panel on open, returns to the row on collapse.
+  - Wizard: focus moves to first input of each new step.
+  - Remediation: focus moves to first step content on page load.
 - **Keyboard Shortcuts:**
   - `?` — Opens Keyboard Shortcuts modal.
   - `/` — Focuses universal App/Server search.
   - `Esc` — Dismisses active modals/toasts/menus.
+- **Screen Reader Announcements:**
+  - Deployment progress: `aria-live="polite"` announces each phase change.
+  - New alerts: `aria-live="assertive"` announces alert arrival.
+  - Gauge updates: not announced (too frequent). Current values readable on focus.
+  - Verification results: `aria-live="polite"` announces each check result.
 
 (Ends Interaction Patterns Spec)
