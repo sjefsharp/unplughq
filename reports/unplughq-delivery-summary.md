@@ -2,12 +2,12 @@
 artifact: delivery-summary
 produced-by: product-manager
 project-slug: unplughq
-date: 2026-03-16
+date: 2026-03-20
 ---
 
 # Delivery Summary — unplughq
 
-Generated: 2026-03-16
+Generated: 2026-03-20
 
 ## Work Item Summary
 
@@ -32,6 +32,15 @@ Generated: 2026-03-16
 | Gate 6 | ✔ PASS | 2026-03-16 |
 | Gate 7 | ✔ PASS | 2026-03-16 |
 | Gate 8 | ✔ PASS | 2026-03-16 |
+| Gate 9 | ✔ PASS | 2026-03-16 |
+| Gate 1 | ✔ PASS | 2026-03-16 |
+| Gate 2 | ✔ PASS | 2026-03-16 |
+| Gate 3 | ✔ PASS | 2026-03-16 |
+| Gate 4 | ✔ PASS | 2026-03-16 |
+| Gate 5 | ✔ PASS | 2026-03-18 |
+| Gate 6 | ✔ PASS | 2026-03-18 |
+| Gate 7 | ? UNKNOWN | 2026-03-18 |
+| Gate 8 | ✔ PASS | 2026-03-18 |
 
 ```mermaid
 gantt
@@ -46,6 +55,15 @@ gantt
     Gate 6 (PASS) :done, 2026-03-16, 1d
     Gate 7 (PASS) :done, 2026-03-16, 1d
     Gate 8 (PASS) :done, 2026-03-16, 1d
+    Gate 9 (PASS) :done, 2026-03-16, 1d
+    Gate 1 (PASS) :done, 2026-03-16, 1d
+    Gate 2 (PASS) :done, 2026-03-16, 1d
+    Gate 3 (PASS) :done, 2026-03-16, 1d
+    Gate 4 (PASS) :done, 2026-03-16, 1d
+    Gate 5 (PASS) :done, 2026-03-18, 1d
+    Gate 6 (PASS) :done, 2026-03-18, 1d
+    Gate 7 (UNKNOWN) :crit, 2026-03-18, 1d
+    Gate 8 (PASS) :done, 2026-03-18, 1d
 ```
 
 ## Agent Utilization
