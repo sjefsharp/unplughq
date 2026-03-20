@@ -877,3 +877,54 @@ Before proceeding to P7 Deployment, the following 6 P1 blockers must be remediat
 ### Decision
 
 **PASS** — All 5 P7 agents delivered. 542 tests pass. Build clean. Feature branch clean. Production deployment verified. Proceeding to Phase 8 (Close).
+
+---
+
+## Gate 9 — PI-2 Sprint 2 (Phase 8 → Delivery Complete)
+
+**Date:** 2026-03-20
+**Evaluator:** PM
+**Phase:** P8 Close → Delivery Complete
+
+### P8 Deliverables
+
+| Artifact | Status |
+| --- | --- |
+| `retrospective-sprint2.md` (SM AB#324) | ✅ Deployed |
+| `release-notes-sprint2.md` (PM) | ✅ Committed |
+| `management-report-sprint2.md` (PM) | ✅ Committed |
+| `reports/unplughq-delivery-summary.md` (PM) | ✅ Regenerated |
+
+### Gate 9 Checklist
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| Management report exists | ✅ PASS | `docs/management-report-sprint2.md` |
+| Delivery summary exists | ✅ PASS | `reports/unplughq-delivery-summary.md` regenerated 2026-03-20 |
+| All enhancement candidates resolved | ✅ PASS | 4 candidates: 2 rejected, 2 deferred — 0 in `proposed` state |
+| SM retrospective complete | ✅ PASS | AB#324 — retrospective-sprint2.md deployed |
+| Release notes written | ✅ PASS | `docs/release-notes-sprint2.md` |
+| Feature branch clean | ✅ PASS | No uncommitted changes on `feat/pi-2-sprint-2` |
+| All PI-2 gates passed | ✅ PASS | Gates 1–8 all PASS (Gate 6 CONDITIONAL → resolved) |
+| Framework validation | ⚠️ KNOWN | 158 issues — all pre-existing framework-level (61 cross-ref, 62 skill structure, 34 installed skills). Same counts as PI-1 Gate 9. No Sprint 2 regressions. |
+| Task-First compliance | ✅ PASS | 33 agent tasks across P0–P8 (AB#277–AB#324) |
+
+### PI-2 Sprint 2 Summary
+
+| Metric | Value |
+| --- | --- |
+| Stories delivered | 8/8 (100%) |
+| Story points | 54 SP |
+| Features completed | 2 (F2 App Catalog, F3 Monitoring) |
+| Cumulative PI-2 features | 4/4 (F1, F2, F3, F4) |
+| Tests | 542 across 33 files |
+| Bugs found | 10 (37.5% reduction from Sprint 1) |
+| Bugs fixed | 6 P1 + 3 PI-1 deferred = 9 |
+| Bugs deferred to PI-3 | 4 (AB#300, AB#301, AB#311, AB#312) |
+| Agent invocations | 33 |
+| Gate failures | 0 |
+| Re-iterations | 1 (P5 remediation cycle) |
+
+### Decision
+
+**PASS** — All P8 deliverables complete. Management report and delivery summary exist. Enhancement candidates fully resolved. Sprint 2 delivered 8/8 stories (54 SP) across 2 features with 542 passing tests. Ready to merge `feat/pi-2-sprint-2` to `main` and close Epic AB#180.
